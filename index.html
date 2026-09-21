@@ -68,8 +68,7 @@
     <dialog id="reservationDialog"><form method="dialog" class="modal"><div class="modal-header"><div><p class="eyebrow" id="modalCode">PRE-000</p><h2 id="modalTitle">Detalle de pre-reserva</h2></div><button class="close-btn" value="cancel" aria-label="Cerrar">×</button></div><div id="modalContent"></div><div class="modal-actions" id="modalActions"></div></form></dialog>
     <dialog id="authDialog"><form id="authForm" class="modal"><div class="modal-header"><div><p class="eyebrow">Acceso privado</p><h2>Ingresar al dashboard</h2></div><button class="close-btn" type="button" id="closeAuthBtn" aria-label="Cerrar">×</button></div><p class="auth-copy">Te enviaremos un enlace seguro de acceso. Solo las cuentas autorizadas de Inside Spa pueden ver las reservas.</p><label class="auth-label" for="authEmail">Correo autorizado</label><input class="auth-input" id="authEmail" type="email" autocomplete="email" required placeholder="nombre@insidespa.com.mx" /><p class="auth-feedback" id="authFeedback"></p><div class="modal-actions"><button type="submit" class="primary-btn" id="sendLinkBtn">Enviar enlace de acceso</button></div></form></dialog>
     <dialog id="toast"><p id="toastMessage"></p></dialog>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0"></script>
     <script src="supabase-config.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>

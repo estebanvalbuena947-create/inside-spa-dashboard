@@ -1,5 +1,7 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/+esm';
+
 const config = window.INSIDE_SPA_SUPABASE;
-const supabase = window.supabase.createClient(config.url, config.publishableKey, {
+const supabase = createClient(config.url, config.publishableKey, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
 });
 let reservations = [];
