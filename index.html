@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inside Spa | Gestión de reservas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navegación principal">
+        <a class="brand" href="#dashboard" aria-label="Inside Spa inicio">
+          <span class="brand-mark">I</span>
+          <span><strong>inside</strong><small>SPA & WELLNESS</small></span>
+        </a>
+        <nav class="nav-list">
+          <a class="nav-link active" href="#dashboard"><span>▦</span>Resumen</a>
+          <a class="nav-link" href="#reservas"><span>◷</span>Pre-reservas <b id="pendingBadge">0</b></a>
+          <a class="nav-link" href="#historico"><span>◫</span>Histórico</a>
+          <a class="nav-link" href="#comprobantes"><span>▤</span>Comprobantes</a>
+          <a class="nav-link" href="#clientes"><span>♙</span>Clientes</a>
+        </nav>
+        <div class="sidebar-bottom">
+          <button class="support-btn" type="button">? <span>Centro de ayuda</span></button>
+          <div class="profile"><div class="avatar">LM</div><div><strong>Laura Mejía</strong><small>Administradora</small></div><button type="button" aria-label="Abrir menú de perfil">⌄</button></div>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <button class="menu-toggle" type="button" aria-label="Abrir navegación">☰</button>
+          <div><p class="eyebrow">Lunes, 21 de septiembre</p><h1>Buenos días, Laura <span>✦</span></h1></div>
+          <div class="top-actions"><span class="sync-status" id="syncStatus">Conecta tu cuenta</span><button class="icon-btn" type="button" aria-label="Notificaciones">♢<i></i></button><button class="new-reservation" type="button" id="authBtn">Iniciar sesión</button></div>
+        </header>
+
+        <section class="overview" id="dashboard">
+          <div class="section-heading"><div><h2>Resumen de hoy</h2><p>Una vista rápida de la operación de tu spa.</p></div><button class="date-button" type="button">▣ Hoy, 21 sep <span>⌄</span></button></div>
+          <div class="metrics">
+            <article class="metric-card"><div class="metric-icon sand">◷</div><div><p>Pre-reservas pendientes</p><strong id="pendingMetric">0</strong><small class="up" id="pendingChange">—</small></div></article>
+            <article class="metric-card"><div class="metric-icon sage">✓</div><div><p>Confirmadas hoy</p><strong id="confirmedMetric">0</strong><small class="up">↑ 12% vs. ayer</small></div></article>
+            <article class="metric-card"><div class="metric-icon rose">◫</div><div><p>Ingresos confirmados</p><strong id="revenueMetric">$0</strong><small class="up">↑ 8% vs. ayer</small></div></article>
+            <article class="metric-card"><div class="metric-icon lilac">♙</div><div><p>Clientes por atender</p><strong id="clientsMetric">0</strong><small class="muted">En las próximas 24 h</small></div></article>
+          </div>
+        </section>
+
+        <section class="content-grid" id="reservas">
+          <article class="panel reservation-panel">
+            <div class="panel-header"><div><h2>Pre-reservas por gestionar <span id="reservationCount">0</span></h2><p>Revisa pagos y toma una decisión.</p></div><a href="#historico">Ver todas <span>→</span></a></div>
+            <div class="filter-row"><label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="Buscar por cliente o código" /></label><select id="serviceFilter" aria-label="Filtrar por servicio"><option value="">Todos los servicios</option></select><select id="statusFilter" aria-label="Filtrar por estado"><option value="pending">Pendientes</option><option value="">Todos los estados</option><option value="confirmed">Confirmadas</option><option value="rejected">Rechazadas</option></select></div>
+            <div class="table-wrap"><table><thead><tr><th>CLIENTE</th><th>SERVICIO</th><th>FECHA Y HORA</th><th>VALOR</th><th>ESTADO</th><th aria-label="Acciones"></th></tr></thead><tbody id="reservationBody"></tbody></table></div>
+            <p class="empty-state" id="emptyState" hidden>No hay reservas que coincidan con los filtros.</p>
+          </article>
+
+          <aside class="right-column">
+            <article class="panel activity-panel"><div class="panel-header"><div><h2>Actividad reciente</h2><p>Últimos movimientos</p></div><button class="more-btn" type="button" aria-label="Más opciones">•••</button></div><ol class="activity-list" id="activityList"></ol><a class="view-history" href="#historico">Ver historial completo →</a></article>
+            <article class="occupancy-card"><div><p>Ocupación de hoy</p><strong>72<small>%</small></strong><span class="up">↑ 6% vs. ayer</span></div><div class="circle-progress"><span>13<small>/18</small></span></div><p class="occupancy-note">13 de 18 cupos reservados</p></article>
+          </aside>
+        </section>
+
+        <section class="panel history-panel" id="historico"><div class="panel-header"><div><h2>Histórico de decisiones</h2><p>Registro de aprobaciones, rechazos y comprobantes.</p></div><button class="export-btn" id="exportBtn" type="button">⇩ Exportar CSV</button></div><div class="decision-list" id="decisionList"></div></section>
+      </main>
+    </div>
+
+    <dialog id="reservationDialog"><form method="dialog" class="modal"><div class="modal-header"><div><p class="eyebrow" id="modalCode">PRE-000</p><h2 id="modalTitle">Detalle de pre-reserva</h2></div><button class="close-btn" value="cancel" aria-label="Cerrar">×</button></div><div id="modalContent"></div><div class="modal-actions" id="modalActions"></div></form></dialog>
+    <dialog id="authDialog"><form id="authForm" class="modal"><div class="modal-header"><div><p class="eyebrow">Acceso privado</p><h2>Ingresar al dashboard</h2></div><button class="close-btn" type="button" id="closeAuthBtn" aria-label="Cerrar">×</button></div><p class="auth-copy">Te enviaremos un enlace seguro de acceso. Solo las cuentas autorizadas de Inside Spa pueden ver las reservas.</p><label class="auth-label" for="authEmail">Correo autorizado</label><input class="auth-input" id="authEmail" type="email" autocomplete="email" required placeholder="nombre@insidespa.com.mx" /><p class="auth-feedback" id="authFeedback"></p><div class="modal-actions"><button type="submit" class="primary-btn" id="sendLinkBtn">Enviar enlace de acceso</button></div></form></dialog>
+    <dialog id="toast"><p id="toastMessage"></p></dialog>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0"></script>
+    <script src="supabase-config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
