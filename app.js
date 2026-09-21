@@ -5,6 +5,7 @@ const supabase = createClient(config.url, config.publishableKey, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
 });
 let reservations = [];
+let confirmedReservations = [];
 let decisions = [];
 let receipts = new Map();
 let currentId = null;
@@ -48,7 +49,7 @@ function render() {
   document.querySelector('#emptyState').hidden = rows.length > 0;
   document.querySelectorAll('.row-action').forEach(button => button.addEventListener('click', () => openModal(Number(button.dataset.id))));
   const pending = reservations.filter(r => statusOf(r).key === 'pending').length;
-  const confirmed = reservations.filter(r => statusOf(r).key === 'confirmed');
+  const confirmed = confirmedReservations.length ? confirmedReservations : reservations.filter(r => statusOf(r).key === 'confirmed');
   const confirmedRevenue = confirmed.reduce((total, r) => total + Number(r.monto_pagado || receiptData(r)?.datos?.monto_pago || 0), 0);
   document.querySelector('#pendingMetric').textContent = pending;
   document.querySelector('#pendingBadge').textContent = pending;
@@ -56,7 +57,7 @@ function render() {
   document.querySelector('#pendingChange').textContent = pending ? `${pending} requieren atención` : 'Todo al día';
   document.querySelector('#confirmedMetric').textContent = confirmed.length;
   document.querySelector('#revenueMetric').textContent = money(confirmedRevenue);
-  document.querySelector('#clientsMetric').textContent = reservations.filter(r => r.masaje_inicio || r.jacuzzi_inicio).length;
+  document.querySelector('#clientsMetric').textContent = reservations.filter(r => r.masaje_inicio || r.jacuzzi_inicio).length + confirmedReservations.filter(r => r.masaje_inicio || r.jacuzzi_inicio).length;
   const activityRows = decisions.slice(0, 4);
   document.querySelector('#activityList').innerHTML = activityRows.length ? activityRows.map(item => {
     const reservation = reservations.find(r => Number(r.id) === Number(item.reservation_draft_id));
@@ -97,14 +98,16 @@ async function decide(action) {
 
 async function loadData() {
   setSyncStatus('Sincronizando…');
-  const [reservationResult, receiptResult, decisionResult] = await Promise.all([
+  const [reservationResult, receiptResult, decisionResult, confirmedResult] = await Promise.all([
     supabase.from('reservas_draft').select('*').order('comprobante_revision_at', { ascending: false, nullsFirst: false }).limit(100),
     supabase.from('spa_comprobantes_pago').select('reserva_draft_id,estado,datos,creado_at,actualizado_at').order('actualizado_at', { ascending: false }).limit(100),
-    supabase.from('dashboard_reservation_decisions').select('*').order('created_at', { ascending: false }).limit(100)
+    supabase.from('dashboard_reservation_decisions').select('*').order('created_at', { ascending: false }).limit(100),
+    supabase.from('reservas').select('id,nombre,email,phone,nombre_servicio,servicio,masaje_inicio,jacuzzi_inicio,monto_pagado,moneda_pago,reserva_confirmada,pabau_confirmado_at,sucursal').order('pabau_confirmado_at', { ascending: false, nullsFirst: false }).limit(100)
   ]);
   const error = reservationResult.error || receiptResult.error || decisionResult.error;
   if (error) { setSyncStatus('Error de conexión'); showToast(`No se pudieron cargar los datos: ${error.message}`); return; }
   reservations = reservationResult.data || [];
+  confirmedReservations = confirmedResult.data || [];
   decisions = decisionResult.data || [];
   receipts = new Map();
   (receiptResult.data || []).forEach(receipt => { if (!receipts.has(Number(receipt.reserva_draft_id))) receipts.set(Number(receipt.reserva_draft_id), receipt); });
@@ -113,7 +116,7 @@ async function loadData() {
   const previous = select.value;
   select.innerHTML = '<option value="">Todos los servicios</option>' + services.map(item => `<option value="${safe(item)}">${safe(item)}</option>`).join('');
   select.value = previous;
-  setSyncStatus('Datos sincronizados', true);
+  setSyncStatus(confirmedResult.error ? 'Datos sincronizados parcialmente' : 'Datos sincronizados', true);
   render();
 }
 
