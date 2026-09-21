@@ -64,11 +64,16 @@ function render() {
     const action = item.action === 'approved' ? 'aprobó el comprobante de' : item.action === 'rejected' ? 'rechazó el comprobante de' : 'solicitó información a';
     return `<li style="--activity-color:${item.action === 'approved' ? '#3b8a72' : item.action === 'rejected' ? '#c26a68' : '#c28d49'}"><strong>${safe(item.decided_by_email)}</strong> ${action} <strong>${safe(reservation?.nombre || `reserva #${item.reservation_draft_id}`)}</strong>.<time>${safe(dateFormat.format(new Date(item.created_at)))}</time></li>`;
   }).join('') : '<li><strong>Sin decisiones todavía.</strong><time>Las acciones aprobadas o rechazadas aparecerán aquí.</time></li>';
-  document.querySelector('#decisionList').innerHTML = decisions.length ? decisions.slice(0, 6).map(item => {
+  const decisionMarkup = decisions.slice(0, 6).map(item => {
     const reservation = reservations.find(r => Number(r.id) === Number(item.reservation_draft_id));
     const label = item.action === 'approved' ? 'Comprobante aprobado' : item.action === 'rejected' ? 'Comprobante rechazado' : 'Información solicitada';
     return `<article class="decision-item"><strong>${safe(label)} · ${safe(reservation?.nombre || `#${item.reservation_draft_id}`)}</strong><p>${safe(item.previous_status)} → ${safe(item.resulting_status)}${item.note ? ` · ${safe(item.note)}` : ''}</p><time>${safe(dateFormat.format(new Date(item.created_at)))} · ${safe(item.decided_by_email)}</time></article>`;
-  }).join('') : '<p class="empty-state">Aún no hay decisiones registradas.</p>';
+  }).join('');
+  const confirmedMarkup = confirmedReservations.slice(0, 6).map(reservation => {
+    const when = reservation.pabau_confirmado_at || reservation.masaje_inicio || reservation.jacuzzi_inicio;
+    return `<article class="decision-item"><strong>Reserva confirmada · ${safe(reservation.nombre || `#${reservation.id}`)}</strong><p>${safe(reservation.nombre_servicio || reservation.servicio || 'Servicio confirmado')} · ${money(reservation.monto_pagado)}</p><time>${when ? safe(dateFormat.format(new Date(when))) : 'Fecha de confirmación no disponible'}</time></article>`;
+  }).join('');
+  document.querySelector('#decisionList').innerHTML = decisionMarkup || confirmedMarkup ? decisionMarkup + confirmedMarkup : '<p class="empty-state">Aún no hay decisiones o reservas confirmadas registradas.</p>';
 }
 
 function openModal(id) {
