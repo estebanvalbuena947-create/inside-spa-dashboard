@@ -7,12 +7,10 @@
    apertura del modal, aprobación/rechazo y exportación CSV.
    Falla si cualquier paso lanza una excepción. */
 
-import { readFileSync } from 'node:fs';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { join } from 'node:path';
+import { installDom, installSupabaseStub, root } from './dom-mock.mjs';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const html = readFileSync(join(root, 'index.html'), 'utf8');
 const failures = [];
 const steps = [];
 const warn = message => console.log(`   · ${message}`);
@@ -21,147 +19,17 @@ const step = (name, ok, detail = '') => {
   else failures.push(`${name}${detail ? ` · ${detail}` : ''}`);
 };
 
-/* ---------- 1. Construir el DOM con los #id reales ---------- */
-const rootTags = [...html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
-const rootTagsWithoutPercent = rootTags.filter(id => id !== 'occupancyPercent');
-
-const store = new Map();
-const localStorageMock = {
-  getItem: key => (store.has(key) ? store.get(key) : null),
-  setItem: (key, value) => store.set(key, String(value)),
-  removeItem: key => store.delete(key),
-  clear: () => store.clear()
-};
-
-function makeNode(tagName = 'DIV', id = '') {
-  const listeners = new Map();
-  const attributes = new Map();
-  if (id) attributes.set('id', id);
-  const node = {
-    tagName: tagName.toUpperCase(),
-    id,
-    dataset: {},
-    style: { setProperty() {}, removeProperty() {} },
-    children: [],
-    value: '',
-    textContent: '',
-    innerHTML: '',
-    hidden: false,
-    disabled: false,
-    open: false,
-    returnValue: '',
-    scrollIntoView() {},
-    classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
-    getAttribute: key => (attributes.has(key) ? attributes.get(key) : null),
-    setAttribute: (key, value) => attributes.set(key, String(value)),
-    removeAttribute: key => attributes.delete(key),
-    addEventListener: (type, handler) => {
-      if (!listeners.has(type)) listeners.set(type, []);
-      listeners.get(type).push(handler);
-    },
-    removeEventListener: (type, handler) => {
-      const list = listeners.get(type) || [];
-      listeners.set(type, list.filter(item => item !== handler));
-    },
-    dispatch: (type, extra = {}) => {
-      const event = {
-        type,
-        target: node,
-        preventDefault() {},
-        stopPropagation() {},
-        closest: () => null,
-        ...extra
-      };
-      (listeners.get(type) || []).forEach(handler => handler(event));
-      (listeners.get('click') || []).forEach(handler => handler(event));
-    },
-    appendChild(child) { node.children.push(child); return child; },
-    remove() {},
-    showModal() { node.open = true; },
-    show() { node.open = true; },
-    close() {
-      node.open = false;
-      (listeners.get('close') || []).forEach(handler => handler({ type: 'close', target: node }));
-    },
-    reset() {}
-  };
-  return node;
-}
-
-const byId = new Map();
-const byClass = new Map();
-const dynamicNodes = new Map();
-
-function ensureId(id) {
-  if (!byId.has(id)) {
-    const tag = id === 'searchInput' || id === 'dayFilter' ? 'INPUT' : id.endsWith('Dialog') || id === 'toast' ? 'DIALOG' : 'DIV';
-    byId.set(id, makeNode(tag, id));
-  }
-  return byId.get(id);
-}
-
-rootTags.forEach(id => ensureId(id));
-
-/* Nodos por clase usados por el código. */
-['.sidebar', '.menu-toggle', '.nav-link', '.occupancy-card', '.circle-progress'].forEach(selector => {
-  byClass.set(selector, makeNode('DIV'));
-});
-
-globalThis.document = {
-  hidden: false,
-  body: makeNode('BODY'),
-  querySelector: selector => {
-    if (typeof selector !== 'string') return null;
-    if (selector.startsWith('#')) return ensureId(selector.slice(1));
-    if (selector.includes('#') && selector.includes(' ')) {
-      const id = selector.split('#')[1].trim();
-      if (id && rootTags.includes(id.split(/[\s.:]/)[0])) return makeNode('DIV', id);
-      return makeNode('DIV');
-    }
-    if (byClass.has(selector)) return byClass.get(selector);
-    return rootTags.map(id => `#${id}`).includes(selector) ? makeNode('DIV') : makeNode('DIV');
-  },
-  querySelectorAll: selector => {
-    if (selector === '.nav-link') return rootTags.filter(id => id.startsWith('nav')).map(() => makeNode('A'));
-    if (selector === '.sidebar') return [byClass.get('.sidebar')];
-    return [];
-  },
-  getElementById: id => (rootTags.includes(id) ? ensureId(id) : null),
-  createElement: tag => makeNode(tag),
-  addEventListener() {},
-  removeEventListener() {}
-};
-
-globalThis.window = {
-  location: {
-    origin: 'https://inside-spa-dashboard.vercel.app',
-    pathname: '/',
-    hash: '',
-    search: '',
-    protocol: 'https:',
-    href: 'https://inside-spa-dashboard.vercel.app/'
-  },
-  history: { replaceState() {} },
-  localStorage: localStorageMock,
-  addEventListener() {},
-  removeEventListener() {},
-  INSIDE_SPA_SUPABASE: {
+/* ---------- 1. DOM con los #id reales de index.html ---------- */
+installDom({
+  config: {
     url: 'https://ncutewymydclypuqlbfk.supabase.co',
     publishableKey: 'sb_publishable_prueba',
-    allowedEmails: ['contacto@insidespa.com.mx', 'estebanvalbuena947@gmail.com']
+    allowedEmails: ['contacto@insidespa.com.mx', 'estebanvalbuena947@gmail.com'],
+    timeZone: 'America/Mexico_City'
   }
-};
-globalThis.localStorage = localStorageMock;
-globalThis.URL.createObjectURL = () => 'blob:prueba';
-globalThis.URL.revokeObjectURL = () => {};
-globalThis.HTMLElement = class HTMLElement {};
-globalThis.customElements = { define() {}, get: () => undefined };
-globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
-globalThis.setInterval = () => 0;
-globalThis.clearInterval = () => {};
-globalThis.Blob = class Blob {
-  constructor(parts) { this.parts = parts; }
-};
+});
+
+
 
 /* ---------- 2. Datos simulados de Supabase ---------- */
 const today = new Date();
@@ -231,29 +99,8 @@ globalThis.__supabaseStub = {
 };
 
 /* ---------- 3. Interceptar la importación del módulo de Supabase ---------- */
-const stubSource = `export const createClient = globalThis.__supabaseStub.createClient;`;
-const stubUrl = `data:text/javascript,${encodeURIComponent(stubSource)}`;
-
-const { register } = await import('node:module');
-if (typeof register === 'function') {
-  // Node >= 20.6: usar un hook de resolución para redirigir el CDN al stub.
-  const { writeFileSync, mkdtempSync } = await import('node:fs');
-  const { tmpdir } = await import('node:os');
-  const dir = mkdtempSync(join(tmpdir(), 'inside-spa-smoke-'));
-  const hookPath = join(dir, 'hook.mjs');
-  writeFileSync(hookPath, `
-export async function resolve(specifier, context, nextResolve) {
-  if (/(supabase-js|esm\\.sh)/.test(specifier)) {
-    return { url: ${JSON.stringify(stubUrl)}, shortCircuit: true };
-  }
-  return nextResolve(specifier, context);
-}
-`);
-  register(pathToFileURL(hookPath).href);
-  warn('hook de importación activo: la librería de Supabase se sustituye por un doble de prueba');
-} else {
-  warn('no se pudo registrar el hook de importación; se prueba sin la librería real');
-}
+await installSupabaseStub({ createClient: globalThis.__supabaseStub.createClient });
+warn('hook de importación activo: la librería de Supabase se sustituye por un doble de prueba');
 
 /* ---------- 4. Ejecutar main.js ---------- */
 async function runDiagnosticsForTest(app) {

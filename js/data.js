@@ -19,7 +19,7 @@ export const PAGE_LIMIT = 500;
 /* Columnas reales del proyecto (verificadas contra la base). Si alguna no
    existiera, la consulta cae automáticamente a select('*'). */
 const COLUMNS = {
-  reservas_draft: 'id,nombre,email,phone,nombre_servicio,servicio,masaje_inicio,jacuzzi_inicio,monto_pagado,moneda_pago,estado_reserva,reserva_confirmada,pago_recibido,horario_pendiente,motivo_revision,comprobante_revision_at,comprobante_revision_datos,updated_at',
+  reservas_draft: 'id,nombre,email,phone,nombre_servicio,servicio,masaje_inicio,jacuzzi_inicio,monto_pagado,moneda_pago,estado_reserva,reserva_confirmada,pago_recibido,horario_pendiente,motivo_revision,comprobante_revision_at,comprobante_revision_datos',
   reservas: 'id,nombre,email,phone,nombre_servicio,masaje_inicio,jacuzzi_inicio,monto_pagado,moneda_pago,reserva_confirmada,pabau_confirmado_at,sucursal,updated_at',
   spa_comprobantes_pago: 'huella,reserva_draft_id,subscriber_id,estado,datos,creado_at,actualizado_at',
   dashboard_reservation_decisions: 'id,reservation_draft_id,action,note,previous_status,resulting_status,decided_by_email,created_at'
@@ -36,8 +36,9 @@ const MESSAGES = {
   not_logged: 'Inicia sesión con una cuenta autorizada para ver los datos.',
   missing_table: table => `La tabla ${table} no existe en este proyecto de Supabase.`,
   missing_column: (table, message) => `Falta una columna esperada en ${table} (${message}). Revisa la migración SQL.`,
-  permission: table => `Tu cuenta no tiene permiso de lectura sobre ${table} (falta GRANT/RLS). Hay que ejecutar la migración SQL.`,
-  rls: table => `Las políticas RLS de ${table} no permiten ver estas filas a tu cuenta. Hay que ejecutar la migración SQL.`,
+  permission: (table, operation) => `Tu cuenta no tiene permiso de ${operation === 'write' ? 'escritura' : 'lectura'} sobre ${table}. Falta el GRANT en la migración SQL (supabase/APLICAR_EN_SUPABASE.sql).`,
+  rls: (table, operation) => `Las políticas RLS de ${table} no permiten ${operation === 'write' ? 'guardar cambios' : 'ver estas filas'} con tu cuenta. Hay que ejecutar la migración SQL.`,
+  invalid_token: 'Tu sesión venció o el enlace de acceso ya no es válido. Vuelve a iniciar sesión.',
   network: 'No se pudo conectar con Supabase. Revisa tu conexión a internet.'
 };
 
@@ -57,18 +58,24 @@ export function classifyError(error, table) {
   if (code === '42703' || /column .* does not exist/i.test(message)) return 'missing_column';
   if (code === '42501' || /permission denied/i.test(message)) return 'permission';
   if (/row-level security|violates row-level security/i.test(message)) return 'rls';
+  /* PGRST301 lo devuelve PostgREST tanto si falta la tabla como si el token de la
+     sesión no es válido ("No suitable key or wrong key type"). Se distinguen por
+     el texto para no decirle al equipo que falta una tabla cuando en realidad
+     solo tiene que volver a iniciar sesión. */
+  if (code === 'PGRST301' && /jwt|token|claims|expired|key|decode|signature|verify/i.test(message)) return 'invalid_token';
   if (code === 'PGRST301' || code === 'PGRST205' || /could not find the table/i.test(message)) return 'missing_table';
   if (/failed to fetch|networkerror|load failed|network request failed/i.test(message)) return 'network';
   if (code === 'PGRST202' || /could not find the function/i.test(message)) return 'missing_function';
   return table ? `${table}` : 'unknown';
 }
 
-export function describeError(error, table) {
+export function describeError(error, table, operation = 'read') {
   const kind = classifyError(error, table);
   if (kind === 'missing_table') return MESSAGES.missing_table(table);
   if (kind === 'missing_column') return MESSAGES.missing_column(table, String(error?.message || ''));
-  if (kind === 'permission') return MESSAGES.permission(table);
-  if (kind === 'rls') return MESSAGES.rls(table);
+  if (kind === 'permission') return MESSAGES.permission(table, operation);
+  if (kind === 'rls') return MESSAGES.rls(table, operation);
+  if (kind === 'invalid_token') return MESSAGES.invalid_token;
   if (kind === 'network') return MESSAGES.network;
   return String(error?.message || error || 'Error desconocido') + (table ? ` (${table})` : '');
 }
@@ -199,7 +206,7 @@ export async function decide(supabase, { draftId, action, note, previousStatus, 
 
   const rpcKind = classifyError(rpc.error, TABLE.decisions);
   if (rpcKind !== 'missing_function') {
-    throw new DataError(rpcKind === 'permission' ? 'permission' : rpcKind, describeError(rpc.error, TABLE.decisions), { step: 'rpc', error: rpc.error });
+    throw new DataError(rpcKind === 'permission' ? 'permission' : rpcKind, describeError(rpc.error, TABLE.decisions, 'write'), { step: 'rpc', error: rpc.error });
   }
 
   // Vía alternativa: registrar la decisión y actualizar el estado de la pre-reserva.
@@ -219,23 +226,31 @@ export async function decide(supabase, { draftId, action, note, previousStatus, 
 
   const stateError = await applyDraftState(supabase, draftId, action);
   if (!inserted && stateError) {
-    throw new DataError('fallback_failed', `No se pudo registrar la decisión: ${describeError(stateError, TABLE.drafts)}`, { insertError, stateError });
+    throw new DataError('fallback_failed', `No se pudo registrar la decisión: ${describeError(stateError, TABLE.drafts, 'write')}`, { insertError, stateError });
   }
   if (!inserted && !stateError) return { via: 'status_only' };
-  if (inserted && stateError) return { via: 'decision_only', warning: describeError(stateError, TABLE.drafts) };
+  if (inserted && stateError) return { via: 'decision_only', warning: describeError(stateError, TABLE.drafts, 'write') };
   return { via: 'fallback' };
 }
 
 async function applyDraftState(supabase, draftId, action) {
   const nextState = NEXT_STATE[action];
   const attempts = [
+    /* Igual que el RPC: estado, bandera de confirmación y marcas de revisión. */
+    {
+      estado_reserva: nextState,
+      reserva_confirmada: action === 'approved' ? true : action === 'rejected' ? false : null,
+      pago_recibido: action === 'approved' ? true : null,
+      comprobante_revision_at: new Date().toISOString()
+    },
     { estado_reserva: nextState },
-    { reserva_confirmada: action === 'approved' },
-    { estado: nextState }
+    { reserva_confirmada: action === 'approved' }
   ];
   let lastError = null;
   for (const patch of attempts) {
-    const attempt = await supabase.from(TABLE.drafts).update(patch).eq('id', Number(draftId));
+    const clean = Object.fromEntries(Object.entries(patch).filter(([, value]) => value !== null));
+    if (!Object.keys(clean).length) continue;
+    const attempt = await supabase.from(TABLE.drafts).update(clean).eq('id', Number(draftId));
     if (!attempt.error) return null;
     lastError = attempt.error;
     const kind = classifyError(attempt.error, TABLE.drafts);
@@ -290,7 +305,7 @@ export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], 
     const kind = classifyError(rpcProbe.error, TABLE.decisions);
     if (kind === 'missing_function') push('Decisión · RPC', 'fail', `La función ${DECISION_RPC} no está en el esquema.`);
     else if (/not authorized|no autorizado/i.test(String(rpcProbe.error.message))) push('Decisión · RPC', 'ok', 'La función existe y valida al usuario autorizado.');
-    else push('Decisión · RPC', kind === 'permission' ? 'fail' : 'warn', `${rpcProbe.error.message} [${kind}]`);
+    else push('Decisión · RPC', kind === 'permission' || kind === 'invalid_token' ? 'fail' : 'warn', `${describeError(rpcProbe.error, TABLE.decisions, 'write')} [${kind}]`);
   }
 
   const insertProbe = await supabase.from(TABLE.decisions).insert({
@@ -308,7 +323,7 @@ export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], 
     }
   } else {
     const kind = classifyError(insertProbe.error, TABLE.decisions);
-    push('Escritura · decisiones', 'fail', `${describeError(insertProbe.error, TABLE.decisions)} [${kind}]`);
+    push('Escritura · decisiones', 'fail', `${describeError(insertProbe.error, TABLE.decisions, 'write')} [${kind}]`);
   }
 
   return checks;

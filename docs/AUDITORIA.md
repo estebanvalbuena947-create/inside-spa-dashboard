@@ -78,19 +78,37 @@ KPIs calculados con esos datos reales (misma lógica del dashboard):
 - Refresco automático cada 60 s, refresco manual, exportación CSV con BOM y avisos legibles por error.
 - Migración SQL en `supabase/APLICAR_EN_SUPABASE.sql` (permisos, RLS y RPC de decisiones).
 
-## 5. Pendiente de confirmar
+## 5. Estado de la base verificado en vivo
 
-1. Permisos + RLS de la **sesión autenticada**: se validan con el panel *Diagnóstico* del dashboard
-   o con `node tools/check-authenticated.mjs` (requiere `SUPABASE_JWT_SECRET` en `.env.local`).
-2. Ejecutar el SQL si el Diagnóstico reporta `FALTA` en permisos, políticas o RPC.
-3. Subir el commit a GitHub para que Vercel publique (`git push origin main`).
+Comprobado ejecutando el dashboard real contra la base real (`node tools/live-check.mjs`):
 
-## 6. Herramientas de verificación
+| Elemento | Estado |
+| --- | --- |
+| Columna `estado_reserva`, `reserva_confirmada`, `pago_recibido`, `comprobante_revision_at`, `comprobante_revision_datos` | existen en `reservas_draft` |
+| RPC `process_dashboard_reservation_decision(bigint, text, text)` | **existe y valida la autorización** ("Not authorized" con sesión anónima) |
+| `spa_comprobantes_pago` para el rol `authenticated` | **FALTA**: `42501 permission denied` → requiere el GRANT |
+| `dashboard_reservation_decisions` (escritura) | **FALTA**: sin permiso de INSERT → requiere el GRANT |
+| `reservas_draft`, `reservas_dashboard_reservation_decisions` (lectura) | accesibles (RLS oculta las filas sin sesión, que es lo correcto) |
+| CDN de la librería de Supabase | responde HTTP 200 |
+
+> Nota: `reservas_draft` no tiene columna `updated_at`; su marca de tiempo real es
+> `comprobante_revision_at` (la migración SQL ya lo respeta).
+
+## 6. Pendiente de confirmar
+
+1. Permisos + RLS de la **sesión autenticada**:
+   - dentro del dashboard: sección *Diagnóstico* → "Revisar ahora";
+   - o `node tools/live-check.mjs` con `SUPABASE_JWT_SECRET` en `.env.local`.
+2. Ejecutar `supabase/APLICAR_EN_SUPABASE.sql` (ya confirmado que faltan 2 permisos).
+3. Subir los commits a GitHub para que Vercel publique (`git push origin main`).
+
+## 7. Herramientas de verificación
 
 | Comando | Qué comprueba |
 | --- | --- |
 | `node tools/verify.mjs` | 56 comprobaciones de lógica, estados, montos, fechas, filtros y estructura |
 | `node tools/smoke.mjs` | Arranca la app completa con un DOM simulado (25 pasos) |
+| `node tools/live-check.mjs` | Ejecuta la app contra la base real (sin sesión o `--session`) |
 | `node tools/audit-db.mjs` | Esquema real, filas reales y KPIs reales desde Supabase |
 | `node tools/check-authenticated.mjs` | Lectura de las 4 tablas y RPC con una sesión `authenticated` |
 

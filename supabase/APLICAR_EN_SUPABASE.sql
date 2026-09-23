@@ -116,6 +116,7 @@ declare
   v_new_state text;
   v_note text := nullif(btrim(coalesce(p_note, '')), '');
 begin
+  -- 1. Autorización: solo los correos del dashboard pueden decidir.
   if v_email = '' or not (v_email = any (public.inside_spa_dashboard_emails())) then
     raise exception 'Not authorized for Inside Spa dashboard';
   end if;
@@ -140,14 +141,50 @@ begin
     v_new_state := 'rechazado';
     v_resulting := 'rechazado';
   else
-    v_new_state := 'requiere_revision';
+    -- "Pedir información" no cambia el estado del pago: si el comprobante ya
+    -- estaba en revisión se deja igual, y si no, pasa a revisión manual.
+    v_new_state := case when v_previous in ('requiere_revision', 'requiere_revision_pago')
+                        then v_previous else 'requiere_revision' end;
     v_resulting := 'requiere_revision';
   end if;
 
+  -- 2. Actualiza la pre-reserva con las columnas reales del proyecto.
+  --    (reservas_draft no tiene updated_at: su marca de tiempo es comprobante_revision_at).
   update public.reservas_draft
-     set estado_reserva = v_new_state
+     set estado_reserva = v_new_state,
+         reserva_confirmada = case when p_action = 'approved' then true
+                                   when p_action = 'rejected' then false
+                                   else reserva_confirmada end,
+         pago_recibido = case when p_action = 'approved' then true else pago_recibido end,
+         fecha_pago = case when p_action = 'approved' then current_date::text else fecha_pago end,
+         comprobante_revision_at = now()
    where id = p_reservation_draft_id;
 
+  -- 3. Deja rastro en la evidencia guardada dentro de la pre-reserva, para que
+  --    el dashboard y n8n sepan quién revisó y con qué resultado.
+  update public.reservas_draft
+     set comprobante_revision_datos = coalesce(comprobante_revision_datos, '{}'::jsonb)
+         || jsonb_build_object(
+              'decision_dashboard', p_action,
+              'decision_dashboard_at', now(),
+              'decision_dashboard_por', v_email,
+              'comprobante_estado', case p_action
+                                      when 'approved' then 'aprobado'
+                                      when 'rejected' then 'rechazado'
+                                      else 'revision_manual' end,
+              'decision_nota', v_note
+            )
+   where id = p_reservation_draft_id;
+
+  -- 4. Marca el comprobante de la tabla como aprobado o rechazado.
+  update public.spa_comprobantes_pago
+     set estado = case p_action when 'approved' then 'aprobado'
+                                when 'rejected' then 'rechazado'
+                                else 'revision' end,
+         actualizado_at = now()
+   where reserva_draft_id = p_reservation_draft_id;
+
+  -- 5. Registro histórico de la decisión.
   insert into public.dashboard_reservation_decisions
     (reservation_draft_id, action, note, previous_status, resulting_status, decided_by_email)
   values

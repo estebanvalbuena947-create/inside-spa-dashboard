@@ -46,6 +46,9 @@ js/view.js                 Render del HTML (tablas, tarjetas, modales, toast)
 js/main.js                 Sesión, carga de datos, decisiones, refresco automático, exportación
 tools/verify.mjs           Pruebas automáticas sin navegador (56 comprobaciones)
 tools/smoke.mjs            Arranca la app completa con un DOM simulado (25 pasos)
+tools/live-check.mjs       Ejecuta el dashboard real contra la base real
+tools/dom-mock.mjs         DOM mínimo compartido por las pruebas
+tools/rest-client.mjs      Cliente REST fiel a PostgREST para las pruebas en vivo
 tools/audit-db.mjs         Auditoría de la base real (esquema, filas, estados, KPIs)
 tools/check-authenticated.mjs  Valida RLS y permisos con una sesión authenticated
 docs/AUDITORIA.md          Informe de la auditoría (qué estaba roto y qué se corrigió)
@@ -167,6 +170,7 @@ Entra a la sección **Diagnóstico** y pulsa *Revisar ahora*. Revisa, con tu pro
 ```powershell
 node tools/verify.mjs             # 56 comprobaciones de lógica y estructura
 node tools/smoke.mjs              # 25 pasos: arranca la app completa con un DOM simulado
+node tools/live-check.mjs         # ejecuta la app contra la base real (--session para autenticada)
 node tools/audit-db.mjs           # audita la base real (esquema, filas, estados y KPIs)
 node tools/check-authenticated.mjs # valida RLS/permisos con una sesión autenticada
 ```
@@ -177,6 +181,10 @@ node tools/check-authenticated.mjs # valida RLS/permisos con una sesión autenti
 - **`smoke.mjs`**: monta un DOM con los `#id` reales, sustituye la librería de Supabase por un
   doble y ejecuta `js/main.js`: arranque, carga de las 4 tablas, render de todas las vistas,
   filtros, diagnóstico, modal de detalle y refresco. Falla si algo lanza una excepción.
+- **`live-check.mjs`**: arranca el dashboard de verdad contra la base de verdad, emitiendo las
+  mismas peticiones PostgREST que el navegador (`tools/rest-client.mjs`), y reporta qué contesta
+  el backend, qué métricas se pintan y qué dice el diagnóstico. Con `--session` firma una sesión
+  `authenticated` (necesita `SUPABASE_JWT_SECRET` en `.env.local`) y valida la lectura real de datos.
 - **`audit-db.mjs`**: contra la base real. Sin credenciales solo comprueba el acceso público; con
   `SUPABASE_SERVICE_ROLE_KEY` en `.env.local` lista el esquema real, cuenta filas, resume estados y
   calcula los KPIs del dashboard con datos de producción (`--json`, `--sample N`).
