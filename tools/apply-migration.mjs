@@ -34,6 +34,46 @@ const host = args.includes('--host') ? args[args.indexOf('--host') + 1] : `db.${
 const user = args.includes('--user') ? args[args.indexOf('--user') + 1] : 'postgres';
 const database = args.includes('--db') ? args[args.indexOf('--db') + 1] : 'postgres';
 let password = args.includes('--password') ? args[args.indexOf('--password') + 1] : process.env.SUPABASE_DB_PASSWORD || null;
+const accessToken = args.includes('--token') ? args[args.indexOf('--token') + 1] : process.env.SUPABASE_ACCESS_TOKEN || null;
+
+/* ---------- 0. Vía preferida: Management API con un token personal sbp_ ---------- */
+if (accessToken) {
+  console.log('\n=== APLICAR LA MIGRACIÓN (Management API) ===');
+  console.log(`Proyecto: ${ref}`);
+  console.log(`Archivo : supabase/APLICAR_EN_SUPABASE.sql (${sql.split('\n').length} líneas)`);
+
+  const response = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: sql })
+  });
+  const text = await response.text();
+  if (response.status >= 400) {
+    console.error(`\nLa migración falló (HTTP ${response.status}): ${text.slice(0, 400)}`);
+    process.exit(1);
+  }
+  let audit = null;
+  try { audit = JSON.parse(text); } catch { /* respuesta no JSON */ }
+
+  console.log('\nMigración aplicada. Resultado de la auditoría incluida en el SQL:');
+  if (Array.isArray(audit)) {
+    const rows = audit.flat ? audit.flat() : audit;
+    const summary = rows.filter(row => row && (row.seccion || row.tabla));
+    if (summary.length) {
+      summary.slice(0, 40).forEach(row => {
+        if (row.seccion) console.log(`  ${String(row.seccion).padEnd(22)} ${String(row.item || row.tabla || '').padEnd(46)} ${row.estado ?? ''} ${row.detalle ?? ''}`);
+        else console.log(`  ${String(row.tabla).padEnd(30)} ${String(row.columna).padEnd(34)} ${row.tipo}`);
+      });
+    } else {
+      console.log(JSON.stringify(rows).slice(0, 600));
+    }
+  } else if (audit) {
+    console.log(JSON.stringify(audit).slice(0, 600));
+  }
+
+  await verifyAfterMigration();
+  process.exit(0);
+}
 
 console.log('\n=== APLICAR LA MIGRACIÓN DEL DASHBOARD ===');
 console.log(`Proyecto : ${ref}`);
@@ -100,47 +140,60 @@ if (!psql) {
 
 /* ---------- 2. Aplicar el SQL ---------- */
 console.log('\nAplicando la migración...');
-const result = spawnSync(psql, [
+const psqlResult = spawnSync(psql, [
   `host=${host}`, `port=5432`, `dbname=${database}`, `user=${user}`, `password=${password}`,
   'sslmode=require', '--no-psqlrc', '--quiet', '--set=ON_ERROR_STOP=1', '--file', sqlFile
 ], { encoding: 'utf8', env: { ...process.env, PGPASSWORD: password } });
 
-const output = `${result.stdout || ''}${result.stderr || ''}`.trim();
-if (output) console.log(output.split('\n').slice(-25).join('\n'));
-if (result.status !== 0) {
-  console.error(`\nLa migración falló (código ${result.status}). Revisa el mensaje de arriba.`);
+const psqlOutput = `${psqlResult.stdout || ''}${psqlResult.stderr || ''}`.trim();
+if (psqlOutput) console.log(psqlOutput.split('\n').slice(-25).join('\n'));
+if (psqlResult.status !== 0) {
+  console.error(`\nLa migración falló (código ${psqlResult.status}). Revisa el mensaje de arriba.`);
   process.exit(1);
 }
 console.log('Migración aplicada sin errores.');
 
-/* ---------- 3. Verificar que todo quedó operativo ---------- */
-console.log('\n--- VERIFICACIÓN DESPUÉS DE APLICAR ---');
-const probe = async (path, options = {}) => {
-  const response = await fetch(`${url}/rest/v1/${path}`, {
-    headers: { apikey: publishableKey, Authorization: `Bearer ${publishableKey}`, 'Content-Type': 'application/json' },
-    ...options
+/* ---------- Verificación posterior (compartida por las dos vías) ---------- */
+async function verifyAfterMigration() {
+  console.log('\n--- VERIFICACIÓN DESPUÉS DE APLICAR ---');
+  const probe = async (path, options = {}) => {
+    const response = await fetch(`${url}/rest/v1/${path}`, {
+      headers: { apikey: publishableKey, Authorization: `Bearer ${publishableKey}`, 'Content-Type': 'application/json' },
+      ...options
+    });
+    const text = await response.text();
+    let body = null;
+    try { body = JSON.parse(text); } catch { /* no json */ }
+    return { status: response.status, body };
+  };
+
+  /* Se compara la clave pública (sujeta a RLS) con la service_role (lectura real). */
+  const serviceKey = (existsSync(join(root, '.env.local')) ? readFileSync(join(root, '.env.local'), 'utf8') : '')
+    .match(/SUPABASE_SERVICE_ROLE_KEY=(\S+)/)?.[1] || null;
+
+  let failures = 0;
+  for (const table of ['reservas_draft', 'reservas', 'spa_comprobantes_pago', 'dashboard_reservation_decisions']) {
+    const anon = await probe(`${table}?select=*&limit=1`);
+    const withRole = serviceKey
+      ? await fetch(`${url}/rest/v1/${table}?select=*&limit=1`, { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } })
+      : null;
+    const total = withRole ? (withRole.headers.get('content-range') || '').split('/')[1] : null;
+    const blocked = anon.body?.code === '42501';
+    if (blocked) failures += 1;
+    console.log(`  ${blocked ? 'FALLA' : 'OK   '} ${table.padEnd(34)} ${blocked ? `sigue bloqueada (${anon.body?.code})` : 'legible'}${total ? ` · ${total} fila(s)` : ''}`);
+  }
+
+  const rpc = await probe('rpc/process_dashboard_reservation_decision', {
+    method: 'POST',
+    body: JSON.stringify({ p_reservation_draft_id: -1, p_action: 'needs_info' })
   });
-  const text = await response.text();
-  let body = null;
-  try { body = JSON.parse(text); } catch { /* no json */ }
-  return { status: response.status, body };
-};
+  const rpcOk = /not authorized/i.test(String(rpc.body?.message || ''));
+  console.log(`  ${rpcOk ? 'OK   ' : 'AVISO'} RPC de decisiones                 ${rpcOk ? 'existe y valida la autorización' : String(rpc.body?.message || rpc.status).slice(0, 70)}`);
 
-/* Se comprueba con la service_role (lectura real) y con la clave pública (RLS). */
-const serviceKey = (existsSync(join(root, '.env.local')) ? readFileSync(join(root, '.env.local'), 'utf8') : '')
-  .match(/SUPABASE_SERVICE_ROLE_KEY=(\S+)/)?.[1] || null;
-
-let failures = 0;
-for (const table of ['reservas_draft', 'reservas', 'spa_comprobantes_pago', 'dashboard_reservation_decisions']) {
-  const anon = await probe(`${table}?select=*&limit=1`);
-  const withRole = serviceKey
-    ? await fetch(`${url}/rest/v1/${table}?select=*&limit=1`, { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } })
-    : null;
-  const total = withRole ? (withRole.headers.get('content-range') || '').split('/')[1] : null;
-  const blocked = anon.body?.code === '42501';
-  if (blocked) failures += 1;
-  console.log(`  ${blocked ? 'FALLA' : 'OK   '} ${table.padEnd(34)} ${blocked ? `sigue bloqueada (${anon.body?.code})` : 'legible'}${total ? ` · ${total} fila(s)` : ''}`);
+  console.log(`\n${failures ? `${failures} tabla(s) siguen bloqueadas: revisa el SQL aplicado.` : 'Permisos correctos: el dashboard ya puede leer todo.'}`);
+  console.log('Última comprobación con la sesión real: dashboard → Diagnóstico → "Revisar ahora".');
+  return failures;
 }
 
-console.log(`\n${failures ? `${failures} tabla(s) siguen bloqueadas: revisa el SQL aplicado.` : 'Permisos correctos.'}`);
-console.log('Última comprobación con la sesión real: abre el dashboard → Diagnóstico → "Revisar ahora".');
+/* ---------- 4. Verificar y cerrar ---------- */
+await verifyAfterMigration();
