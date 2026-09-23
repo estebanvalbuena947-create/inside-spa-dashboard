@@ -191,6 +191,19 @@ export async function loadDashboard(supabase, { onProgress } = {}) {
 /* ---------- Decisiones ---------- */
 
 const NEXT_STATE = { approved: 'confirmado', rejected: 'rechazado', needs_info: 'requiere_revision' };
+/** Estado de partida cuando el llamador no lo conoce (columnas NOT NULL del histórico). */
+const PREVIOUS_STATE_FALLBACK = 'pendiente_pago';
+
+/** Traduce el estado visible ("Por revisar") al valor que guarda la base. */
+export function statusToStateCode(label) {
+  const text = String(label || '').toLowerCase();
+  if (text.includes('confirmada') || text.includes('aprobada')) return 'confirmado';
+  if (text.includes('rechaz')) return 'rechazado';
+  if (text.includes('informaci')) return 'requiere_revision';
+  if (text.includes('revis')) return 'requiere_revision_pago';
+  if (text.includes('confirmaci')) return 'procesando_pabau';
+  return PREVIOUS_STATE_FALLBACK;
+}
 
 /**
  * Registra una decisión. Primero intenta el RPC oficial; si no existe,
@@ -210,10 +223,22 @@ export async function decide(supabase, { draftId, action, note, previousStatus, 
   }
 
   // Vía alternativa: registrar la decisión y actualizar el estado de la pre-reserva.
+  /* El histórico exige previous_status y resulting_status (NOT NULL), así que se
+     envían siempre: el llamador puede pasar el estado visible y aquí se traduce. */
+  const previousStatusValue = statusToStateCode(previousStatus) || PREVIOUS_STATE_FALLBACK;
+  const resultingStatusValue = NEXT_STATE[action] || 'requiere_revision';
   const payloads = [
-    { reservation_draft_id: Number(draftId), action, note: note ? String(note) : null, previous_status: previousStatus || null, resulting_status: NEXT_STATE[action] || null, decided_by_email: userEmail || null },
-    { reservation_draft_id: Number(draftId), action, note: note ? String(note) : null },
-    { reserva_draft_id: Number(draftId), action, note: note ? String(note) : null }
+    {
+      reservation_draft_id: Number(draftId),
+      action,
+      note: note ? String(note) : null,
+      previous_status: previousStatusValue,
+      resulting_status: resultingStatusValue,
+      decided_by_email: userEmail || null
+    },
+    /* Variantes por si el esquema tuviera otros nombres de columna. */
+    { reservation_draft_id: Number(draftId), action, note: note ? String(note) : null, previous_status: previousStatusValue, resulting_status: resultingStatusValue },
+    { reserva_draft_id: Number(draftId), action, note: note ? String(note) : null, previous_status: previousStatusValue, resulting_status: resultingStatusValue }
   ];
   let inserted = false;
   let insertError = null;
@@ -261,7 +286,7 @@ async function applyDraftState(supabase, draftId, action) {
 
 /* ---------- Diagnóstico ---------- */
 
-export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], session }) {
+export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], session, probeDraftId = null }) {
   const checks = [];
   const push = (name, status, detail, extra = {}) => checks.push({ name, status, detail, ...extra });
 
@@ -310,17 +335,32 @@ export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], 
     push('Decisión · RPC', 'warn', 'El RPC respondió sin error para una reserva inexistente; revisa la validación interna.');
   } else {
     const kind = classifyError(rpcProbe.error, TABLE.decisions);
+    const message = String(rpcProbe.error.message || '');
     if (kind === 'missing_function') push('Decisión · RPC', 'fail', `La función ${DECISION_RPC} no está en el esquema.`);
-    else if (/not authorized|no autorizado/i.test(String(rpcProbe.error.message))) push('Decisión · RPC', 'ok', 'La función existe y valida al usuario autorizado.');
+    else if (/not authorized|no autorizado/i.test(message)) push('Decisión · RPC', 'ok', 'La función existe y valida al usuario autorizado.');
+    /* Con un id inexistente la respuesta correcta es "no existe": eso confirma
+       que la función está instalada y que la sesión pasó la autorización. */
+    else if (/no existe|does not exist|not found/i.test(message)) push('Decisión · RPC', 'ok', 'La función existe, autoriza tu sesión y valida que la reserva exista.');
     else push('Decisión · RPC', kind === 'permission' || kind === 'invalid_token' ? 'fail' : 'warn', `${describeError(rpcProbe.error, TABLE.decisions, 'write')} [${kind}]`);
   }
 
-  const insertProbe = await supabase.from(TABLE.decisions).insert({
-    reservation_draft_id: -1,
-    action: 'needs_info',
-    note: 'diagnostico-automatico-descartable'
-  }).select().limit(1);
-  if (!insertProbe.error) {
+  /* Prueba de escritura con TODAS las columnas obligatorias del histórico
+     (previous_status y resulting_status son NOT NULL) y con una pre-reserva real,
+     porque reservation_draft_id tiene clave foránea. El registro se borra. */
+  const probeId = Number.isFinite(Number(probeDraftId)) ? Number(probeDraftId) : null;
+  const insertProbe = probeId === null
+    ? { error: null, data: null, skipped: true }
+    : await supabase.from(TABLE.decisions).insert({
+      reservation_draft_id: probeId,
+      action: 'needs_info',
+      previous_status: 'requiere_revision',
+      resulting_status: 'requiere_revision',
+      note: 'diagnostico-automatico-descartable',
+      decided_by_email: userEmail || null
+    }).select().limit(1);
+  if (insertProbe.skipped) {
+    push('Escritura · decisiones', 'warn', 'Sin pre-reservas todavía: no se pudo probar la escritura.');
+  } else if (!insertProbe.error) {
     push('Escritura · decisiones', 'ok', 'La tabla de decisiones acepta registros del dashboard.');
     const created = insertProbe.data?.[0];
     const id = pick(created || {}, 'id');

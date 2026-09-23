@@ -135,16 +135,42 @@ con `node tools/verify-grants.mjs`:
 - Correos de la base y de `supabase-config.js` coinciden.
 - El rol `anon` sigue sin acceso a `spa_comprobantes_pago`: correcto, es una tabla privada.
 
-## 8. Pendiente de confirmar
+## 8. Verificación con la sesión real (23 sep 2026)
 
-1. **Prueba final con tu sesión real** (no se puede automatizar: este proyecto firma las
-   sesiones con clave **asimétrica ES256** y solo Supabase tiene la clave privada):
-   - abre https://inside-spa-dashboard.vercel.app, inicia sesión con un correo autorizado;
-   - entra a **Diagnóstico → "Revisar ahora"**: debe salir todo en `ok`;
-   - gestiona una pre-reserva y comprueba que la decisión queda en el histórico.
-   Desde la consola del navegador (F12) también sirve `await insideSpaCheck()`.
+Con la sesión real de `estebanvalbuena947@gmail.com` el Diagnóstico del dashboard reporta:
 
-## 9. Herramientas de verificación
+| Comprobación | Resultado |
+| --- | --- |
+| Sesión y correo autorizado | correctos |
+| Lectura · Pre-reservas | **18 filas visibles** |
+| Lectura · Comprobantes | **14 filas visibles** (el GRANT funcionó) |
+| Lectura · Reservas confirmadas | **10 filas visibles** |
+| Lectura · Decisiones | accesible (aún sin registros) |
+| RPC de decisiones | existe y valida la autorización |
+
+Los dos avisos que aparecían eran **falsos positivos de la propia comprobación**, ya
+corregidos:
+
+1. El sondeo del RPC usaba un id inexistente, así que recibía "la pre-reserva -1 no
+   existe" (respuesta correcta: confirma que la función está instalada y que la sesión
+   pasó la autorización). Ahora ese caso se interpreta como `ok`.
+2. El sondeo de escritura no enviaba `previous_status` ni `resulting_status` (NOT NULL) y
+   usaba una pre-reserva inexistente, pero `reservation_draft_id` tiene **clave foránea** a
+   `reservas_draft(id)`. Ahora usa una pre-reserva real, completa las columnas obligatorias
+   y borra el registro de prueba.
+
+Restricciones comprobadas en el catálogo (`node tools/db-query.mjs --token sbp_...`):
+`action` tiene un `CHECK` con `approved`/`rejected`/`needs_info` (coincide con el
+dashboard), `id` es la clave primaria y `reservation_draft_id` es clave foránea.
+
+## 9. Pendiente de confirmar
+
+1. **Repetir el Diagnóstico** en el dashboard (sección *Diagnóstico* → "Revisar ahora"):
+   debe quedar todo en `ok`, incluida la escritura.
+2. **Gestionar una pre-reserva real** (aprobar / rechazar / pedir información) y comprobar
+   que aparece en *Histórico de decisiones* con tu correo y la nota.
+
+## 10. Herramientas de verificación
 
 | Comando | Qué comprueba |
 | --- | --- |

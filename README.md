@@ -56,6 +56,7 @@ tools/rest-client.mjs      Cliente REST fiel a PostgREST para las pruebas en viv
 tools/audit-db.mjs         Auditoría de la base real (esquema, filas, estados, KPIs)
 tools/apply-migration.mjs  Aplica la migración SQL (Management API o psql) y verifica
 tools/verify-grants.mjs    Verifica en el catálogo: GRANT, RLS, políticas y RPC
+tools/db-query.mjs         Ejecuta SQL de consulta con un token sbp_ (catálogo y datos)
 tools/check-authenticated.mjs  Valida RLS y permisos con una sesión authenticated
 docs/AUDITORIA.md          Informe de la auditoría (qué estaba roto y qué se corrigió)
 supabase/APLICAR_EN_SUPABASE.sql   Migración + auditoría de la base (LEER SECCIÓN 3)

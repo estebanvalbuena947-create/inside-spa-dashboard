@@ -402,10 +402,14 @@ function exportCsv() {
 async function diagnostics({ announce = true } = {}) {
   if (!state.supabase) return;
   view.renderDiagnosticsLoading();
+  /* Se usa una pre-reserva real para la prueba de escritura: la tabla de
+     decisiones tiene clave foránea a reservas_draft. */
+  const probeDraftId = state.drafts[0]?.id ?? state.drafts.find(row => Number.isFinite(row.id))?.id ?? null;
   const checks = await runDiagnostics(state.supabase, {
     userEmail: state.userEmail,
     allowedEmails,
-    session: state.session
+    session: state.session,
+    probeDraftId
   });
   const failures = checks.filter(check => check.status === 'fail').length;
   view.renderDiagnostics(checks, failures
@@ -524,7 +528,7 @@ window.__INSIDE_SPA__ = { state, refresh, diagnostics, exportCsv };
 window.insideSpaCheck = async () => {
   if (!state.supabase) { console.warn('El dashboard todavía no está listo.'); return null; }
   if (!state.session) { console.warn('No hay sesión activa: inicia sesión primero.'); return null; }
-  const checks = await runDiagnostics(state.supabase, { userEmail: state.userEmail, allowedEmails, session: state.session });
+  const checks = await runDiagnostics(state.supabase, { userEmail: state.userEmail, allowedEmails, session: state.session, probeDraftId: state.drafts[0]?.id ?? null });
   const failures = checks.filter(check => check.status === 'fail');
   console.table(checks.map(({ name, status, detail }) => ({ comprobacion: name, estado: status, detalle: detail })));
   console.log(failures.length
