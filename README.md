@@ -127,9 +127,9 @@ de Supabase limita a pocos correos por hora.
 | Confirmadas hoy | Reservas de `reservas` con `pabau_confirmado_at` de hoy + pre-reservas aprobadas hoy (día según la zona horaria del spa) |
 | Ingresos confirmados hoy | Suma de montos de quienes se confirmaron hoy (acepta montos en texto: `"$1,200.50"`) |
 | Clientes por atender | Reservas confirmadas con servicio en las próximas 24 horas |
-
-| Ocupación de hoy | Confirmadas + pre-reservas con fecha de hoy sobre 18 cupos (`CAPACITY` en `js/main.js`) |
-| Comprobantes | Un comprobante por pre-reserva (se conserva el más reciente) con enlace al archivo y datos de pago || Clientes | Consolidado por correo/teléfono de pre-reservas y confirmadas |
+| Pre-reservas con fecha de hoy | Pre-reservas cuyo servicio es hoy (número principal de la tarjeta), más las confirmadas de hoy y el porcentaje sobre 18 cupos (`CAPACITY` en `js/main.js`) |
+| Comprobantes | Un comprobante por pre-reserva (se conserva el más reciente) con enlace al archivo y datos de pago |
+| Clientes | Consolidado por correo/teléfono de pre-reservas y confirmadas |
 | Histórico | Decisiones registradas (con usuario y nota) + reservas confirmadas |
 | Diagnóstico | Estado real de cada tabla, permisos, sesión y RPC |
 
