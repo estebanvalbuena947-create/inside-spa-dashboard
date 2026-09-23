@@ -75,10 +75,16 @@ textarea.auth-input{resize:vertical;min-height:64px}
 .checks-note{margin:10px 0 0;font-size:12px;color:var(--muted)}
 
 /* Ocupación: el anillo usa la variable --fill que calcula app.js */
-.circle-progress{--fill:0%}
-/* El título de la tarjeta ahora es un h3 (antes un párrafo): mismo aspecto. */
+/* El anillo toma el color del proyecto y la proporción real de pre-reservas. */
+.circle-progress{--fill:0%;background:conic-gradient(#d7b67e var(--fill),#ffffff30 0)}
+/* La tarjeta solo muestra el título y el número de pre-reservas de hoy. */
+.occupancy-card{grid-template-columns:1fr;justify-items:center;row-gap:14px;padding:21px 21px 24px;text-align:center}
 .occupancy-card h3{font-size:11px;font-weight:500;margin:0;color:#d5e2dc;font-family:"DM Sans",sans-serif;letter-spacing:0}
-.circle-progress span small{font-size:8px;letter-spacing:0}
+/* Título y anillo ocupan el ancho completo, uno debajo del otro. */
+.occupancy-card > div:first-child,.occupancy-card .circle-progress{grid-column:1/-1}
+/* El número es lo más visible, con la etiqueta debajo. */
+.circle-progress span{font-family:"Playfair Display",serif;font-size:34px;letter-spacing:-1px;line-height:1}
+.circle-progress span small{font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;letter-spacing:0;color:#2c655b;margin-top:2px}
 
 /* Botones deshabilitados durante una decisión */
 button:disabled{opacity:.55;cursor:not-allowed}

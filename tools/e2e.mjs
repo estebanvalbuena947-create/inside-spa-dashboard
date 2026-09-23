@@ -155,9 +155,8 @@ check('La tarjeta se titula "Pre-reservas con fecha de hoy"',
 check('El número principal son las pre-reservas de hoy',
   (doc.getElementById('occupancyRatio')?.innerHTML || '').startsWith(String(draftsToday)),
   `esperado ${draftsToday} · tiene "${doc.getElementById('occupancyRatio')?.innerHTML}"`);
-check('La nota desglosa pre-reservas y confirmadas',
-  /en pre-reserva/.test(doc.getElementById('occupancyNote')?.textContent || ''),
-  doc.getElementById('occupancyNote')?.textContent?.slice(0, 100));
+check('La tarjeta no muestra porcentaje ni notas', !doc.getElementById('occupancyPercent') && !doc.getElementById('occupancyNote'),
+  `percent=${Boolean(doc.getElementById('occupancyPercent'))} note=${Boolean(doc.getElementById('occupancyNote'))}`);
 
 /* ---------- 6. El diagnóstico no deja basura en el histórico ---------- */
 const decisionsBefore = mockDb.dashboard_reservation_decisions.length;

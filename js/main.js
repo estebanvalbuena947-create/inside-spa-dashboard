@@ -13,7 +13,6 @@ import {
 import * as view from './view.js?v=2.0.0';
 
 const SUPABASE_VERSION = '2.116.0';
-const CAPACITY = 18;
 const REFRESH_MS = 60000;
 
 async function loadSupabaseLibrary() {
@@ -282,7 +281,7 @@ function computeVisible() {
 
 function renderAll() {
   view.renderMetrics(state);
-  view.renderOccupancy(state, CAPACITY);
+  view.renderOccupancy(state);
   view.renderReservations(state);
   view.renderActivity(state);
   view.renderHistory(state);
