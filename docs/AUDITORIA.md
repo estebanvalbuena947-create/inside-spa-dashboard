@@ -108,7 +108,25 @@ Notas de esquema que el dashboard respeta:
   tiempo en proceso e intentos de pago. Además hay un aviso de urgencia cuando una
   retención vence en menos de una hora.
 
-## 6. Pendiente de confirmar
+## 6. Estado de la publicación (importante)
+
+La versión publicada en Vercel **funciona** (probada con `node tools/e2e-deployed.mjs`:
+lee las 4 tablas, calcula métricas, pinta las vistas y guarda decisiones), pero
+**está desactualizada** respecto al código local. Comprobado con
+`node tools/compare-deploy.mjs`:
+
+| Archivo | Qué falta en producción |
+| --- | --- |
+| `js/data.js` | consulta de `reservas` con `updated_at` → **hoy reintenta con `select(*)` en cada carga** (bug ya corregido en local) |
+| `js/data.js` | `retencion_expira_at`, `intentos_pago`, aviso de sesión vencida |
+| `js/domain.js` | `expiringHolds` (retenciones por vencer) |
+| `js/view.js` + `index.html` | aviso de retención por vencer (`holdAlert`) |
+| `js/main.js` | `insideSpaCheck()` para comprobar la conexión desde la consola |
+
+Se resuelve con `git push origin main`: hay **7 commits locales** pendientes y el
+remoto sigue en `41a399e`.
+
+## 7. Pendiente de confirmar
 
 1. Permisos + RLS de la **sesión autenticada**. El proyecto firma las sesiones con
    clave **asimétrica (ES256)**, así que no se puede firmar una sesión de prueba desde
@@ -117,9 +135,9 @@ Notas de esquema que el dashboard respeta:
    - dashboard → sección *Diagnóstico* → **Revisar ahora**;
    - consola del navegador (F12) con sesión iniciada: `await insideSpaCheck()`.
 2. Ejecutar `supabase/APLICAR_EN_SUPABASE.sql` (ya confirmado que faltan 2 permisos).
-3. Subir los commits a GitHub para que Vercel publique (`git push origin main`).
+3. `git push origin main` para publicar los 7 commits pendientes.
 
-## 7. Herramientas de verificación
+## 8. Herramientas de verificación
 
 | Comando | Qué comprueba |
 | --- | --- |
