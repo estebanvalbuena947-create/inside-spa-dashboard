@@ -66,6 +66,11 @@ export function makeNode(tagName = 'DIV', id = '', onMarkup = null) {
     },
     enumerable: true
   });
+  /* outerHTML permite comprobar el nodo completo en las pruebas. */
+  Object.defineProperty(node, 'outerHTML', {
+    get: () => `<${(node.tagName || 'div').toLowerCase()} id="${node.id}">${markup}</${(node.tagName || 'div').toLowerCase()}>`,
+    enumerable: true
+  });
   return node;
 }
 

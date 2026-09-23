@@ -16,7 +16,7 @@
  *   5. Una tabla sin GRANT se reporta como problema de permisos.
  */
 
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { join } from 'node:path';
 import { installDom, installSupabaseStub, readSupabaseConfig, root } from './dom-mock.mjs';
@@ -143,6 +143,21 @@ check('Se registraron las 3 decisiones', mockDb.dashboard_reservation_decisions.
 /* ---------- 5. La interfaz refleja las decisiones ---------- */
 await app.refresh({ reason: 'e2e-2' });
 await wait(300);
+
+/* ---------- 5.b Tarjeta "Pre-reservas con fecha de hoy" ---------- */
+const { isToday } = await import(pathToFileURL(join(root, 'js/core.js')).href);
+const draftsToday = app.state.drafts.filter(row => isToday(row.scheduleDate)).length;
+const occupancyTitle = doc.getElementById('occupancyCard')?.innerHTML || doc.querySelector('#occupancyCard')?.outerHTML || '';
+check('La tarjeta se titula "Pre-reservas con fecha de hoy"',
+  /Pre-reservas con fecha de hoy/.test(occupancyTitle)
+  || /Pre-reservas con fecha de hoy/.test(readFileSync(join(root, 'index.html'), 'utf8')),
+  occupancyTitle.slice(0, 100));
+check('El número principal son las pre-reservas de hoy',
+  (doc.getElementById('occupancyRatio')?.innerHTML || '').startsWith(String(draftsToday)),
+  `esperado ${draftsToday} · tiene "${doc.getElementById('occupancyRatio')?.innerHTML}"`);
+check('La nota desglosa pre-reservas y confirmadas',
+  /en pre-reserva/.test(doc.getElementById('occupancyNote')?.textContent || ''),
+  doc.getElementById('occupancyNote')?.textContent?.slice(0, 100));
 
 /* ---------- 6. El diagnóstico no deja basura en el histórico ---------- */
 const decisionsBefore = mockDb.dashboard_reservation_decisions.length;

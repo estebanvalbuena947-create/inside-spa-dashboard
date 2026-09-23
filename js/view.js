@@ -95,18 +95,27 @@ function describePending(kpis) {
 }
 
 export function renderOccupancy(state, capacity = 18) {
-  const today = state.confirmed.filter(row => isSameDay(row.scheduleDate));
+  const confirmedToday = state.confirmed.filter(row => isSameDay(row.scheduleDate));
   const draftsToday = state.drafts.filter(row => isSameDay(row.scheduleDate));
-  const used = today.length + draftsToday.length;
-  const percent = capacity > 0 ? Math.round((used / capacity) * 100) : 0;
+  const total = draftsToday.length + confirmedToday.length;
+  const percent = capacity > 0 ? Math.round((total / capacity) * 100) : 0;
+
+  /* El número principal son las PRE-RESERVAS con fecha de hoy. */
   const ratioNode = $('#occupancyRatio');
-  if (ratioNode) ratioNode.innerHTML = `${used || 0}<small>/${capacity}</small>`;
+  if (ratioNode) ratioNode.innerHTML = `${draftsToday.length}<small>pre-reservas</small>`;
   const percentNode = $('#occupancyPercent');
   if (percentNode) percentNode.innerHTML = `${Math.min(percent, 999)}<small>%</small>`;
-  setText('#occupancyChange', today.length ? `${today.length} confirmadas hoy` : 'Sin confirmaciones hoy');
-  setText('#occupancyNote', used
-    ? `${used} de ${capacity} cupos con actividad hoy (confirmadas + pre-reservas con fecha de hoy).`
-    : 'No hay cupos ocupados hoy según las reservas registradas.');
+
+  setText('#occupancyChange', confirmedToday.length
+    ? `+ ${confirmedToday.length} confirmada(s) con servicio hoy`
+    : 'Sin confirmadas con servicio hoy');
+
+  const servicios = draftsToday.filter(row => row.servicio).slice(0, 3).map(row => row.servicio);
+  const detalle = servicios.length ? ` · ${servicios.join(', ')}${draftsToday.length > servicios.length ? '…' : ''}` : '';
+  setText('#occupancyNote', total
+    ? `${total} servicio(s) agendados hoy: ${draftsToday.length} en pre-reserva y ${confirmedToday.length} confirmados (${percent}% de ${capacity} cupos).${detalle}`
+    : 'No hay servicios agendados para hoy según las reservas registradas.');
+
   const circle = $('.circle-progress');
   if (circle) circle.style.setProperty('--fill', `${Math.max(0, Math.min(100, percent))}%`);
 }

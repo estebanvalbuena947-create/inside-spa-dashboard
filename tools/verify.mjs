@@ -45,6 +45,10 @@ const fakePatterns = [[/>72<small>/, 'ocupación 72%'], [/13 de 18 cupos reserva
 const fakeFound = fakePatterns.filter(([pattern]) => pattern.test(html)).map(([, label]) => label);
 check('No quedan métricas ni fechas inventadas en el HTML', fakeFound.length === 0, fakeFound.join(', '));
 
+/* La tarjeta de la derecha se titula por las pre-reservas de hoy, no por "ocupación". */
+check('La tarjeta se titula "Pre-reservas con fecha de hoy"', html.includes('Pre-reservas con fecha de hoy'), 'título');
+check('Ya no se muestra el título "Ocupación de hoy"', !html.includes('Ocupación de hoy'), 'título viejo');
+
 /* ---------- 4. Lógica de negocio ---------- */
 const { buildKpis, buildClients, buildReceipts, filterDrafts, indexByDraftId, isConfirmed, normalizeConfirmed, normalizeDecision, normalizeDraft, normalizeReceipt, receiptFromEvidence, serviceOptions, statusOf, visibleAmount } = await import(pathToFileURL(join(root, 'js/domain.js')).href);
 const { toAmount, buildCsv, parseDate, isToday, dayKey, dayKeyInZone, todayKey } = await import(pathToFileURL(join(root, 'js/core.js')).href);

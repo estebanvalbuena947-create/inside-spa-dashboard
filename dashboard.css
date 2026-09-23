@@ -76,6 +76,9 @@ textarea.auth-input{resize:vertical;min-height:64px}
 
 /* Ocupación: el anillo usa la variable --fill que calcula app.js */
 .circle-progress{--fill:0%}
+/* El título de la tarjeta ahora es un h3 (antes un párrafo): mismo aspecto. */
+.occupancy-card h3{font-size:11px;font-weight:500;margin:0;color:#d5e2dc;font-family:"DM Sans",sans-serif;letter-spacing:0}
+.circle-progress span small{font-size:8px;letter-spacing:0}
 
 /* Botones deshabilitados durante una decisión */
 button:disabled{opacity:.55;cursor:not-allowed}
