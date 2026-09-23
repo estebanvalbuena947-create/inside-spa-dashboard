@@ -32,7 +32,6 @@ y el commit local `988851f` está en GitHub, así que la cadena GitHub → Verce
 | 8 | Sin diagnóstico ni manejo claro de errores | — | Errores silenciosos: el panel se veía en ceros |
 
 ## 3. Datos reales hoy (23 sep 2026)
-
 | Tabla | Filas |
 | --- | --- |
 | `reservas_draft` (pre-reservas) | 18 |
@@ -111,41 +110,41 @@ Notas de esquema que el dashboard respeta:
 ## 6. Estado de la publicación (importante)
 
 La versión publicada en Vercel **funciona** (probada con `node tools/e2e-deployed.mjs`:
-lee las 4 tablas, calcula métricas, pinta las vistas y guarda decisiones), pero
-**está desactualizada** respecto al código local. Comprobado con
-`node tools/compare-deploy.mjs`:
+lee las 4 tablas, calcula métricas, pinta las vistas y guarda decisiones) y **está al día**:
+los commits se subieron y `node tools/compare-deploy.mjs` confirma que producción coincide
+con el código local (incluido el arreglo de la consulta de `reservas`, el aviso de
+retenciones y `insideSpaCheck()`).
 
-| Archivo | Qué falta en producción |
-| --- | --- |
-| `js/data.js` | consulta de `reservas` con `updated_at` → **hoy reintenta con `select(*)` en cada carga** (bug ya corregido en local) |
-| `js/data.js` | `retencion_expira_at`, `intentos_pago`, aviso de sesión vencida |
-| `js/domain.js` | `expiringHolds` (retenciones por vencer) |
-| `js/view.js` + `index.html` | aviso de retención por vencer (`holdAlert`) |
-| `js/main.js` | `insideSpaCheck()` para comprobar la conexión desde la consola |
+## 7. Migración aplicada (23 sep 2026)
 
-Se resuelve con `git push origin main`: hay **7 commits locales** pendientes y el
-remoto sigue en `41a399e`.
+`supabase/APLICAR_EN_SUPABASE.sql` se aplicó con la Management API
+(`node tools/apply-migration.mjs --token sbp_...`) y se verificó en el catálogo de Postgres
+con `node tools/verify-grants.mjs`:
 
-## 7. Pendiente de confirmar
+| Tabla | SELECT | INSERT | UPDATE | RLS |
+| --- | --- | --- | --- | --- |
+| `reservas_draft` | sí | sí | sí | activa |
+| `reservas` | sí | sí | sí | activa |
+| `spa_comprobantes_pago` | **sí (antes no)** | no | no | activa |
+| `dashboard_reservation_decisions` | sí | sí | sí | activa |
 
-1. **Aplicar los permisos.** Quedó confirmado otra vez, con la clave pública, que
-   `spa_comprobantes_pago` responde `42501 permission denied` (el resto de tablas son
-   accesibles y el RPC ya existe y valida). Dos vías:
-   - `node tools/apply-migration.mjs --password "<contraseña de la base>"` — aplica el SQL y
-     verifica el resultado en el mismo paso. La contraseña está en
-     *Supabase → Project Settings → Database*; el script no la guarda.
-     La conexión directa está comprobada: `psql` llega al servidor (responde
-     "password authentication failed" con una contraseña inválida, no un bloqueo de red).
-   - pegar `supabase/APLICAR_EN_SUPABASE.sql` en el SQL Editor.
-2. **Permisos + RLS de la sesión autenticada.** El proyecto firma las sesiones con clave
-   **asimétrica (ES256)**, así que no se puede firmar una sesión de prueba desde Node (solo
-   Supabase tiene la clave privada). Se comprueba con la sesión real:
-   - dashboard → sección *Diagnóstico* → **Revisar ahora**;
-   - consola del navegador (F12): `await insideSpaCheck()`.
-3. **`git push origin main`** para publicar los 7 commits pendientes (producción arrastra
-   todavía la consulta de `reservas` con `updated_at`).
+- Políticas creadas para los correos autorizados en lectura (4 tablas) y escritura
+  (`reservas_draft`, `spa_comprobantes_pago`, decisiones).
+- `process_dashboard_reservation_decision(bigint, text, text)` existe, es
+  `SECURITY DEFINER` y el rol `authenticated` puede ejecutarlo.
+- Correos de la base y de `supabase-config.js` coinciden.
+- El rol `anon` sigue sin acceso a `spa_comprobantes_pago`: correcto, es una tabla privada.
 
-## 8. Herramientas de verificación
+## 8. Pendiente de confirmar
+
+1. **Prueba final con tu sesión real** (no se puede automatizar: este proyecto firma las
+   sesiones con clave **asimétrica ES256** y solo Supabase tiene la clave privada):
+   - abre https://inside-spa-dashboard.vercel.app, inicia sesión con un correo autorizado;
+   - entra a **Diagnóstico → "Revisar ahora"**: debe salir todo en `ok`;
+   - gestiona una pre-reserva y comprueba que la decisión queda en el histórico.
+   Desde la consola del navegador (F12) también sirve `await insideSpaCheck()`.
+
+## 9. Herramientas de verificación
 
 | Comando | Qué comprueba |
 | --- | --- |

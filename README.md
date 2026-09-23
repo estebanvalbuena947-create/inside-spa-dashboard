@@ -54,7 +54,8 @@ tools/live-sdk.mjs         Igual, con la librería oficial de Supabase
 tools/dom-mock.mjs         DOM mínimo compartido por las pruebas
 tools/rest-client.mjs      Cliente REST fiel a PostgREST para las pruebas en vivo
 tools/audit-db.mjs         Auditoría de la base real (esquema, filas, estados, KPIs)
-tools/apply-migration.mjs  Aplica la migración SQL y verifica el resultado
+tools/apply-migration.mjs  Aplica la migración SQL (Management API o psql) y verifica
+tools/verify-grants.mjs    Verifica en el catálogo: GRANT, RLS, políticas y RPC
 tools/check-authenticated.mjs  Valida RLS y permisos con una sesión authenticated
 docs/AUDITORIA.md          Informe de la auditoría (qué estaba roto y qué se corrigió)
 supabase/APLICAR_EN_SUPABASE.sql   Migración + auditoría de la base (LEER SECCIÓN 3)
@@ -71,13 +72,14 @@ El dashboard necesita permisos explícitos. Sin ellos, Supabase responde
 **Opción A · un comando (aplica y verifica solo):**
 
 ```powershell
-node tools/apply-migration.mjs --password "<contraseña de la base>"
+node tools/apply-migration.mjs --token sbp_...      # con un token personal de Supabase
+node tools/apply-migration.mjs --password "..."     # o con la contraseña de la base
+node tools/verify-grants.mjs --token sbp_...        # comprueba el resultado en el catálogo
 ```
 
-La contraseña está en *Supabase → Project Settings → Database → Database password*.
-El script no la guarda en disco: la pasa a `psql` por variable de entorno, aplica
-`supabase/APLICAR_EN_SUPABASE.sql` y después **verifica** que las tablas quedaron legibles.
-Con `--check` (sin contraseña) solo informa del estado actual.
+El token personal se crea en *Supabase → Account → Access Tokens*; la contraseña está en
+*Project Settings → Database*. Ninguno se guarda en disco. Con `--check` (sin credenciales)
+solo informa del estado actual.
 
 **Opción B · manual:**
 

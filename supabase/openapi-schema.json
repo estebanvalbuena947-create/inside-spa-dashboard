@@ -4093,6 +4093,51 @@
     ]
    }
   },
+  "/rpc/inside_spa_dashboard_emails": {
+   "get": {
+    "produces": [
+     "application/json",
+     "application/vnd.pgrst.object+json;nulls=stripped",
+     "application/vnd.pgrst.object+json"
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "tags": [
+     "(rpc) inside_spa_dashboard_emails"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "in": "body",
+      "name": "args",
+      "required": true,
+      "schema": {
+       "type": "object"
+      }
+     },
+     {
+      "$ref": "#/parameters/preferParams"
+     }
+    ],
+    "produces": [
+     "application/json",
+     "application/vnd.pgrst.object+json;nulls=stripped",
+     "application/vnd.pgrst.object+json"
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "tags": [
+     "(rpc) inside_spa_dashboard_emails"
+    ]
+   }
+  },
   "/rpc/process_dashboard_reservation_decision": {
    "post": {
     "parameters": [

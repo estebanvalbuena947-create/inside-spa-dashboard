@@ -281,12 +281,19 @@ export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], 
       expires ? `Vence el ${expires.toLocaleString('es-MX')}.` : 'No se pudo leer la expiración.');
   }
 
+  const hasSession = Boolean(session?.user);
   for (const [label, table] of [['Pre-reservas', TABLE.drafts], ['Comprobantes', TABLE.receipts], ['Decisiones', TABLE.decisions], ['Reservas confirmadas', TABLE.confirmed]]) {
     const probe = await supabase.from(table).select('*').limit(1);
     if (probe.error) {
       const kind = classifyError(probe.error, table);
-      const status = kind === 'missing_table' ? 'fail' : kind === 'permission' || kind === 'rls' ? 'fail' : 'warn';
-      push(`Lectura · ${label}`, status, `${describeError(probe.error, table)} [${kind}${probe.error.code ? ` · ${probe.error.code}` : ''}]`);
+      /* Sin sesión, estos avisos son lo esperado (la RLS y los GRANT son para
+         usuarios autenticados): se informan como aviso, no como error. */
+      const expectedWithoutSession = !hasSession && (kind === 'permission' || kind === 'rls');
+      const status = expectedWithoutSession ? 'warn' : kind === 'missing_table' || kind === 'permission' || kind === 'rls' || kind === 'invalid_token' ? 'fail' : 'warn';
+      const detail = expectedWithoutSession
+        ? `Sin sesión no se puede leer ${table}, y eso es lo esperado: inicia sesión con un correo autorizado.`
+        : describeError(probe.error, table);
+      push(`Lectura · ${label}`, status, `${detail} [${kind}${probe.error.code ? ` · ${probe.error.code}` : ''}]`);
       continue;
     }
     const count = await supabase.from(table).select('*', { count: 'exact', head: true });
@@ -323,7 +330,10 @@ export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], 
     }
   } else {
     const kind = classifyError(insertProbe.error, TABLE.decisions);
-    push('Escritura · decisiones', 'fail', `${describeError(insertProbe.error, TABLE.decisions, 'write')} [${kind}]`);
+    const detail = !hasSession && (kind === 'permission' || kind === 'rls')
+      ? 'Sin sesión no se puede escribir, y eso es lo esperado: inicia sesión para registrar decisiones.'
+      : describeError(insertProbe.error, TABLE.decisions, 'write');
+    push('Escritura · decisiones', !hasSession && kind === 'permission' ? 'warn' : 'fail', `${detail} [${kind}]`);
   }
 
   return checks;
