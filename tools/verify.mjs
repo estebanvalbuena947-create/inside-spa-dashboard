@@ -173,6 +173,20 @@ check('La fila ofrece "Ver comprobante" junto a Gestionar',
 check('El enlace del comprobante no dispara el modal',
   /closest\?\.\('\.receipt-link'\)/.test(viewSource) || /closest\('\.receipt-link'\)/.test(viewSource), 'rowActionId');
 
+/* ---------- 5.b Migración: higiene de políticas y registros de prueba ---------- */
+const migrationSource = readFileSync(join(root, 'supabase', 'APLICAR_EN_SUPABASE.sql'), 'utf8');
+check('La migración elimina las políticas duplicadas anteriores',
+  ['read reservation drafts', 'update payment decisions', 'read payment receipts', 'write their decisions']
+    .every(nombre => migrationSource.includes(`drop policy if exists "Inside Spa dashboard admins ${nombre}"`)),
+  'faltan drop policy');
+check('La migración define la comprobación de escritura del diagnóstico',
+  /create or replace function public\.dashboard_decision_write_probe\(\)/.test(migrationSource));
+check('La migración limpia registros de prueba anteriores',
+  /delete from public\.dashboard_reservation_decisions[\s\S]{0,120}diagnostico-automatico-descartable/.test(migrationSource));
+check('El dashboard usa esa función y no borra el histórico',
+  /WRITE_PROBE_RPC = 'dashboard_decision_write_probe'/.test(readFileSync(join(root, 'js', 'data.js'), 'utf8'))
+  && !/from\(TABLE\.decisions\)\.delete\(\)/.test(readFileSync(join(root, 'js', 'data.js'), 'utf8')));
+
 /* ---------- 5. Columnas declaradas vs. esquema real ---------- */
 const schemaPath = join(root, 'supabase/openapi-schema.json');
 if (existsSync(schemaPath)) {

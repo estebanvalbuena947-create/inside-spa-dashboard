@@ -154,6 +154,7 @@ const server = createServer(async (request, response) => {
 
   /* RPC de decisiones: igual que el de Supabase. */
   if (restPath === 'rpc/process_dashboard_reservation_decision') {
+    mockStats.decisionRpcCalls += 1;
     if (RPC_MISSING) { json(response, 404, { code: 'PGRST202', message: 'Could not find the function public.process_dashboard_reservation_decision' }); return; }
     const body = await readBody(request) || {};
     if (!session?.email) { json(response, 400, { code: 'P0001', message: 'Not authorized for Inside Spa dashboard' }); return; }
@@ -179,6 +180,25 @@ const server = createServer(async (request, response) => {
       decided_by: '00000000-0000-0000-0000-0000000000a1', decided_by_email: session.email, created_at: iso(new Date())
     });
     json(response, 200, { ok: true, reservation_draft_id: draft.id, action: body.p_action, previous_status: previous, resulting_status: nextState, decided_by_email: session.email });
+    return;
+  }
+
+  /* RPC de comprobación de escritura: inserta y borra en el mismo paso. */
+  if (restPath === 'rpc/dashboard_decision_write_probe') {
+    mockStats.writeProbeCalls += 1;
+    const body = await readBody(request) || {};
+    void body;
+    if (!session?.email) { json(response, 400, { code: 'P0001', message: 'Not authorized for Inside Spa dashboard' }); return; }
+    const draft = db.reservas_draft[0];
+    const id = randomUUID();
+    db.dashboard_reservation_decisions.push({
+      id, reservation_draft_id: draft?.id ?? null, action: 'needs_info',
+      previous_status: 'requiere_revision', resulting_status: 'requiere_revision',
+      note: 'diagnostico-automatico-descartable', decided_by: '00000000-0000-0000-0000-0000000000a1',
+      decided_by_email: session.email, created_at: iso(new Date())
+    });
+    db.dashboard_reservation_decisions = db.dashboard_reservation_decisions.filter(row => row.id !== id);
+    json(response, 200, { ok: true, reservation_draft_id: draft?.id ?? null, probado_por: session.email });
     return;
   }
 
@@ -233,6 +253,8 @@ export function startMockBackend() {
 
 export const mockDb = db;
 export const mockUrl = `http://127.0.0.1:${port}`;
+/** Contadores de uso para las pruebas. */
+export const mockStats = { writeProbeCalls: 0, decisionRpcCalls: 0 };
 
 /* Si se ejecuta directamente, queda escuchando. */
 if (process.argv[1] && process.argv[1].endsWith('mock-backend.mjs')) {

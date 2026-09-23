@@ -71,7 +71,7 @@ if (accessToken) {
     console.log(JSON.stringify(audit).slice(0, 600));
   }
 
-  await verifyAfterMigration();
+  await verifyAfterMigration(accessToken);
   process.exit(0);
 }
 
@@ -154,7 +154,7 @@ if (psqlResult.status !== 0) {
 console.log('Migración aplicada sin errores.');
 
 /* ---------- Verificación posterior (compartida por las dos vías) ---------- */
-async function verifyAfterMigration() {
+async function verifyAfterMigration(accessTokenForAudit = null) {
   console.log('\n--- VERIFICACIÓN DESPUÉS DE APLICAR ---');
   const probe = async (path, options = {}) => {
     const response = await fetch(`${url}/rest/v1/${path}`, {
@@ -178,9 +178,44 @@ async function verifyAfterMigration() {
       ? await fetch(`${url}/rest/v1/${table}?select=*&limit=1`, { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } })
       : null;
     const total = withRole ? (withRole.headers.get('content-range') || '').split('/')[1] : null;
+    /* Ojo: la clave pública usa el rol `anon`, que NO tiene los GRANT del
+       dashboard (son para `authenticated`), así que un 42501 aquí es esperado. */
     const blocked = anon.body?.code === '42501';
-    if (blocked) failures += 1;
-    console.log(`  ${blocked ? 'FALLA' : 'OK   '} ${table.padEnd(34)} ${blocked ? `sigue bloqueada (${anon.body?.code})` : 'legible'}${total ? ` · ${total} fila(s)` : ''}`);
+    console.log(`  ${blocked ? 'INFO ' : 'OK   '} ${table.padEnd(34)} ${blocked ? 'privada para el rol anon (correcto)' : 'legible sin sesión'}${total ? ` · ${total} fila(s)` : ''}`);
+  }
+
+  /* La comprobación que importa: permisos del rol `authenticated` en el catálogo. */
+  if (accessTokenForAudit) {
+    try {
+      const query = `select t.table_name,
+           has_table_privilege('authenticated', 'public.'||t.table_name, 'SELECT') as sel,
+           c.relrowsecurity as rls
+      from information_schema.tables t
+      join pg_class c on c.relname = t.table_name and c.relnamespace = 'public'::regnamespace
+     where t.table_schema = 'public'
+       and t.table_name in ('reservas_draft','reservas','spa_comprobantes_pago','dashboard_reservation_decisions')
+     order by t.table_name`;
+      const response = await fetch(`https://api.supabase.com/v1/projects/${ref}/database/query`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessTokenForAudit}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      const rows = await response.json();
+      console.log('\n  Permisos del rol authenticated (catálogo):');
+      if (Array.isArray(rows)) {
+        rows.forEach(row => {
+          const ok = row.sel && row.rls;
+          if (!ok) failures += 1;
+          console.log(`  ${ok ? 'OK   ' : 'FALLA'} ${String(row.table_name).padEnd(34)} SELECT=${row.sel} RLS=${row.rls}`);
+        });
+      } else {
+        console.log(`  no se pudo leer el catálogo: ${JSON.stringify(rows).slice(0, 120)}`);
+      }
+    } catch (error) {
+      console.log(`  no se pudo consultar el catálogo: ${error.message}`);
+    }
+  } else {
+    console.log('\n  (sin token no se puede comprobar el rol authenticated en el catálogo)');
   }
 
   const rpc = await probe('rpc/process_dashboard_reservation_decision', {
@@ -190,7 +225,9 @@ async function verifyAfterMigration() {
   const rpcOk = /not authorized/i.test(String(rpc.body?.message || ''));
   console.log(`  ${rpcOk ? 'OK   ' : 'AVISO'} RPC de decisiones                 ${rpcOk ? 'existe y valida la autorización' : String(rpc.body?.message || rpc.status).slice(0, 70)}`);
 
-  console.log(`\n${failures ? `${failures} tabla(s) siguen bloqueadas: revisa el SQL aplicado.` : 'Permisos correctos: el dashboard ya puede leer todo.'}`);
+  console.log(failures
+    ? `\n${failures} tabla(s) sin permiso para authenticated: revisa el SQL aplicado.`
+    : '\nPermisos correctos: el dashboard ya puede leer y escribir con la sesión del equipo.');
   console.log('Última comprobación con la sesión real: dashboard → Diagnóstico → "Revisar ahora".');
   return failures;
 }

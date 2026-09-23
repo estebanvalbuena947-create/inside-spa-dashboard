@@ -286,6 +286,10 @@ async function applyDraftState(supabase, draftId, action) {
 
 /* ---------- Diagnóstico ---------- */
 
+const PROBE_NOTE = 'diagnostico-automatico-descartable';
+/** RPC que prueba la escritura del histórico y limpia su propio registro. */
+export const WRITE_PROBE_RPC = 'dashboard_decision_write_probe';
+
 export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], session, probeDraftId = null }) {
   const checks = [];
   const push = (name, status, detail, extra = {}) => checks.push({ name, status, detail, ...extra });
@@ -344,36 +348,41 @@ export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], 
     else push('Decisión · RPC', kind === 'permission' || kind === 'invalid_token' ? 'fail' : 'warn', `${describeError(rpcProbe.error, TABLE.decisions, 'write')} [${kind}]`);
   }
 
-  /* Prueba de escritura con TODAS las columnas obligatorias del histórico
-     (previous_status y resulting_status son NOT NULL) y con una pre-reserva real,
-     porque reservation_draft_id tiene clave foránea. El registro se borra. */
-  const probeId = Number.isFinite(Number(probeDraftId)) ? Number(probeDraftId) : null;
-  const insertProbe = probeId === null
-    ? { error: null, data: null, skipped: true }
-    : await supabase.from(TABLE.decisions).insert({
-      reservation_draft_id: probeId,
-      action: 'needs_info',
-      previous_status: 'requiere_revision',
-      resulting_status: 'requiere_revision',
-      note: 'diagnostico-automatico-descartable',
-      decided_by_email: userEmail || null
-    }).select().limit(1);
-  if (insertProbe.skipped) {
-    push('Escritura · decisiones', 'warn', 'Sin pre-reservas todavía: no se pudo probar la escritura.');
-  } else if (!insertProbe.error) {
-    push('Escritura · decisiones', 'ok', 'La tabla de decisiones acepta registros del dashboard.');
-    const created = insertProbe.data?.[0];
-    const id = pick(created || {}, 'id');
-    if (id !== null && id !== undefined) {
-      const cleanup = await supabase.from(TABLE.decisions).delete().eq('id', id);
-      push('Limpieza · registro de prueba', cleanup.error ? 'warn' : 'ok', cleanup.error ? `No se pudo borrar el registro de prueba: ${cleanup.error.message}` : 'Registro de prueba eliminado.');
-    }
+  /* Prueba de escritura: la hace una función de la base que inserta un registro
+     de prueba en el histórico y lo borra en la misma transacción. Así se valida
+     la escritura sin dar permiso de DELETE sobre el histórico y sin dejar basura. */
+  const writeProbe = await supabase.rpc(WRITE_PROBE_RPC);
+  if (!writeProbe.error) {
+    const probado = writeProbe.data?.reservation_draft_id;
+    push('Escritura · decisiones', 'ok',
+      `La tabla de decisiones acepta registros del dashboard${probado ? ` (prueba con la pre-reserva #${probado}, ya borrada)` : ''}.`);
   } else {
-    const kind = classifyError(insertProbe.error, TABLE.decisions);
-    const detail = !hasSession && (kind === 'permission' || kind === 'rls')
-      ? 'Sin sesión no se puede escribir, y eso es lo esperado: inicia sesión para registrar decisiones.'
-      : describeError(insertProbe.error, TABLE.decisions, 'write');
-    push('Escritura · decisiones', !hasSession && kind === 'permission' ? 'warn' : 'fail', `${detail} [${kind}]`);
+    const kind = classifyError(writeProbe.error, TABLE.decisions);
+    const message = String(writeProbe.error.message || '');
+    if (kind === 'missing_function') {
+      /* Compatibilidad: proyectos sin la función de prueba. Se intenta el insert
+         directo (el registro quedaría pendiente de borrado manual). */
+      const probeId = Number.isFinite(Number(probeDraftId)) ? Number(probeDraftId) : null;
+      const insertProbe = probeId === null
+        ? { error: null, skipped: true }
+        : await supabase.from(TABLE.decisions).insert({
+          reservation_draft_id: probeId,
+          action: 'needs_info',
+          previous_status: 'requiere_revision',
+          resulting_status: 'requiere_revision',
+          note: PROBE_NOTE,
+          decided_by_email: userEmail || null
+        }).select().limit(1);
+      if (insertProbe.skipped) push('Escritura · decisiones', 'warn', 'Sin pre-reservas todavía: no se pudo probar la escritura.');
+      else if (!insertProbe.error) push('Escritura · decisiones', 'ok', 'La tabla de decisiones acepta registros (falta la función de limpieza automática).');
+      else push('Escritura · decisiones', 'fail', `${describeError(insertProbe.error, TABLE.decisions, 'write')} [${classifyError(insertProbe.error, TABLE.decisions)}]`);
+    } else if (!hasSession && (kind === 'permission' || kind === 'rls')) {
+      push('Escritura · decisiones', 'warn', 'Sin sesión no se puede escribir, y eso es lo esperado: inicia sesión para registrar decisiones.');
+    } else if (/not authorized|no autorizado/i.test(message)) {
+      push('Escritura · decisiones', 'fail', 'Tu correo no está autorizado para registrar decisiones.');
+    } else {
+      push('Escritura · decisiones', kind === 'permission' || kind === 'invalid_token' ? 'fail' : 'warn', `${describeError(writeProbe.error, TABLE.decisions, 'write')} [${kind}]`);
+    }
   }
 
   return checks;

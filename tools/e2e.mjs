@@ -20,7 +20,7 @@ import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { join } from 'node:path';
 import { installDom, installSupabaseStub, readSupabaseConfig, root } from './dom-mock.mjs';
-import { startMockBackend, mockUrl, mockDb, signToken, TEST_EMAIL } from './mock-backend.mjs';
+import { startMockBackend, mockUrl, mockDb, mockStats, signToken, TEST_EMAIL } from './mock-backend.mjs';
 
 const entry = join(root, '.vendor', 'entry.mjs');
 if (!existsSync(entry)) {
@@ -140,9 +140,21 @@ const rejectedRow = mockDb.reservas_draft.find(row => row.id === 140);
 check('Rechazar deja la reserva rechazada', rejectedRow.estado_reserva === 'rechazado', rejectedRow.estado_reserva);
 check('Se registraron las 3 decisiones', mockDb.dashboard_reservation_decisions.length === 3, String(mockDb.dashboard_reservation_decisions.length));
 
-/* ---------- 5. Refresco: la interfaz refleja los cambios ---------- */
+/* ---------- 5. La interfaz refleja las decisiones ---------- */
 await app.refresh({ reason: 'e2e-2' });
 await wait(300);
+
+/* ---------- 6. El diagnóstico no deja basura en el histórico ---------- */
+const decisionsBefore = mockDb.dashboard_reservation_decisions.length;
+const probesBefore = mockStats.writeProbeCalls;
+await app.diagnostics({ announce: false });
+check('El diagnóstico usa la función de comprobación de escritura', mockStats.writeProbeCalls === probesBefore + 1,
+  `${probesBefore} -> ${mockStats.writeProbeCalls}`);
+check('El diagnóstico no deja registros de prueba', mockDb.dashboard_reservation_decisions.length === decisionsBefore,
+  `${decisionsBefore} -> ${mockDb.dashboard_reservation_decisions.length}`);
+check('Ningún registro del histórico es de prueba',
+  mockDb.dashboard_reservation_decisions.every(row => row.note !== 'diagnostico-automatico-descartable'));
+
 console.log('\n--- 5. LA INTERFAZ REFLEJA LAS DECISIONES ---');
 check('El histórico muestra 3 decisiones', (doc.getElementById('decisionList')?.innerHTML.match(/decision-item/g) || []).length >= 3,
   String((doc.getElementById('decisionList')?.innerHTML.match(/decision-item/g) || []).length));

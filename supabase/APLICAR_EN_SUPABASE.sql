@@ -56,6 +56,16 @@ drop policy if exists "Inside Spa dashboard admins update receipts" on public.sp
 drop policy if exists "Inside Spa dashboard admins read decisions" on public.dashboard_reservation_decisions;
 drop policy if exists "Inside Spa dashboard admins write decisions" on public.dashboard_reservation_decisions;
 
+-- Políticas equivalentes creadas antes (llevan la lista de correos escrita a mano).
+-- Se eliminan para no dejar reglas duplicadas: las de abajo usan la función
+-- inside_spa_dashboard_emails(), que es la única lista que hay que mantener.
+-- En Postgres varias políticas permisivas se suman, así que quitarlas no cambia
+-- el resultado, solo deja una única regla por operación.
+drop policy if exists "Inside Spa dashboard admins read reservation drafts" on public.reservas_draft;
+drop policy if exists "Inside Spa dashboard admins update payment decisions" on public.reservas_draft;
+drop policy if exists "Inside Spa dashboard admins read payment receipts" on public.spa_comprobantes_pago;
+drop policy if exists "Inside Spa dashboard admins write their decisions" on public.dashboard_reservation_decisions;
+
 create policy "Inside Spa dashboard admins read confirmed reservations"
   on public.reservas for select to authenticated
   using (lower(coalesce(auth.jwt() ->> 'email', '')) = any (public.inside_spa_dashboard_emails()));
@@ -203,6 +213,49 @@ $$;
 
 revoke all on function public.process_dashboard_reservation_decision(bigint, text, text) from public;
 grant execute on function public.process_dashboard_reservation_decision(bigint, text, text) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 3.b) COMPROBACIÓN DE ESCRITURA DEL DIAGNÓSTICO
+--      Inserta un registro de prueba en el histórico y lo borra en la misma
+--      transacción. Así el dashboard puede comprobar que la escritura funciona
+--      sin necesidad de dar permiso de DELETE sobre el histórico (que debe
+--      permanecer como registro de auditoría) y sin dejar basura si algo falla.
+-- ---------------------------------------------------------------------------
+create or replace function public.dashboard_decision_write_probe()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_email text := lower(coalesce(auth.jwt() ->> 'email', ''));
+  v_draft bigint;
+  v_id uuid;
+begin
+  if v_email = '' or not (v_email = any (public.inside_spa_dashboard_emails())) then
+    raise exception 'Not authorized for Inside Spa dashboard';
+  end if;
+
+  select id into v_draft from public.reservas_draft order by id limit 1;
+
+  insert into public.dashboard_reservation_decisions
+    (reservation_draft_id, action, previous_status, resulting_status, note, decided_by_email)
+  values
+    (v_draft, 'needs_info', 'requiere_revision', 'requiere_revision', 'diagnostico-automatico-descartable', v_email)
+  returning id into v_id;
+
+  delete from public.dashboard_reservation_decisions where id = v_id;
+
+  return jsonb_build_object('ok', true, 'reservation_draft_id', v_draft, 'probado_por', v_email);
+end
+$$;
+
+revoke all on function public.dashboard_decision_write_probe() from public;
+grant execute on function public.dashboard_decision_write_probe() to authenticated;
+
+-- Higiene: registros de prueba que hayan quedado de comprobaciones anteriores.
+delete from public.dashboard_reservation_decisions
+ where note = 'diagnostico-automatico-descartable';
 
 -- ---------------------------------------------------------------------------
 -- 4) AUDITORÍA (solo lectura): RESUMEN

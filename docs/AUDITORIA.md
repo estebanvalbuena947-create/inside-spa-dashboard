@@ -135,6 +135,49 @@ con `node tools/verify-grants.mjs`:
 - Correos de la base y de `supabase-config.js` coinciden.
 - El rol `anon` sigue sin acceso a `spa_comprobantes_pago`: correcto, es una tabla privada.
 
+## 7.b Limpieza de duplicados y residuos (23 sep 2026)
+
+La primera versión de la migración convivió con políticas RLS que ya existían con otro
+nombre, así que quedaron **6 reglas duplicadas** (equivalentes: unas usaban la lista de
+correos escrita a mano y otras la función `inside_spa_dashboard_emails()`). Se eliminaron
+las antiguas y quedó **una sola política por operación**:
+
+| Tabla | Operación | Política única que queda |
+| --- | --- | --- |
+| `reservas` | SELECT | `… read confirmed reservations` |
+| `reservas_draft` | SELECT | `… read drafts` |
+| `reservas_draft` | UPDATE | `… update drafts` |
+| `spa_comprobantes_pago` | SELECT | `… read receipts` |
+| `spa_comprobantes_pago` | UPDATE | `… update receipts` |
+| `dashboard_reservation_decisions` | SELECT | `… read decisions` |
+| `dashboard_reservation_decisions` | INSERT | `… write decisions` |
+
+Las que se eliminaron: `… read reservation drafts`, `… update payment decisions`,
+`… read payment receipts` y `… write their decisions`. La migración ahora las borra de
+forma explícita, así que volver a ejecutarla no vuelve a duplicarlas.
+
+Además se limpió **1 registro de prueba** que mi propio Diagnóstico había dejado en el
+histórico (`note = diagnostico-automatico-descartable`). El histórico quedó en **0 filas**:
+las decisiones reales que se tomen desde el panel se conservan.
+
+Para que no vuelva a pasar, la comprobación de escritura del Diagnóstico ya no inserta
+desde el navegador: la hace la función `dashboard_decision_write_probe()`, que inserta un
+registro de prueba y **lo borra en la misma transacción**. Así el dashboard valida la
+escritura sin necesitar permiso de DELETE sobre el histórico (que debe permanecer como
+registro de auditoría) y sin dejar basura si se cierra la pestaña.
+
+## 7.c Datos que NO se tocaron (son reales, no basura)
+
+| Qué | Por qué se deja |
+| --- | --- |
+| 4 comprobantes sin pre-reserva asociada (ids 178, 181, 186) | quedan cuando la pre-reserva pasa a `reservas` o expira: son el rastro de la evidencia. Tres son de Moses Cortez, Diana María y uno del flujo de pruebas de n8n |
+| 1 reserva confirmada con `nombre = Test` (`test@gmail.com`, id 187) | registro del flujo de pruebas del equipo en n8n; borrarlo podría romper la conciliación con Pabau |
+| `reservas_draft` id 187 con un comprobante de `Test` | igual que el anterior, pertenece a la prueba de punta a punta del equipo |
+
+Si prefieres eliminar los registros de prueba, se pueden borrar de forma puntual; dime y lo
+hago con los ids exactos.
+
+
 ## 8. Verificación con la sesión real (23 sep 2026)
 
 Con la sesión real de `estebanvalbuena947@gmail.com` el Diagnóstico del dashboard reporta:
