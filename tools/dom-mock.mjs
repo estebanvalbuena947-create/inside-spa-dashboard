@@ -11,7 +11,7 @@ export const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const html = readFileSync(join(root, 'index.html'), 'utf8');
 export const rootIds = [...html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
 
-export function makeNode(tagName = 'DIV', id = '') {
+export function makeNode(tagName = 'DIV', id = '', onMarkup = null) {
   const listeners = new Map();
   const attributes = new Map();
   if (id) attributes.set('id', id);
@@ -23,7 +23,6 @@ export function makeNode(tagName = 'DIV', id = '') {
     children: [],
     value: '',
     textContent: '',
-    innerHTML: '',
     hidden: false,
     disabled: false,
     open: false,
@@ -56,6 +55,17 @@ export function makeNode(tagName = 'DIV', id = '') {
     },
     reset() {}
   };
+  /* innerHTML se intercepta para registrar los #id que el código genera en HTML
+     dinámico (los botones del modal de decisión, por ejemplo). */
+  let markup = '';
+  Object.defineProperty(node, 'innerHTML', {
+    get: () => markup,
+    set: value => {
+      markup = String(value ?? '');
+      if (onMarkup) onMarkup(markup);
+    },
+    enumerable: true
+  });
   return node;
 }
 
@@ -80,10 +90,22 @@ export function installDom({ config, origin = 'https://inside-spa-dashboard.verc
   const ensureId = id => {
     if (!byId.has(id)) {
       const tag = id === 'searchInput' || id === 'dayFilter' ? 'INPUT' : id.endsWith('Dialog') || id === 'toast' ? 'DIALOG' : 'DIV';
-      byId.set(id, makeNode(tag, id));
+      byId.set(id, makeNode(tag, id, registerDynamicIds));
     }
     return byId.get(id);
   };
+  /* Los #id generados en HTML dinámico se registran para que querySelector e
+     getElementById funcionen como en el navegador. */
+  const dynamicIds = new Set();
+  function registerDynamicIds(markup) {
+    if (typeof markup !== 'string') return;
+    for (const match of markup.matchAll(/id="([A-Za-z][\w-]*)"/g)) {
+      const id = match[1];
+      if (rootIds.includes(id) || dynamicIds.has(id)) continue;
+      dynamicIds.add(id);
+      byId.set(id, makeNode('BUTTON', id, registerDynamicIds));
+    }
+  }
   rootIds.forEach(ensureId);
   ['.sidebar', '.menu-toggle', '.nav-link', '.occupancy-card', '.circle-progress'].forEach(selector => byClass.set(selector, makeNode('DIV')));
 
@@ -95,11 +117,11 @@ export function installDom({ config, origin = 'https://inside-spa-dashboard.verc
       if (selector.startsWith('#')) return ensureId(selector.slice(1));
       if (byClass.has(selector)) return byClass.get(selector);
       const idPart = selector.split('#')[1];
-      if (idPart) return makeNode('DIV', idPart.split(/[\s.:]/)[0]);
+      if (idPart) return ensureId(idPart.split(/[\s.:]/)[0]);
       return makeNode('DIV');
     },
     querySelectorAll: selector => (selector === '.nav-link' ? rootIds.filter(id => id.startsWith('nav')).map(() => makeNode('A')) : selector === '.sidebar' ? [byClass.get('.sidebar')] : []),
-    getElementById: id => (rootIds.includes(id) ? ensureId(id) : null),
+    getElementById: id => (rootIds.includes(id) || dynamicIds.has(id) ? ensureId(id) : null),
     createElement: tag => makeNode(tag),
     addEventListener() {},
     removeEventListener() {}

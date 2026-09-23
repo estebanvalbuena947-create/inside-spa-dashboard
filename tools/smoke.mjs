@@ -59,33 +59,47 @@ const TABLES = {
 
 function queryBuilder(table) {
   const rows = TABLES[table] || [];
+  const state = { method: 'select', payload: null, filters: [] };
   const builder = {
     select: () => builder,
     order: () => builder,
     limit: () => builder,
-    eq: () => builder,
-    update: () => builder,
-    delete: () => builder,
-    insert: () => builder,
-    then: (resolvePromise, rejectPromise) => Promise.resolve({ data: rows, error: null, count: rows.length }).then(resolvePromise, rejectPromise),
+    eq: (column, value) => { state.filters.push([column, value]); return builder; },
+    update: payload => { state.method = 'update'; state.payload = payload; return builder; },
+    delete: () => { state.method = 'delete'; return builder; },
+    insert: payload => { state.method = 'insert'; state.payload = payload; return builder; },
+    then: (resolvePromise, rejectPromise) => {
+      if (state.method === 'update') dbWrites.push({ table, method: 'update', payload: state.payload, filters: state.filters });
+      if (state.method === 'insert') dbWrites.push({ table, method: 'insert', payload: state.payload });
+      if (state.method === 'delete') dbWrites.push({ table, method: 'delete', filters: state.filters });
+      const data = state.method === 'insert' ? [{ id: '00000000-0000-0000-0000-0000000000ff', ...(state.payload || {}) }] : rows;
+      return Promise.resolve({ data, error: null, count: data.length }).then(resolvePromise, rejectPromise);
+    },
     catch: handler => Promise.resolve({ data: rows, error: null }).catch(handler)
   };
   return builder;
 }
 
 const rpcCalls = [];
+const dbWrites = [];
+/* El doble de la librería permite simular los dos caminos de una decisión:
+   con RPC disponible (devuelve ok) o sin RPC (cae a la vía alternativa). */
+let rpcMode = 'missing';
+globalThis.__smokeSetRpcMode = mode => { rpcMode = mode; };
 globalThis.__supabaseStub = {
   createClient: () => ({
     from: table => queryBuilder(table),
     rpc: async (name, params) => {
-      rpcCalls.push({ name, params });
+      rpcCalls.push({ name, params, mode: rpcMode });
       if (name !== 'process_dashboard_reservation_decision') {
         return { data: null, error: { code: 'PGRST202', message: 'Could not find the function public.x' } };
       }
       if (Number(params.p_reservation_draft_id) === -1) {
         return { data: null, error: { code: 'P0001', message: 'Not authorized for Inside Spa dashboard' } };
       }
-      return { data: { ok: true }, error: null };
+      if (rpcMode === 'missing') return { data: null, error: { code: 'PGRST202', message: 'Could not find the function public.process_dashboard_reservation_decision' } };
+      if (rpcMode === 'denied') return { data: null, error: { code: '42501', message: 'permission denied for function process_dashboard_reservation_decision' } };
+      return { data: { ok: true, action: params.p_action }, error: null };
     },
     auth: {
       getSession: async () => ({ data: { session: { user: { email: 'contacto@insidespa.com.mx' }, expires_at: Math.floor(Date.now() / 1000) + 3600 } }, error: null }),
@@ -172,16 +186,51 @@ if (mainModule) {
     step('Diagnóstico sin fallos con el doble de prueba', checks.every(check => check.status !== 'fail'), JSON.stringify(checks.filter(check => check.status === 'fail')));
     step('Diagnóstico pintado en pantalla', (document.getElementById('checksList')?.innerHTML || '').includes('check'));
 
-    /* Modal y decisión con vía alternativa (RPC ausente en el doble) */
+    /* Modal y botones de decisión */
     const { renderReservationModal, renderModalActions } = await import(pathToFileURL(join(root, 'js/view.js')).href);
     const opened = renderReservationModal(state, 1);
     step('Modal de detalle se construye', opened === true);
     renderModalActions(state, 1);
-    step('Botones de decisión disponibles', typeof document.getElementById('approveBtn') !== 'undefined');
+    step('Botones "Aprobar", "Rechazar" y "Pedir información"', ['approveBtn', 'rejectBtn', 'requestInfoBtn'].every(id => globalThis.document.getElementById(id)), '');
     step('Nota de decisión presente', Boolean(document.getElementById('decisionNote')));
+    step('Modal no ofrece decidir sobre una confirmada', (() => { renderModalActions(state, 3); return Boolean(document.getElementById('closeModalBtn')); })());
+
+    /* Decisión por la vía alternativa: el RPC no existe en el doble. */
+    const { decide: commitDecision } = await import(pathToFileURL(join(root, 'js/data.js')).href);
+    const writesBefore = dbWrites.length;
+    const fallback = await commitDecision(app.state.supabase, {
+      draftId: 1, action: 'approved', note: 'aprobado en la prueba', previousStatus: 'Por revisar', userEmail: app.state.userEmail
+    });
+    step('Decisión sin RPC usa la vía alternativa', fallback.via === 'fallback', String(fallback.via));
+    step('Vía alternativa actualiza la pre-reserva', dbWrites.slice(writesBefore).some(write => write.table === 'reservas_draft' && write.method === 'update' && write.payload?.estado_reserva === 'confirmado'),
+      JSON.stringify(dbWrites.slice(writesBefore)));
+    step('Vía alternativa registra la decisión', dbWrites.slice(writesBefore).some(write => write.table === 'dashboard_reservation_decisions' && write.method === 'insert' && write.payload?.action === 'approved'));
+
+    /* Decisión con RPC disponible: camino normal. */
+    globalThis.__smokeSetRpcMode('ok');
+    const viaRpc = await commitDecision(app.state.supabase, {
+      draftId: 2, action: 'rejected', note: null, previousStatus: 'En confirmación', userEmail: app.state.userEmail
+    });
+    step('Decisión con RPC usa el camino oficial', viaRpc.via === 'rpc', String(viaRpc.via));
+    step('El RPC recibe id, acción y nota', (() => {
+      const call = rpcCalls.filter(item => item.mode === 'ok').pop();
+      return call?.name === 'process_dashboard_reservation_decision' && call.params.p_reservation_draft_id === 2 && call.params.p_action === 'rejected';
+    })(), JSON.stringify(rpcCalls.slice(-1)));
+
+    /* Decisión sin permisos: se reporta el fallo en vez de fingir éxito. */
+    globalThis.__smokeSetRpcMode('denied');
+    let deniedMessage = '';
+    try {
+      await commitDecision(app.state.supabase, { draftId: 1, action: 'needs_info', note: null, previousStatus: 'x', userEmail: app.state.userEmail });
+    } catch (error) {
+      deniedMessage = error.message || '';
+    }
+    step('Sin permisos se informa el error (no hay falso éxito)', /permiso|permission/i.test(deniedMessage), deniedMessage.slice(0, 120));
+    globalThis.__smokeSetRpcMode('missing');
 
     await app.refresh({ reason: 'prueba' });
     step('Refresco manual sin errores', app.state.loaded === true);
+    step('La tabla se vuelve a pintar tras decidir', /Ana López/.test(document.getElementById('reservationBody')?.innerHTML || ''));
   }
 }
 
