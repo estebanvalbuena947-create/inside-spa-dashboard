@@ -44,9 +44,13 @@ js/domain.js               Reglas de negocio: estados, decisiones, filtros, KPIs
 js/data.js                 Consultas a Supabase, tolerancia a esquema, errores legibles, diagnóstico
 js/view.js                 Render del HTML (tablas, tarjetas, modales, toast)
 js/main.js                 Sesión, carga de datos, decisiones, refresco automático, exportación
-tools/verify.mjs           Pruebas automáticas sin navegador (56 comprobaciones)
-tools/smoke.mjs            Arranca la app completa con un DOM simulado (25 pasos)
+tools/verify.mjs           Pruebas automáticas sin navegador (67 comprobaciones)
+tools/smoke.mjs            Arranca la app completa con un DOM simulado (33 pasos)
+tools/e2e.mjs              Integración de punta a punta con backend y librería de prueba
+tools/mock-backend.mjs     Backend local que imita la base real (RLS, GRANT y RPC)
+tools/vendor-sdk.mjs       Descarga la librería oficial de Supabase del CDN
 tools/live-check.mjs       Ejecuta el dashboard real contra la base real
+tools/live-sdk.mjs         Igual, con la librería oficial de Supabase
 tools/dom-mock.mjs         DOM mínimo compartido por las pruebas
 tools/rest-client.mjs      Cliente REST fiel a PostgREST para las pruebas en vivo
 tools/audit-db.mjs         Auditoría de la base real (esquema, filas, estados, KPIs)
@@ -168,25 +172,35 @@ Entra a la sección **Diagnóstico** y pulsa *Revisar ahora*. Revisa, con tu pro
 ## 8. Verificación local (sin navegador)
 
 ```powershell
-node tools/verify.mjs             # 56 comprobaciones de lógica y estructura
+node tools/vendor-sdk.mjs         # descarga la librería oficial del CDN a .vendor/ (una vez)
+node tools/verify.mjs             # 67 comprobaciones de lógica, estructura y columnas
 node tools/smoke.mjs              # 33 pasos: arranca la app completa con un DOM simulado
+node tools/e2e.mjs                # 30 comprobaciones de punta a punta (backend de prueba + librería oficial)
 node tools/live-check.mjs         # ejecuta la app contra la base real
+node tools/live-sdk.mjs           # ejecuta la app con la librería oficial contra la base real
 node tools/audit-db.mjs           # audita la base real (esquema, filas, estados y KPIs)
 node tools/check-authenticated.mjs # valida RLS/permisos con una sesión autenticada
 ```
 
 - **`verify.mjs`**: sintaxis, que cada `#id` usado por JS exista en el HTML, que cada enlace del
-  menú tenga su sección, que no queden métricas inventadas, y la lógica de dinero, fechas,
-  estados, filtros, KPIs, clientes y CSV.
-- **`smoke.mjs`**: monta un DOM con los `#id` reales, sustituye la librería de Supabase por un
-  doble y ejecuta `js/main.js`: arranque, carga de las 4 tablas, render de todas las vistas,
-  filtros, diagnóstico, modal de detalle, refresco y los **tres caminos de una decisión**
-  (vía alternativa sin RPC, camino oficial por RPC y falta de permisos). Falla si algo lanza
-  una excepción o si se reporta un falso éxito.
+  menú tenga su sección, que no queden métricas inventadas, que la lógica de dinero, fechas,
+  estados, filtros, KPIs, clientes y CSV sea correcta, y que **todas las columnas y los órdenes
+  que pide `js/data.js` existan en `supabase/openapi-schema.json`**.
+- **`smoke.mjs`**: monta un DOM con los `#id` reales, sustituye la librería por un doble y ejecuta
+  `js/main.js`: arranque, carga de las 4 tablas, render de todas las vistas, filtros, diagnóstico,
+  modal, refresco y los **tres caminos de una decisión** (vía alternativa sin RPC, camino oficial
+  por RPC y falta de permisos). Falla si algo lanza una excepción o si se reporta un falso éxito.
+- **`e2e.mjs`**: prueba de integración real. Levanta `tools/mock-backend.mjs` (backend local con las
+  columnas reales, RLS activa, una tabla sin GRANT y el RPC de decisiones), usa la **librería
+  oficial de Supabase descargada del CDN** y comprueba el ciclo completo: sin sesión no se ven
+  filas; con sesión se leen las 4 tablas, se calculan las métricas correctas y se pintan las
+  vistas; aprobar / pedir información / rechazar viajan por el RPC y **el estado y el histórico
+  cambian en el backend**.
 - **`live-check.mjs`**: arranca el dashboard de verdad contra la base de verdad, emitiendo las
-  mismas peticiones PostgREST que el navegador (`tools/rest-client.mjs`), y reporta qué contesta
-  el backend, qué métricas se pintan y qué dice el diagnóstico. Con `--session` explica por qué
-  este proyecto no permite firmar sesiones de prueba (usa claves ES256) y cómo validarlo en 1 clic.
+  mismas peticiones PostgREST que el navegador (`tools/rest-client.mjs`), y reporta qué contesta el
+  backend, qué métricas se pintan, qué dice el diagnóstico y si alguna consulta tuvo que reintentar
+  con `select(*)` (señal de columna inexistente).
+- **`live-sdk.mjs`**: lo mismo pero con la librería oficial (`--rest-url` para apuntar a otro backend).
 - **`audit-db.mjs`**: contra la base real. Sin credenciales solo comprueba el acceso público; con
   `SUPABASE_SERVICE_ROLE_KEY` en `.env.local` lista el esquema real, cuenta filas, resume estados y
   calcula los KPIs del dashboard con datos de producción (`--json`, `--sample N`).

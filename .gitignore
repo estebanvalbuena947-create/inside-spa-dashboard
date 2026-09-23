@@ -6,3 +6,6 @@ supabase/.temp/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Copia local de la libreria de Supabase para pruebas (.vendor/)
+.vendor/

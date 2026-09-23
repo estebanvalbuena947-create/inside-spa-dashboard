@@ -123,10 +123,21 @@ Notas de esquema que el dashboard respeta:
 
 | Comando | Qué comprueba |
 | --- | --- |
-| `node tools/verify.mjs` | 56 comprobaciones de lógica, estados, montos, fechas, filtros y estructura |
+| `node tools/verify.mjs` | 67 comprobaciones: lógica, estados, montos, fechas, filtros, estructura y columnas contra el esquema |
 | `node tools/smoke.mjs` | Arranca la app completa con un DOM simulado (33 pasos, incluye los 3 caminos de una decisión) |
+| `node tools/e2e.mjs` | Integración de punta a punta: backend de prueba + librería oficial de Supabase (30 comprobaciones) |
 | `node tools/live-check.mjs` | Ejecuta la app contra la base real y reporta qué contesta el backend |
+| `node tools/live-sdk.mjs` | Igual, usando la librería oficial de Supabase |
 | `node tools/audit-db.mjs` | Esquema real, filas reales y KPIs reales desde Supabase |
 | `node tools/check-authenticated.mjs` | Lectura de las 4 tablas y RPC con una sesión `authenticated` |
+
+Los tres últimos se apoyan en `tools/mock-backend.mjs` (backend local con las columnas reales, RLS,
+una tabla sin GRANT y el RPC de decisiones) y en `tools/vendor-sdk.mjs`, que descarga la librería
+oficial del CDN para poder ejecutarla en Node. Así el ciclo completo queda probado sin navegador:
+
+- sin sesión no se ven filas y el panel lo explica;
+- con sesión se leen las 4 tablas y las métricas salen correctas;
+- aprobar / pedir información / rechazar viajan por el RPC y **el estado y el histórico cambian**
+  en el backend (verificado leyendo los datos después de cada decisión).
 
 > `supabase/openapi-schema.json` guarda el esquema real del proyecto (16 tablas) como referencia.
