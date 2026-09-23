@@ -128,14 +128,22 @@ remoto sigue en `41a399e`.
 
 ## 7. Pendiente de confirmar
 
-1. Permisos + RLS de la **sesión autenticada**. El proyecto firma las sesiones con
-   clave **asimétrica (ES256)**, así que no se puede firmar una sesión de prueba desde
-   Node (solo Supabase tiene la clave privada). Hay dos formas de comprobarlo con la
-   sesión real:
+1. **Aplicar los permisos.** Quedó confirmado otra vez, con la clave pública, que
+   `spa_comprobantes_pago` responde `42501 permission denied` (el resto de tablas son
+   accesibles y el RPC ya existe y valida). Dos vías:
+   - `node tools/apply-migration.mjs --password "<contraseña de la base>"` — aplica el SQL y
+     verifica el resultado en el mismo paso. La contraseña está en
+     *Supabase → Project Settings → Database*; el script no la guarda.
+     La conexión directa está comprobada: `psql` llega al servidor (responde
+     "password authentication failed" con una contraseña inválida, no un bloqueo de red).
+   - pegar `supabase/APLICAR_EN_SUPABASE.sql` en el SQL Editor.
+2. **Permisos + RLS de la sesión autenticada.** El proyecto firma las sesiones con clave
+   **asimétrica (ES256)**, así que no se puede firmar una sesión de prueba desde Node (solo
+   Supabase tiene la clave privada). Se comprueba con la sesión real:
    - dashboard → sección *Diagnóstico* → **Revisar ahora**;
-   - consola del navegador (F12) con sesión iniciada: `await insideSpaCheck()`.
-2. Ejecutar `supabase/APLICAR_EN_SUPABASE.sql` (ya confirmado que faltan 2 permisos).
-3. `git push origin main` para publicar los 7 commits pendientes.
+   - consola del navegador (F12): `await insideSpaCheck()`.
+3. **`git push origin main`** para publicar los 7 commits pendientes (producción arrastra
+   todavía la consulta de `reservas` con `updated_at`).
 
 ## 8. Herramientas de verificación
 

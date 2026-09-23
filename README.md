@@ -54,6 +54,7 @@ tools/live-sdk.mjs         Igual, con la librería oficial de Supabase
 tools/dom-mock.mjs         DOM mínimo compartido por las pruebas
 tools/rest-client.mjs      Cliente REST fiel a PostgREST para las pruebas en vivo
 tools/audit-db.mjs         Auditoría de la base real (esquema, filas, estados, KPIs)
+tools/apply-migration.mjs  Aplica la migración SQL y verifica el resultado
 tools/check-authenticated.mjs  Valida RLS y permisos con una sesión authenticated
 docs/AUDITORIA.md          Informe de la auditoría (qué estaba roto y qué se corrigió)
 supabase/APLICAR_EN_SUPABASE.sql   Migración + auditoría de la base (LEER SECCIÓN 3)
@@ -65,7 +66,20 @@ app.js                     Obsoleto: solo redirige al código nuevo (se puede bo
 ## 3. Configuración de la base (una sola vez)
 
 El dashboard necesita permisos explícitos. Sin ellos, Supabase responde
-`permission denied for table spa_comprobantes_pago` y el panel aparece vacío.
+`permission denied for table spa_comprobantes_pago` y el comprobante no se puede leer.
+
+**Opción A · un comando (aplica y verifica solo):**
+
+```powershell
+node tools/apply-migration.mjs --password "<contraseña de la base>"
+```
+
+La contraseña está en *Supabase → Project Settings → Database → Database password*.
+El script no la guarda en disco: la pasa a `psql` por variable de entorno, aplica
+`supabase/APLICAR_EN_SUPABASE.sql` y después **verifica** que las tablas quedaron legibles.
+Con `--check` (sin contraseña) solo informa del estado actual.
+
+**Opción B · manual:**
 
 1. Abre https://supabase.com/dashboard/project/ncutewymydclypuqlbfk/sql/new
 2. Pega **todo** el contenido de `supabase/APLICAR_EN_SUPABASE.sql`.
@@ -76,7 +90,7 @@ El dashboard necesita permisos explícitos. Sin ellos, Supabase responde
 El script:
 - otorga `SELECT`/`INSERT`/`UPDATE` a los administradores del dashboard,
 - crea las políticas RLS para los correos de `supabase-config.js`,
-- define el RPC `process_dashboard_reservation_decision(bigint, text, text)`,
+- define (o reemplaza) el RPC `process_dashboard_reservation_decision(bigint, text, text)`,
 - no borra ni modifica datos de reservas.
 
 > Los correos autorizados están en dos sitios que deben coincidir:
@@ -84,7 +98,7 @@ El script:
 
 **La forma más rápida de saber si falta algo:** inicia sesión en el dashboard y entra a la
 sección **Diagnóstico**. Con tu propia sesión revisa permisos, políticas, RPC y escritura, y
-dice exactamente qué ejecutar.
+dice exactamente qué ejecutar. Desde la consola del navegador también sirve `await insideSpaCheck()`.
 
 ---
 
