@@ -3,7 +3,7 @@
    Comprueba: sintaxis, IDs usados por el código vs index.html, KPIs,
    estados, montos en texto y exportación CSV. */
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
@@ -78,7 +78,7 @@ const draftRows = [
   { id: 2, nombre: 'Luis Pérez', email: 'luis@test.com', nombre_servicio: 'Jacuzzi', servicio: 'jacuzzi', jacuzzi_inicio: iso(tomorrow), monto_pagado: null, monto_esperado: 1000, comprobante_revision_datos: evidenceOne, estado_reserva: 'procesando_pabau', comprobante_revision_at: iso(today) },
   { id: 3, nombre: 'Marta Ruiz', nombre_servicio: 'Facial', servicio: 'facial', estado_reserva: 'confirmado', reserva_confirmada: true, monto_pagado: 800, comprobante_revision_at: iso(today) },
   { id: 4, nombre: 'Ana López', email: 'ana@test.com', nombre_servicio: 'Facial', servicio: 'facial', estado_reserva: 'requiere_revision' },
-  { id: 5, nombre: 'Sofía Nava', email: 'sofia@test.com', nombre_servicio: 'Jacuzzi', servicio: 'jacuzzi', jacuzzi_inicio: iso(inTwoHours), monto_pagado: null, estado_reserva: 'creando_retencion' }
+  { id: 5, nombre: 'Sofía Nava', email: 'sofia@test.com', nombre_servicio: 'Jacuzzi', servicio: 'jacuzzi', jacuzzi_inicio: iso(inTwoHours), monto_pagado: null, estado_reserva: 'creando_retencion', retencion_expira_at: iso(new Date(today.getTime() + 35 * 60000)), intentos_pago: 2 }
 ];
 const confirmedRows = [
   { id: 91, nombre: 'Carlos Díaz', email: 'carlos@test.com', nombre_servicio: 'Masaje profundo', masaje_inicio: iso(inTwoHours), monto_pagado: 1500, pabau_confirmado_at: iso(today), reserva_confirmada: true },
@@ -125,6 +125,8 @@ check('KPI ingresos de hoy = 2300', kpis.confirmedAmountToday === 2300, String(k
 check('KPI por confirmar suma reserva + comprobante = 2200', Math.abs(kpis.pendingAmount - 2200) < 0.001, String(kpis.pendingAmount));
 check('KPI próximas 24 h = 1', kpis.upcomingCount === 1, String(kpis.upcomingCount));
 check('KPI rechazadas = 1', kpis.rejectedCount === 1, String(kpis.rejectedCount));
+check('Alerta de retención próxima a vencer', kpis.expiringHolds.length === 1 && kpis.expiringHolds[0].id === 5, String(kpis.expiringHolds.length));
+check('Lee el vencimiento y los intentos de pago', drafts[4].retencionExpiraAt instanceof Date && drafts[4].intentosPago === 2, String(drafts[4].intentosPago));
 
 const statuses = kpis.statuses;
 const baseStatuses = buildKpis(renormalized, confirmed, [], receipts).statuses;
@@ -160,7 +162,31 @@ check('CSV escapa comas y comillas', csv.includes('"texto, con coma"') && csv.in
 check('CSV incluye BOM para Excel', csv.startsWith('\uFEFF'));
 check('isToday detecta la fecha actual', isToday(new Date()) === true);
 
-/* ---------- 5. Archivos requeridos ---------- */
+/* ---------- 5. Columnas declaradas vs. esquema real ---------- */
+const schemaPath = join(root, 'supabase/openapi-schema.json');
+if (existsSync(schemaPath)) {
+  const spec = JSON.parse(readFileSync(schemaPath, 'utf8'));
+  const definitions = spec.definitions || spec.components?.schemas || {};
+  const dataSource = readFileSync(join(root, 'js/data.js'), 'utf8');
+  const declared = [...dataSource.matchAll(/^\s{2}(reservas_draft|reservas|spa_comprobantes_pago|dashboard_reservation_decisions):\s*'([^']+)'/gm)];
+  check('Se leyeron las listas de columnas de data.js', declared.length === 4, String(declared.length));
+  declared.forEach(([, table, columns]) => {
+    const available = Object.keys(definitions[table]?.properties || {});
+    const unknown = columns.split(',').filter(column => !available.includes(column));
+    check(`Columnas de ${table} existen en el esquema real`, unknown.length === 0, unknown.join(', '));
+  });
+  /* Las columnas de orden también deben existir: si no, la consulta falla y cae al comodín. */
+  const orderBlock = dataSource.match(/const ORDER_CANDIDATES = \{([\s\S]*?)\n\};/)?.[1] || '';
+  [...orderBlock.matchAll(/(\w+):\s*\[([^\]]+)\]/g)].forEach(([, table, list]) => {
+    const available = Object.keys(definitions[table]?.properties || {});
+    const unknown = [...list.matchAll(/'([^']+)'/g)].map(match => match[1]).filter(column => !available.includes(column));
+    check(`Columnas de orden de ${table} existen`, unknown.length === 0, unknown.join(', '));
+  });
+} else {
+  console.log('   · sin supabase/openapi-schema.json: se omite la validación de columnas');
+}
+
+/* ---------- 6. Archivos requeridos ---------- */
 const required = ['index.html', 'styles.css', 'dashboard.css', 'supabase-config.js', 'js/main.js', 'js/data.js', 'js/domain.js', 'js/core.js', 'js/view.js'];
 const files = new Set(readdirSync(root, { recursive: true }).map(entry => String(entry).replaceAll('\\', '/')));
 required.forEach(file => check(`Existe ${file}`, files.has(file)));

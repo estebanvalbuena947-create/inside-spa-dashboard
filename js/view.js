@@ -54,6 +54,20 @@ export function renderMetrics(state) {
   setText('#receiptBadge', String(kpis.receiptsToCheck));
   setText('#receiptCount', String(receipts.length));
 
+  /* Retenciones a punto de expirar: lo más urgente de la operación. */
+  const holdNode = $('#holdAlert');
+  if (holdNode) {
+    const holds = kpis.expiringHolds || [];
+    holdNode.hidden = holds.length === 0;
+    if (holds.length) {
+      const first = holds[0];
+      const minutesLeft = Math.max(1, Math.round((first.retencionExpiraAt.getTime() - Date.now()) / 60000));
+      const others = holds.length > 1 ? ` y ${holds.length - 1} más` : '';
+      holdNode.innerHTML = `<strong>${holds.length === 1 ? 'Una retención vence pronto' : `${holds.length} retenciones vencen pronto`}:</strong> la de ${safe(first.nombre || `#${first.id}`)} expira en ${minutesLeft} min (${safe(formatTime(first.retencionExpiraAt))})${others}. Decide antes de que se libere el horario.`;
+      holdNode.classList.add('alert-error');
+    }
+  }
+
   const alerts = [...(state.problems || []).map(problem => problem.message)];
   const alertNode = $('#globalAlert');
   if (alertNode) {
@@ -269,6 +283,9 @@ export function renderReservationModal(state, draftId) {
       <div><span>Contacto</span>${safe(draft.email || draft.phone || DASH)}</div>
       <div><span>Última actualización</span>${safe(formatDateTime(draft.updatedAt || draft.reviewAt) || DASH)}</div>
       ${draft.motivoRevision ? `<div><span>Motivo de revisión</span>${safe(draft.motivoRevision)}</div>` : ''}
+      ${draft.retencionExpiraAt ? `<div><span>Retención vence</span>${safe(formatTime(draft.retencionExpiraAt))} · ${safe(formatDate(draft.retencionExpiraAt))}</div>` : ''}
+      ${draft.procesandoDesde ? `<div><span>En proceso desde</span>${safe(formatDateTime(draft.procesandoDesde))}</div>` : ''}
+      ${draft.intentosPago ? `<div><span>Intentos de pago</span>${draft.intentosPago}</div>` : ''}
       ${evidenceRows}
     </div>
     <div class="receipt"><strong>Comprobante de pago</strong><p>${receiptSummary}</p>${mediaLink}${reasonListMarkup(reasons)}</div>

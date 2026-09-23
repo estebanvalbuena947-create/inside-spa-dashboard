@@ -92,6 +92,9 @@ export function normalizeDraft(row) {
     motivoRevision: firstValue(row.motivo_revision, evidence?.motivo_clasificacion),
     motivosPago: Array.isArray(evidence?.motivos_revision_pago) ? evidence.motivos_revision_pago : [],
     evidencia: evidence,
+    retencionExpiraAt: parseDate(row.retencion_expira_at),
+    procesandoDesde: parseDate(row.procesando_desde),
+    intentosPago: Number.isFinite(Number(row.intentos_pago)) ? Number(row.intentos_pago) : null,
     scheduleAt: schedule,
     scheduleDate: parseDate(schedule),
     reviewAt: firstValue(row.comprobante_revision_at, row.actualizado_at, row.updated_at),
@@ -274,6 +277,11 @@ export function buildKpis(drafts, confirmed, decisions, receiptMap) {
   const pendingAmount = manageable.reduce((total, row) => total + amountOf(row), 0);
   const upcoming = confirmed.filter(row => isWithinHours(row.scheduleDate, 24));
   const receiptsToCheck = drafts.filter(row => Boolean(receiptMap.get(row.id))).length;
+  /* Retenciones de Pabau a punto de expirar: si vencen, el horario se libera y
+     el equipo pierde la reserva. Es el aviso más urgente del panel. */
+  const expiringHolds = manageable
+    .filter(row => row.retencionExpiraAt && row.retencionExpiraAt.getTime() > Date.now() && row.retencionExpiraAt.getTime() - Date.now() <= 60 * 60 * 1000)
+    .sort((a, b) => a.retencionExpiraAt - b.retencionExpiraAt);
   const lastConfirmedAt = [...confirmedToday, ...draftsConfirmedToday].reduce((latest, row) => {
     const time = parseDate(row.confirmedAt || row.reviewAt || row.updatedAt)?.getTime() ?? 0;
     return time > latest ? time : latest;
@@ -295,6 +303,7 @@ export function buildKpis(drafts, confirmed, decisions, receiptMap) {
     pendingAmount,
     upcomingCount: upcoming.length,
     receiptsToCheck,
+    expiringHolds,
     lastConfirmedAt: lastConfirmedAt ? new Date(lastConfirmedAt) : null,
     lastDecisionAt: lastDecisionAt ? new Date(lastDecisionAt) : null
   };

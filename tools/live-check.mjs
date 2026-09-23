@@ -106,6 +106,9 @@ const waitFor = async (predicate, timeoutMs = 30000) => {
   return false;
 };
 const finished = await waitFor(() => app.state.loaded || app.state.problems.length > 0);
+/* Instantánea de las consultas de la CARGA, antes del diagnóstico (que añade
+   las suyas). Así se detecta si alguna necesitó reintentar con select(*). */
+const loadCalls = calls.slice();
 
 console.log(`\n--- LLAMADAS REALES AL BACKEND (${calls.length}) ---`);
 calls.slice(0, 10).forEach(call => console.log(`  ${String(call.status).padEnd(4)} ${call.method.padEnd(4)} ${decodeURIComponent(call.url).slice(0, 105)}`));
@@ -144,7 +147,25 @@ try {
   console.log(`  FALLA en el diagnóstico: ${error.message}`);
 }
 
-/* ---------- 7. Conclusión ---------- */
+/* ---------- 7. ¿Alguna consulta tuvo que caer al comodín? ---------- */
+/* Si una columna declarada no existe, el dashboard reintenta con select(*) y
+   hace una llamada extra. Contar las llamadas por tabla detecta ese caso. */
+const perTable = new Map();
+loadCalls.filter(call => call.method === 'GET' && call.url.includes('select=')).forEach(call => {
+  const table = call.url.replace('/rest/v1/', '').split('?')[0];
+  perTable.set(table, (perTable.get(table) || 0) + 1);
+});
+const withWildcard = [...perTable.entries()].filter(([, count]) => count > 1);
+console.log('\n--- CONSULTAS POR TABLA (1 = columnas correctas) ---');
+[...perTable.entries()].forEach(([table, count]) => console.log(`  ${table.padEnd(34)} ${count} consulta(s)`));
+if (withWildcard.length) {
+  console.log('  AVISO: hubo reintento con select(*) en: ' + withWildcard.map(([table]) => table).join(', '));
+  console.log('         Revisa que las columnas de js/data.js existan en la base.');
+} else {
+  console.log('  ✓ Ninguna consulta necesitó el comodín: las columnas declaradas existen.');
+}
+
+/* ---------- 8. Conclusión ---------- */
 console.log('\n--- CONCLUSIÓN ---');
 const empty = app.state.drafts.length === 0;
 if (accessToken) {

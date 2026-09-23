@@ -19,8 +19,8 @@ export const PAGE_LIMIT = 500;
 /* Columnas reales del proyecto (verificadas contra la base). Si alguna no
    existiera, la consulta cae automáticamente a select('*'). */
 const COLUMNS = {
-  reservas_draft: 'id,nombre,email,phone,nombre_servicio,servicio,masaje_inicio,jacuzzi_inicio,monto_pagado,moneda_pago,estado_reserva,reserva_confirmada,pago_recibido,horario_pendiente,motivo_revision,comprobante_revision_at,comprobante_revision_datos',
-  reservas: 'id,nombre,email,phone,nombre_servicio,masaje_inicio,jacuzzi_inicio,monto_pagado,moneda_pago,reserva_confirmada,pabau_confirmado_at,sucursal,updated_at',
+  reservas_draft: 'id,nombre,email,phone,nombre_servicio,servicio,masaje_inicio,jacuzzi_inicio,monto_pagado,moneda_pago,estado_reserva,reserva_confirmada,pago_recibido,horario_pendiente,motivo_revision,comprobante_revision_at,comprobante_revision_datos,retencion_expira_at,intentos_pago,procesando_desde',
+  reservas: 'id,nombre,email,phone,nombre_servicio,masaje_inicio,jacuzzi_inicio,monto_pagado,moneda_pago,reserva_confirmada,pabau_confirmado_at,sucursal',
   spa_comprobantes_pago: 'huella,reserva_draft_id,subscriber_id,estado,datos,creado_at,actualizado_at',
   dashboard_reservation_decisions: 'id,reservation_draft_id,action,note,previous_status,resulting_status,decided_by_email,created_at'
 };
