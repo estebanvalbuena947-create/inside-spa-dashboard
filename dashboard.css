@@ -1,6 +1,68 @@
+/* Inside Spa · estilos propios del dashboard */
+
+/* Estado de sincronización */
 .sync-status{font-size:11px;font-weight:600;color:#9a7440;background:#fbf1e5;padding:6px 8px;border-radius:20px}
 .sync-status.connected{color:#24715e;background:#e6f1ec}
+
+/* Acceso */
 .auth-copy{color:#737877;line-height:1.5;margin:18px 0}
 .auth-label{display:block;font-size:11px;font-weight:600;margin:0 0 6px}
-.auth-input{width:100%;border:1px solid #e8e5e0;border-radius:7px;padding:11px 12px;font:13px "DM Sans",sans-serif;outline-color:#2f7164}
+.auth-input{width:100%;border:1px solid #e8e5e0;border-radius:7px;padding:11px 12px;font:13px "DM Sans",sans-serif;outline-color:#2f7164;background:#fff}
+textarea.auth-input{resize:vertical;min-height:64px}
 .auth-feedback{min-height:18px;margin:8px 0;color:#ba6464;font-size:11px}
+
+/* Badges que faltaban para los estados nuevos */
+.badge.review{color:#9a6a1f;background:#fbf3e2}
+.badge.info{color:#6a5c96;background:var(--lilac-soft)}
+.badge.processing{color:#3f6b93;background:#e8f0f7}
+
+/* Aviso global del panel */
+.panel-alert{margin:16px 0 0;padding:11px 14px;border-radius:8px;font-size:12.5px;background:var(--sand-soft);color:#8a6420;border:1px solid #f0e0c8}
+.panel-alert.alert-error{background:var(--rose-soft);color:#98494a;border-color:#eccfce}
+.panel-alert a{color:inherit;font-weight:600}
+
+/* Filtro por día */
+.date-button{cursor:pointer}
+.date-button input{border:0;background:transparent;font:inherit;color:inherit;outline:none;cursor:pointer}
+
+/* Comprobantes */
+.receipt-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));padding:4px 4px 8px}
+.receipt-card{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fdfcfb;display:flex;flex-direction:column;gap:6px}
+.receipt-card p{margin:0;font-size:12.5px;color:#5d6160}
+.receipt-card .muted{color:var(--muted)}
+.receipt-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.receipt-head strong{font-size:13px}
+.receipt-meta{display:flex;flex-direction:column;gap:3px;font-size:11.5px;color:var(--muted)}
+.receipt-meta strong{color:#454948}
+.receipt-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px}
+.receipt-actions a{font-size:12px;font-weight:600;color:var(--sage);text-decoration:none}
+.receipt-card time{font-size:11px;color:#9aa09e}
+
+/* Decisiones */
+.decision-form{padding:0 4px 6px}
+.decision-form[hidden]{display:none}
+
+/* Diagnóstico */
+.checks{display:flex;flex-direction:column;gap:8px;padding:4px}
+.check{display:grid;grid-template-columns:12px 1fr;align-items:start;gap:10px;border:1px solid var(--line);border-radius:9px;padding:11px 13px;background:#fdfcfb}
+.check strong{font-size:12.5px;grid-column:2}
+.check p{margin:2px 0 0;grid-column:2;font-size:12px;color:#6c716f;word-break:break-word}
+.check-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;background:#c9cdcb}
+.check.ok .check-dot{background:#3b8a72}
+.check.warn .check-dot{background:#c9a13f}
+.check.fail .check-dot{background:#c26a68}
+.check.fail{border-color:#eccfce;background:#fdf6f6}
+.check.warn{border-color:#f0e3c8;background:#fdfaf3}
+.checks-note{margin:10px 0 0;font-size:12px;color:var(--muted)}
+
+/* Ocupación: el anillo usa la variable --fill que calcula app.js */
+.circle-progress{--fill:0%}
+
+/* Botones deshabilitados durante una decisión */
+button:disabled{opacity:.55;cursor:not-allowed}
+
+/* Responsive: tarjetas y tablas en pantallas pequeñas */
+@media (max-width:900px){
+  .receipt-grid{grid-template-columns:1fr}
+  .decision-list{grid-template-columns:1fr}
+}

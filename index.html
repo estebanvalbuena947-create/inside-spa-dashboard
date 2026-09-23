@@ -15,60 +15,141 @@
       <aside class="sidebar" aria-label="Navegación principal">
         <a class="brand" href="#dashboard" aria-label="Inside Spa inicio">
           <span class="brand-mark">I</span>
-          <span><strong>inside</strong><small>SPA & WELLNESS</small></span>
+          <span><strong>inside</strong><small>SPA &amp; WELLNESS</small></span>
         </a>
         <nav class="nav-list">
           <a class="nav-link active" href="#dashboard"><span>▦</span>Resumen</a>
           <a class="nav-link" href="#reservas"><span>◷</span>Pre-reservas <b id="pendingBadge">0</b></a>
-          <a class="nav-link" href="#historico"><span>◫</span>Histórico</a>
-          <a class="nav-link" href="#comprobantes"><span>▤</span>Comprobantes</a>
+          <a class="nav-link" href="#comprobantes"><span>▤</span>Comprobantes <b id="receiptBadge">0</b></a>
           <a class="nav-link" href="#clientes"><span>♙</span>Clientes</a>
+          <a class="nav-link" href="#historico"><span>◫</span>Histórico</a>
+          <a class="nav-link" href="#diagnostico"><span>⚙</span>Diagnóstico <b id="alertBadge" hidden>0</b></a>
         </nav>
         <div class="sidebar-bottom">
-          <button class="support-btn" type="button">? <span>Centro de ayuda</span></button>
-          <div class="profile"><div class="avatar">LM</div><div><strong>Laura Mejía</strong><small>Administradora</small></div><button type="button" aria-label="Abrir menú de perfil">⌄</button></div>
+          <button class="support-btn" type="button" id="helpBtn">? <span>Centro de ayuda</span></button>
+          <div class="profile">
+            <div class="avatar" id="profileAvatar">IS</div>
+            <div><strong id="profileName">Sin sesión</strong><small id="profileRole">Conecta tu cuenta</small></div>
+            <button type="button" id="authBtn" aria-label="Iniciar o cerrar sesión">⌄</button>
+          </div>
         </div>
       </aside>
 
       <main>
         <header class="topbar">
           <button class="menu-toggle" type="button" aria-label="Abrir navegación">☰</button>
-          <div><p class="eyebrow">Lunes, 21 de septiembre</p><h1>Buenos días, Laura <span>✦</span></h1></div>
-          <div class="top-actions"><span class="sync-status" id="syncStatus">Conecta tu cuenta</span><button class="icon-btn" type="button" aria-label="Notificaciones">♢<i></i></button><button class="new-reservation" type="button" id="authBtn">Iniciar sesión</button></div>
+          <div><p class="eyebrow" id="todayLabel">—</p><h1 id="greeting">Buenos días <span>✦</span></h1></div>
+          <div class="top-actions">
+            <span class="sync-status" id="syncStatus">Conecta tu cuenta</span>
+            <button class="icon-btn" type="button" id="refreshBtn" aria-label="Actualizar datos" title="Actualizar datos">⟳</button>
+            <button class="new-reservation" type="button" id="loginBtn">Iniciar sesión</button>
+          </div>
         </header>
 
         <section class="overview" id="dashboard">
-          <div class="section-heading"><div><h2>Resumen de hoy</h2><p>Una vista rápida de la operación de tu spa.</p></div><button class="date-button" type="button">▣ Hoy, 21 sep <span>⌄</span></button></div>
-          <div class="metrics">
-            <article class="metric-card"><div class="metric-icon sand">◷</div><div><p>Pre-reservas pendientes</p><strong id="pendingMetric">0</strong><small class="up" id="pendingChange">—</small></div></article>
-            <article class="metric-card"><div class="metric-icon sage">✓</div><div><p>Confirmadas hoy</p><strong id="confirmedMetric">0</strong><small class="up">↑ 12% vs. ayer</small></div></article>
-            <article class="metric-card"><div class="metric-icon rose">◫</div><div><p>Ingresos confirmados</p><strong id="revenueMetric">$0</strong><small class="up">↑ 8% vs. ayer</small></div></article>
-            <article class="metric-card"><div class="metric-icon lilac">♙</div><div><p>Clientes por atender</p><strong id="clientsMetric">0</strong><small class="muted">En las próximas 24 h</small></div></article>
+          <div class="section-heading">
+            <div><h2>Resumen de hoy</h2><p>Datos reales de tu operación · última actualización <span id="lastUpdate">—</span>.</p></div>
+            <label class="date-button" for="dayFilter">▣ <input id="dayFilter" type="date" aria-label="Filtrar por día" /></label>
           </div>
+          <div class="metrics">
+            <article class="metric-card"><div class="metric-icon sand">◷</div><div><p>Pre-reservas por gestionar</p><strong id="pendingMetric">—</strong><small id="pendingChange" class="muted">Sin datos cargados</small></div></article>
+            <article class="metric-card"><div class="metric-icon sage">✓</div><div><p>Confirmadas hoy</p><strong id="confirmedMetric">—</strong><small id="confirmedChange" class="muted">Sin datos cargados</small></div></article>
+            <article class="metric-card"><div class="metric-icon rose">◫</div><div><p>Ingresos confirmados hoy</p><strong id="revenueMetric">—</strong><small id="revenueChange" class="muted">Sin datos cargados</small></div></article>
+            <article class="metric-card"><div class="metric-icon lilac">♙</div><div><p>Clientes por atender</p><strong id="clientsMetric">—</strong><small id="clientsChange" class="muted">Próximas 24 horas</small></div></article>
+          </div>
+          <p class="panel-alert" id="globalAlert" hidden></p>
         </section>
 
         <section class="content-grid" id="reservas">
           <article class="panel reservation-panel">
             <div class="panel-header"><div><h2>Pre-reservas por gestionar <span id="reservationCount">0</span></h2><p>Revisa pagos y toma una decisión.</p></div><a href="#historico">Ver todas <span>→</span></a></div>
-            <div class="filter-row"><label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="Buscar por cliente o código" /></label><select id="serviceFilter" aria-label="Filtrar por servicio"><option value="">Todos los servicios</option></select><select id="statusFilter" aria-label="Filtrar por estado"><option value="pending">Pendientes</option><option value="">Todos los estados</option><option value="confirmed">Confirmadas</option><option value="rejected">Rechazadas</option></select></div>
+            <div class="filter-row">
+              <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="Buscar por cliente, correo o código" /></label>
+              <select id="serviceFilter" aria-label="Filtrar por servicio"><option value="">Todos los servicios</option></select>
+              <select id="statusFilter" aria-label="Filtrar por estado">
+                <option value="">Todos los estados</option>
+                <option value="pending">Pendientes de pago</option>
+                <option value="review">Por revisar</option>
+                <option value="info">Información solicitada</option>
+                <option value="processing">En confirmación</option>
+                <option value="confirmed">Confirmadas</option>
+                <option value="rejected">Rechazadas</option>
+              </select>
+            </div>
             <div class="table-wrap"><table><thead><tr><th>CLIENTE</th><th>SERVICIO</th><th>FECHA Y HORA</th><th>VALOR</th><th>ESTADO</th><th aria-label="Acciones"></th></tr></thead><tbody id="reservationBody"></tbody></table></div>
             <p class="empty-state" id="emptyState" hidden>No hay reservas que coincidan con los filtros.</p>
           </article>
 
           <aside class="right-column">
-            <article class="panel activity-panel"><div class="panel-header"><div><h2>Actividad reciente</h2><p>Últimos movimientos</p></div><button class="more-btn" type="button" aria-label="Más opciones">•••</button></div><ol class="activity-list" id="activityList"></ol><a class="view-history" href="#historico">Ver historial completo →</a></article>
-            <article class="occupancy-card"><div><p>Ocupación de hoy</p><strong>72<small>%</small></strong><span class="up">↑ 6% vs. ayer</span></div><div class="circle-progress"><span>13<small>/18</small></span></div><p class="occupancy-note">13 de 18 cupos reservados</p></article>
+            <article class="panel activity-panel"><div class="panel-header"><div><h2>Actividad reciente</h2><p>Últimas decisiones del equipo</p></div><button class="more-btn" type="button" id="reloadActivity" aria-label="Actualizar actividad">⟳</button></div><ol class="activity-list" id="activityList"></ol><a class="view-history" href="#historico">Ver historial completo →</a></article>
+            <article class="occupancy-card" id="occupancyCard">
+              <div><p>Ocupación de hoy</p><strong id="occupancyPercent">—<small>%</small></strong><span class="muted" id="occupancyChange">Calculando…</span></div>
+              <div class="circle-progress"><span id="occupancyRatio">—<small>/—</small></span></div>
+              <p class="occupancy-note" id="occupancyNote">Se calcula con las reservas confirmadas de hoy.</p>
+            </article>
           </aside>
         </section>
 
-        <section class="panel history-panel" id="historico"><div class="panel-header"><div><h2>Histórico de decisiones</h2><p>Registro de aprobaciones, rechazos y comprobantes.</p></div><button class="export-btn" id="exportBtn" type="button">⇩ Exportar CSV</button></div><div class="decision-list" id="decisionList"></div></section>
+        <section class="panel history-panel" id="comprobantes">
+          <div class="panel-header"><div><h2>Comprobantes de pago <span id="receiptCount">0</span></h2><p>Evidencia recibida por cada pre-reserva.</p></div></div>
+          <div class="receipt-grid" id="receiptList"></div>
+          <p class="empty-state" id="receiptEmpty" hidden>No hay comprobantes visibles para tu cuenta.</p>
+        </section>
+
+        <section class="panel history-panel" id="clientes">
+          <div class="panel-header"><div><h2>Clientes <span id="clientCount">0</span></h2><p>Consolidado de pre-reservas y reservas confirmadas.</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>CLIENTE</th><th>CONTACTO</th><th>SERVICIOS</th><th>RESERVAS</th><th>VALOR ACUMULADO</th><th>ÚLTIMA ACTIVIDAD</th></tr></thead><tbody id="clientBody"></tbody></table></div>
+          <p class="empty-state" id="clientEmpty" hidden>No hay clientes para mostrar.</p>
+        </section>
+
+        <section class="panel history-panel" id="historico">
+          <div class="panel-header"><div><h2>Histórico de decisiones</h2><p>Registro de aprobaciones, rechazos, solicitudes de información y reservas confirmadas.</p></div><button class="export-btn" id="exportBtn" type="button">⇩ Exportar CSV</button></div>
+          <div class="decision-list" id="decisionList"></div>
+          <p class="empty-state" id="decisionEmpty" hidden>Aún no hay decisiones ni reservas confirmadas registradas.</p>
+        </section>
+
+        <section class="panel history-panel" id="diagnostico">
+          <div class="panel-header"><div><h2>Diagnóstico de conexión</h2><p>Verifica que el dashboard pueda leer y escribir en Supabase.</p></div><button class="export-btn" id="runDiagnosticsBtn" type="button">⟳ Revisar ahora</button></div>
+          <div class="checks" id="checksList"></div>
+          <p class="checks-note" id="checksNote">El diagnóstico consulta cada tabla con tu sesión y reporta exactamente qué falta.</p>
+        </section>
       </main>
     </div>
 
-    <dialog id="reservationDialog"><form method="dialog" class="modal"><div class="modal-header"><div><p class="eyebrow" id="modalCode">PRE-000</p><h2 id="modalTitle">Detalle de pre-reserva</h2></div><button class="close-btn" value="cancel" aria-label="Cerrar">×</button></div><div id="modalContent"></div><div class="modal-actions" id="modalActions"></div></form></dialog>
-    <dialog id="authDialog"><form id="authForm" class="modal"><div class="modal-header"><div><p class="eyebrow">Acceso privado</p><h2>Ingresar al dashboard</h2></div><button class="close-btn" type="button" id="closeAuthBtn" aria-label="Cerrar">×</button></div><p class="auth-copy">Te enviaremos un enlace seguro de acceso. Solo las cuentas autorizadas de Inside Spa pueden ver las reservas.</p><label class="auth-label" for="authEmail">Correo autorizado</label><input class="auth-input" id="authEmail" type="email" autocomplete="email" required placeholder="nombre@insidespa.com.mx" /><p class="auth-feedback" id="authFeedback"></p><div class="modal-actions"><button type="submit" class="primary-btn" id="sendLinkBtn">Enviar enlace de acceso</button></div></form></dialog>
+    <dialog id="reservationDialog">
+      <form method="dialog" class="modal">
+        <div class="modal-header"><div><p class="eyebrow" id="modalCode">PRE-000</p><h2 id="modalTitle">Detalle de pre-reserva</h2></div><button class="close-btn" value="cancel" aria-label="Cerrar">×</button></div>
+        <div id="modalContent"></div>
+        <div class="decision-form" id="decisionForm">
+          <label class="auth-label" for="decisionNote">Nota para el historial (opcional)</label>
+          <textarea class="auth-input" id="decisionNote" rows="2" placeholder="Ej.: comprobante verificado en el banco el 21/09"></textarea>
+        </div>
+        <div class="modal-actions" id="modalActions"></div>
+      </form>
+    </dialog>
+
+    <dialog id="authDialog">
+      <form id="authForm" class="modal">
+        <div class="modal-header"><div><p class="eyebrow">Acceso privado</p><h2>Ingresar al dashboard</h2></div><button class="close-btn" type="button" id="closeAuthBtn" aria-label="Cerrar">×</button></div>
+        <p class="auth-copy">Te enviaremos un enlace seguro de acceso. Solo las cuentas autorizadas de Inside Spa pueden ver las reservas.</p>
+        <label class="auth-label" for="authEmail">Correo autorizado</label>
+        <input class="auth-input" id="authEmail" type="email" autocomplete="email" required placeholder="nombre@insidespa.com.mx" />
+        <p class="auth-feedback" id="authFeedback"></p>
+        <div class="modal-actions"><button type="submit" class="primary-btn" id="sendLinkBtn">Enviar enlace de acceso</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="confirmDialog">
+      <form method="dialog" class="modal">
+        <div class="modal-header"><div><p class="eyebrow" id="confirmCode">Decisión</p><h2 id="confirmTitle">Confirmar acción</h2></div><button class="close-btn" value="cancel" aria-label="Cerrar">×</button></div>
+        <p class="auth-copy" id="confirmCopy"></p>
+        <div class="modal-actions"><button value="cancel" class="reject-btn" type="submit">Cancelar</button><button value="confirm" class="primary-btn" id="confirmAccept" type="submit">Confirmar</button></div>
+      </form>
+    </dialog>
+
     <dialog id="toast"><p id="toastMessage"></p></dialog>
+
     <script src="supabase-config.js"></script>
-    <script type="module" src="app.js"></script>
+    <script type="module" src="js/main.js?v=2.0.0"></script>
   </body>
 </html>
