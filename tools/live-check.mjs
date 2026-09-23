@@ -15,7 +15,6 @@
  * esa descarga solo puede hacerla el navegador.
  */
 
-import { createHmac } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { join } from 'node:path';
@@ -33,26 +32,28 @@ if (!config.url || !config.publishableKey) {
 const envPath = join(root, '.env.local');
 const env = existsSync(envPath) ? readFileSync(envPath, 'utf8') : '';
 const getEnv = name => env.match(new RegExp(`${name}=(\\S+)`))?.[1] || process.env[name] || null;
-const jwtSecret = getEnv('SUPABASE_JWT_SECRET');
 const sessionEmail = config.allowedEmails[0];
-const projectRef = config.url.match(/https:\/\/([^.]+)\./)?.[1];
 
-/* ---------- 1. Sesión de prueba (si se pide y hay secreto) ---------- */
+/* ---------- 1. Sesión de prueba (si se pide) ---------- */
 let accessToken = null;
 if (useSession) {
-  if (!jwtSecret) {
-    console.error('Para --session hace falta SUPABASE_JWT_SECRET en .env.local');
-    console.log('\nSin el secreto puedes validar la sesión real así:');
-    console.log('  1. Abre el dashboard y entra con tu correo.');
-    console.log('  2. Ve a la sección "Diagnóstico" y pulsa "Revisar ahora".');
-    process.exit(2);
-  }
-  const now = Math.floor(Date.now() / 1000);
-  const base64url = value => Buffer.from(value).toString('base64url');
-  const header = { alg: 'HS256', typ: 'JWT' };
-  const payload = { iss: 'supabase', ref: projectRef, role: 'authenticated', email: sessionEmail, aud: 'authenticated', iat: now, exp: now + 3600 };
-  const data = `${base64url(JSON.stringify(header))}.${base64url(JSON.stringify(payload))}`;
-  accessToken = `${data}.${createHmac('sha256', jwtSecret).update(data).digest('base64url')}`;
+  /* Este proyecto firma las sesiones con clave asimétrica (ES256) y publica su
+     clave pública en /auth/v1/.well-known/jwks.json. Para firmar una sesión de
+     prueba haría falta la clave privada, así que si el secreto no es simétrico
+     (HS256) se avisa en lugar de intentarlo y reportar un falso fallo. */
+  const jwksResponse = await fetch(`${config.url}/auth/v1/.well-known/jwks.json`, { headers: { apikey: config.publishableKey } });
+  const jwks = jwksResponse.ok ? await jwksResponse.json().catch(() => null) : null;
+  const key = jwks?.keys?.[0];
+  console.error('No se puede firmar una sesión de prueba en este proyecto.');
+  console.error(key
+    ? `Firma con clave asimétrica (${key.alg}, kid ${key.kid}): el navegador recibe la sesión del magic link y solo Supabase tiene la clave privada.`
+    : 'No se pudo leer la configuración de firmas del proyecto.');
+  console.log('\nPara validar la sesión autenticada usa una de estas dos vías:');
+  console.log('  A) Abre el dashboard, inicia sesión, entra a "Diagnóstico" y pulsa "Revisar ahora".');
+  console.log('  B) En el dashboard ya con sesión, abre la consola del navegador (F12) y ejecuta:');
+  console.log('       await insideSpaCheck()');
+  console.log('     Devuelve la misma tabla de comprobaciones con tu sesión real.');
+  process.exit(2);
 }
 
 /* ---------- 2. Instrumentar las llamadas reales ---------- */
@@ -66,29 +67,7 @@ globalThis.fetch = async (input, init) => {
 };
 
 /* ---------- 3. DOM + cliente REST ---------- */
-const dom = installDom({ config });
-
-/* La sesión se guarda igual que lo hace la librería oficial, para que
-   getSession() la recupere del almacenamiento (no se simula la respuesta). */
-if (accessToken) {
-  const now = Math.floor(Date.now() / 1000);
-  const storageKey = `sb-${projectRef}-auth-token`;
-  const session = {
-    access_token: accessToken,
-    refresh_token: 'token-de-prueba',
-    token_type: 'bearer',
-    expires_in: 3600,
-    expires_at: now + 3600,
-    user: { id: '00000000-0000-0000-0000-0000000000a1', aud: 'authenticated', role: 'authenticated', email: sessionEmail, app_metadata: {}, user_metadata: {} }
-  };
-  const serialized = JSON.stringify(session);
-  dom.localStorage.setItem(storageKey, serialized);
-  /* El SDK guarda las claves largas fragmentadas en trozos de 3.180 caracteres. */
-  for (let index = 0; index * 3180 < serialized.length; index += 1) {
-    dom.localStorage.setItem(`${storageKey}.${index}`, serialized.slice(index * 3180, (index + 1) * 3180));
-  }
-}
-
+installDom({ config });
 await installSupabaseStub({
   createClient: () => createRestClient({ url: config.url, apikey: config.publishableKey, accessToken })
 });

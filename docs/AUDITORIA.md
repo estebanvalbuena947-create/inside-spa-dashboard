@@ -96,9 +96,12 @@ Comprobado ejecutando el dashboard real contra la base real (`node tools/live-ch
 
 ## 6. Pendiente de confirmar
 
-1. Permisos + RLS de la **sesión autenticada**:
-   - dentro del dashboard: sección *Diagnóstico* → "Revisar ahora";
-   - o `node tools/live-check.mjs` con `SUPABASE_JWT_SECRET` en `.env.local`.
+1. Permisos + RLS de la **sesión autenticada**. El proyecto firma las sesiones con
+   clave **asimétrica (ES256)**, así que no se puede firmar una sesión de prueba desde
+   Node (solo Supabase tiene la clave privada). Hay dos formas de comprobarlo con la
+   sesión real:
+   - dashboard → sección *Diagnóstico* → **Revisar ahora**;
+   - consola del navegador (F12) con sesión iniciada: `await insideSpaCheck()`.
 2. Ejecutar `supabase/APLICAR_EN_SUPABASE.sql` (ya confirmado que faltan 2 permisos).
 3. Subir los commits a GitHub para que Vercel publique (`git push origin main`).
 
@@ -107,8 +110,8 @@ Comprobado ejecutando el dashboard real contra la base real (`node tools/live-ch
 | Comando | Qué comprueba |
 | --- | --- |
 | `node tools/verify.mjs` | 56 comprobaciones de lógica, estados, montos, fechas, filtros y estructura |
-| `node tools/smoke.mjs` | Arranca la app completa con un DOM simulado (25 pasos) |
-| `node tools/live-check.mjs` | Ejecuta la app contra la base real (sin sesión o `--session`) |
+| `node tools/smoke.mjs` | Arranca la app completa con un DOM simulado (33 pasos, incluye los 3 caminos de una decisión) |
+| `node tools/live-check.mjs` | Ejecuta la app contra la base real y reporta qué contesta el backend |
 | `node tools/audit-db.mjs` | Esquema real, filas reales y KPIs reales desde Supabase |
 | `node tools/check-authenticated.mjs` | Lectura de las 4 tablas y RPC con una sesión `authenticated` |
 

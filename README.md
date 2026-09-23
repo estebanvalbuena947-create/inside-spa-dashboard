@@ -169,8 +169,8 @@ Entra a la sección **Diagnóstico** y pulsa *Revisar ahora*. Revisa, con tu pro
 
 ```powershell
 node tools/verify.mjs             # 56 comprobaciones de lógica y estructura
-node tools/smoke.mjs              # 25 pasos: arranca la app completa con un DOM simulado
-node tools/live-check.mjs         # ejecuta la app contra la base real (--session para autenticada)
+node tools/smoke.mjs              # 33 pasos: arranca la app completa con un DOM simulado
+node tools/live-check.mjs         # ejecuta la app contra la base real
 node tools/audit-db.mjs           # audita la base real (esquema, filas, estados y KPIs)
 node tools/check-authenticated.mjs # valida RLS/permisos con una sesión autenticada
 ```
@@ -180,17 +180,19 @@ node tools/check-authenticated.mjs # valida RLS/permisos con una sesión autenti
   estados, filtros, KPIs, clientes y CSV.
 - **`smoke.mjs`**: monta un DOM con los `#id` reales, sustituye la librería de Supabase por un
   doble y ejecuta `js/main.js`: arranque, carga de las 4 tablas, render de todas las vistas,
-  filtros, diagnóstico, modal de detalle y refresco. Falla si algo lanza una excepción.
+  filtros, diagnóstico, modal de detalle, refresco y los **tres caminos de una decisión**
+  (vía alternativa sin RPC, camino oficial por RPC y falta de permisos). Falla si algo lanza
+  una excepción o si se reporta un falso éxito.
 - **`live-check.mjs`**: arranca el dashboard de verdad contra la base de verdad, emitiendo las
   mismas peticiones PostgREST que el navegador (`tools/rest-client.mjs`), y reporta qué contesta
-  el backend, qué métricas se pintan y qué dice el diagnóstico. Con `--session` firma una sesión
-  `authenticated` (necesita `SUPABASE_JWT_SECRET` en `.env.local`) y valida la lectura real de datos.
+  el backend, qué métricas se pintan y qué dice el diagnóstico. Con `--session` explica por qué
+  este proyecto no permite firmar sesiones de prueba (usa claves ES256) y cómo validarlo en 1 clic.
 - **`audit-db.mjs`**: contra la base real. Sin credenciales solo comprueba el acceso público; con
   `SUPABASE_SERVICE_ROLE_KEY` en `.env.local` lista el esquema real, cuenta filas, resume estados y
   calcula los KPIs del dashboard con datos de producción (`--json`, `--sample N`).
-- **`check-authenticated.mjs`**: firma un JWT de prueba con el rol `authenticated` (requiere
-  `SUPABASE_JWT_SECRET` en `.env.local`) y comprueba exactamente lo que verá el navegador del
-  equipo: lectura de las 4 tablas y el RPC de decisiones bajo RLS.
+- **`check-authenticated.mjs`**: valida lo que verá el navegador del equipo. Como la firma es
+  asimétrica, la comprobación real se hace desde el propio dashboard: sección *Diagnóstico* o
+  `await insideSpaCheck()` en la consola del navegador.
 
 ---
 

@@ -513,5 +513,22 @@ guardHashNavigation();
 window.addEventListener('hashchange', guardHashNavigation);
 void boot();
 
-/* Expuesto para pruebas automatizadas sin navegador. */
+/* Expuesto para pruebas y para comprobar la conexión desde la consola del navegador. */
 window.__INSIDE_SPA__ = { state, refresh, diagnostics, exportCsv };
+
+/**
+ * Comprobación en un clic desde la consola del navegador (F12):
+ *   await insideSpaCheck()
+ * Revisa el acceso a las 4 tablas y al RPC con la sesión real del usuario.
+ */
+window.insideSpaCheck = async () => {
+  if (!state.supabase) { console.warn('El dashboard todavía no está listo.'); return null; }
+  if (!state.session) { console.warn('No hay sesión activa: inicia sesión primero.'); return null; }
+  const checks = await runDiagnostics(state.supabase, { userEmail: state.userEmail, allowedEmails, session: state.session });
+  const failures = checks.filter(check => check.status === 'fail');
+  console.table(checks.map(({ name, status, detail }) => ({ comprobacion: name, estado: status, detalle: detail })));
+  console.log(failures.length
+    ? `${failures.length} problema(s): ejecuta supabase/APLICAR_EN_SUPABASE.sql y vuelve a intentar.`
+    : 'Todo correcto: el dashboard puede leer y escribir con esta sesión.');
+  return checks;
+};
