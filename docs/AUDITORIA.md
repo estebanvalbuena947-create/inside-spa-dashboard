@@ -84,15 +84,29 @@ Comprobado ejecutando el dashboard real contra la base real (`node tools/live-ch
 
 | Elemento | Estado |
 | --- | --- |
-| Columna `estado_reserva`, `reserva_confirmada`, `pago_recibido`, `comprobante_revision_at`, `comprobante_revision_datos` | existen en `reservas_draft` |
-| RPC `process_dashboard_reservation_decision(bigint, text, text)` | **existe y valida la autorización** ("Not authorized" con sesión anónima) |
+| Esquema de las 4 tablas | confirmado con el listado real de columnas (71 en `reservas_draft`, 41 en `reservas`, 7 en `spa_comprobantes_pago`, 9 en `dashboard_reservation_decisions`) |
+| Columnas que usa el dashboard | todas existen: cada tabla se consulta **una sola vez**, sin reintentos con `select(*)` |
+| `reservas` sin `updated_at` | detectado y corregido (la consulta caía al comodín) |
+| RPC `process_dashboard_reservation_decision(bigint, text, text)` | **existe y valida la autorización** ("Not authorized" sin sesión) |
 | `spa_comprobantes_pago` para el rol `authenticated` | **FALTA**: `42501 permission denied` → requiere el GRANT |
 | `dashboard_reservation_decisions` (escritura) | **FALTA**: sin permiso de INSERT → requiere el GRANT |
-| `reservas_draft`, `reservas_dashboard_reservation_decisions` (lectura) | accesibles (RLS oculta las filas sin sesión, que es lo correcto) |
+| `reservas_draft`, `reservas`, decisiones (lectura) | accesibles (la RLS oculta las filas sin sesión, que es lo correcto) |
+| Magic link (`/auth/v1/otp`) | HTTP 200 para un correo autorizado: el envío funciona |
 | CDN de la librería de Supabase | responde HTTP 200 |
+| Firma de sesiones | clave asimétrica **ES256** (`/auth/v1/.well-known/jwks.json`) |
 
-> Nota: `reservas_draft` no tiene columna `updated_at`; su marca de tiempo real es
-> `comprobante_revision_at` (la migración SQL ya lo respeta).
+Notas de esquema que el dashboard respeta:
+
+- `reservas_draft` no tiene `updated_at`; su marca de tiempo es `comprobante_revision_at`.
+- `reservas_draft.monto_pagado` es `numeric` pero está vacío: el monto real está en
+  `comprobante_revision_datos.monto_documento`.
+- `dashboard_reservation_decisions.decided_by` es `NOT NULL` con default `auth.uid()`:
+  el insert que hace el navegador queda cubierto por ese default.
+- `reservas_draft.estado_reserva` tiene default `'esperando_pago'`, estado que el
+  dashboard reconoce como "Pendiente de pago".
+- Columnas de operación ahora visibles en el detalle: vencimiento de la retención,
+  tiempo en proceso e intentos de pago. Además hay un aviso de urgencia cuando una
+  retención vence en menos de una hora.
 
 ## 6. Pendiente de confirmar
 
