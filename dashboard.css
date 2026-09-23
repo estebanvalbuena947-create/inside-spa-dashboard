@@ -46,6 +46,17 @@ textarea.auth-input{resize:vertical;min-height:64px}
 .reason-list{margin:6px 0 0;padding-left:16px;font-size:11.5px;color:#8a6420}
 .reason-list li{margin-bottom:2px}
 
+/* Acciones de cada fila: ver el comprobante + gestionar la pre-reserva */
+.row-actions{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.receipt-link{font-size:11.5px;font-weight:600;color:var(--sage);text-decoration:none;border-bottom:1px dashed currentColor;cursor:pointer}
+.receipt-link:hover{color:#24715e}
+.row-actions .row-action{font-size:12px;font-weight:600;color:#2f7164;background:var(--sage-soft);border-radius:20px;padding:5px 11px;white-space:nowrap}
+.row-actions .row-action:hover{background:#d8e9e2}
+.modal-receipt-link{margin-right:auto;font-size:12px}
+@media (max-width:900px){
+  .row-actions{flex-direction:column;align-items:flex-start;gap:6px}
+}
+
 /* Decisiones */
 .decision-form{padding:0 4px 6px}
 .decision-form[hidden]{display:none}

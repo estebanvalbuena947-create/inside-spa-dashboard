@@ -115,6 +115,14 @@ const isSameDay = value => isToday(value);
 
 /* ---------- Tabla de pre-reservas ---------- */
 
+/** Celda de acciones de una pre-reserva: ver el comprobante y gestionarla. */
+function rowActions(row, receipt, actionLabel) {
+  const link = isHttpsUrl(receipt?.mediaUrl)
+    ? `<a class="receipt-link" href="${safe(receipt.mediaUrl)}" target="_blank" rel="noopener noreferrer" draggable="false" title="Abrir el comprobante en una pestaña nueva" aria-label="Ver comprobante de ${safe(row.nombre || `la reserva ${row.id}`)}">Ver comprobante ↗</a>`
+    : '';
+  return `<div class="row-actions">${link}<button class="row-action" data-id="${row.id}" aria-label="${safe(actionLabel)}">${receipt ? `${RECEIPT_MARK} ` : ''}${safe(actionLabel)}</button></div>`;
+}
+
 export function renderReservations(state) {
   const rows = state.visibleDrafts;
   const body = $('#reservationBody');
@@ -129,7 +137,7 @@ export function renderReservations(state) {
       <td><span class="date">${safe(formatDayLabel(row.scheduleDate) || 'Horario pendiente')}</span><span class="time">${safe(formatTime(row.scheduleDate) || 'Por definir')}</span></td>
       <td class="price">${amountCell(row, receipt)}</td>
       <td><span class="badge ${safe(status.key)}">${safe(status.label)}</span></td>
-      <td><button class="row-action" data-id="${row.id}" aria-label="${safe(actionLabel)}">${receipt ? `${RECEIPT_MARK} ` : ''}${safe(actionLabel)}</button></td>
+      <td>${rowActions(row, receipt, actionLabel)}</td>
     </tr>`;
   }).join('');
   const empty = $('#emptyState');
@@ -303,10 +311,16 @@ export function renderModalActions(state, draftId) {
   const actions = $('#modalActions');
   if (!actions || !draft) return;
   const status = state.statuses.get(draft.id) || { key: 'pending' };
+  const receipt = state.receipts.get(draft.id);
+  /* El comprobante se puede abrir en otra pestaña desde el propio modal, para
+     revisarlo mientras se decide. */
+  const openLink = isHttpsUrl(receipt?.mediaUrl)
+    ? `<a class="receipt-link modal-receipt-link" href="${safe(receipt.mediaUrl)}" target="_blank" rel="noopener noreferrer" draggable="false">Ver comprobante en otra pestaña ↗</a>`
+    : '';
   if (status.key === 'confirmed' || status.key === 'rejected') {
-    actions.innerHTML = '<button value="cancel" class="primary-btn" type="button" id="closeModalBtn">Cerrar</button>';
+    actions.innerHTML = `${openLink}<button value="cancel" class="primary-btn" type="button" id="closeModalBtn">Cerrar</button>`;
   } else {
-    actions.innerHTML = '<button type="button" class="reject-btn" id="requestInfoBtn">Pedir información</button><button type="button" class="reject-btn" id="rejectBtn">Rechazar</button><button type="button" class="primary-btn" id="approveBtn">Aprobar comprobante</button>';
+    actions.innerHTML = `${openLink}<button type="button" class="reject-btn" id="requestInfoBtn">Pedir información</button><button type="button" class="reject-btn" id="rejectBtn">Rechazar</button><button type="button" class="primary-btn" id="approveBtn">Aprobar comprobante</button>`;
   }
 }
 
@@ -359,6 +373,9 @@ export const setLoading = (loading, label = 'Cargando…') => {
 };
 
 export const rowActionId = event => {
+  /* Si el clic fue en el enlace del comprobante, el navegador abre el archivo y
+     no se debe abrir además el modal de gestión. */
+  if (event?.target?.closest?.('.receipt-link')) return null;
   const button = event.target.closest('.row-action');
   return button ? Number(button.dataset.id) : null;
 };

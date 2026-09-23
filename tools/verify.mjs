@@ -162,6 +162,17 @@ check('CSV escapa comas y comillas', csv.includes('"texto, con coma"') && csv.in
 check('CSV incluye BOM para Excel', csv.startsWith('\uFEFF'));
 check('isToday detecta la fecha actual', isToday(new Date()) === true);
 
+/* Los enlaces externos (comprobantes) deben abrirse de forma segura. */
+const viewSource = readFileSync(join(root, 'js', 'view.js'), 'utf8');
+const externalLinks = [...viewSource.matchAll(/target="_blank"[^>]*/g)].map(match => match[0]);
+check('Los enlaces externos usan rel="noopener noreferrer"',
+  externalLinks.length > 0 && externalLinks.every(fragment => fragment.includes('rel="noopener noreferrer"')),
+  `${externalLinks.length} enlace(s)`);
+check('La fila ofrece "Ver comprobante" junto a Gestionar',
+  /receipt-link/.test(viewSource) && /Ver comprobante/.test(viewSource));
+check('El enlace del comprobante no dispara el modal',
+  /closest\?\.\('\.receipt-link'\)/.test(viewSource) || /closest\('\.receipt-link'\)/.test(viewSource), 'rowActionId');
+
 /* ---------- 5. Columnas declaradas vs. esquema real ---------- */
 const schemaPath = join(root, 'supabase/openapi-schema.json');
 if (existsSync(schemaPath)) {

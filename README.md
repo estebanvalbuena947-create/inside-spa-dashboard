@@ -129,8 +129,7 @@ de Supabase limita a pocos correos por hora.
 | Clientes por atender | Reservas confirmadas con servicio en las próximas 24 horas |
 
 | Ocupación de hoy | Confirmadas + pre-reservas con fecha de hoy sobre 18 cupos (`CAPACITY` en `js/main.js`) |
-| Comprobantes | Un comprobante por pre-reserva (se conserva el más reciente) con enlace al archivo y datos de pago |
-| Clientes | Consolidado por correo/teléfono de pre-reservas y confirmadas |
+| Comprobantes | Un comprobante por pre-reserva (se conserva el más reciente) con enlace al archivo y datos de pago || Clientes | Consolidado por correo/teléfono de pre-reservas y confirmadas |
 | Histórico | Decisiones registradas (con usuario y nota) + reservas confirmadas |
 | Diagnóstico | Estado real de cada tabla, permisos, sesión y RPC |
 
@@ -159,6 +158,12 @@ Desde la fila de una pre-reserva (o desde la tarjeta del comprobante):
 4. Se puede dejar una **nota** que queda en el histórico.
 5. El dashboard llama al RPC `process_dashboard_reservation_decision`, que actualiza el estado
    y registra la decisión con el correo del usuario.
+
+**Ver el comprobante sin salir del panel:** cada fila con evidencia muestra el enlace
+**"Ver comprobante ↗"** junto al botón de gestión, y el modal de detalle repite el enlace
+**"Ver comprobante en otra pestaña ↗"** para revisarlo mientras se decide. Los enlaces se abren
+con `target="_blank" rel="noopener noreferrer"` y, si la evidencia no tiene archivo adjunto,
+el panel lo indica en vez de mostrar un enlace roto.
 
 Si el RPC no existe todavía, el panel lo dice y guarda la decisión por la vía alternativa
 (inserta en `dashboard_reservation_decisions` y actualiza `reservas_draft`). Nunca muestra

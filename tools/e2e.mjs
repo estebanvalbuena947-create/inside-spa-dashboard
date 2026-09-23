@@ -49,6 +49,8 @@ console.log(`Librería: @supabase/supabase-js oficial desde .vendor/\n`);
 
 const doc = globalThis.document;
 const parseRows = id => (doc.getElementById(id)?.innerHTML.match(/<tr>/g) || []).length;
+/* Se importa view.js directamente para probar el manejador de clics de las filas. */
+const { rowActionId } = await import(pathToFileURL(join(root, 'js/view.js')).href);
 
 /* ---------- 1. Sin sesión ---------- */
 await import(pathToFileURL(join(root, 'js/main.js')).href + `?run=${Date.now()}`);
@@ -92,6 +94,26 @@ check('La interfaz muestra el aviso de retención', doc.getElementById('holdAler
 check('Métrica "por gestionar" en pantalla', doc.getElementById('pendingMetric')?.textContent === '3', doc.getElementById('pendingMetric')?.textContent);
 check('Métrica de ingresos en pantalla', doc.getElementById('revenueMetric')?.textContent === '$1,000', doc.getElementById('revenueMetric')?.textContent);
 check('Tabla con las 5 pre-reservas', parseRows('reservationBody') === 5, String(parseRows('reservationBody')));
+const tableMarkup = doc.getElementById('reservationBody')?.innerHTML || '';
+check('Cada fila con comprobante ofrece verlo', (tableMarkup.match(/receipt-link/g) || []).length === 1,
+  `${(tableMarkup.match(/receipt-link/g) || []).length} enlace(s)`);
+check('El enlace abre el comprobante en otra pestaña',
+  /class="receipt-link" href="https:\/\/files\.test\/comprobante-189\.jpg" target="_blank" rel="noopener noreferrer"/.test(tableMarkup),
+  (tableMarkup.match(/<a class="receipt-link"[^>]*>/) || ['(sin enlace)'])[0]);
+check('El enlace del comprobante no abre el modal', (() => {
+  const event = { target: { closest: selector => (selector === '.receipt-link' ? {} : null) } };
+  return rowActionId(event) === null;
+})());
+
+/* El modal de gestión también debe permitir abrir el comprobante. */
+const { renderReservationModal, renderModalActions } = await import(pathToFileURL(join(root, 'js/view.js')).href);
+renderReservationModal(app.state, 189);
+renderModalActions(app.state, 189);
+const actionsMarkup = doc.getElementById('modalActions')?.innerHTML || '';
+check('El modal ofrece abrir el comprobante en otra pestaña',
+  /modal-receipt-link/.test(actionsMarkup) && /target="_blank" rel="noopener noreferrer"/.test(actionsMarkup),
+  actionsMarkup.slice(0, 120));
+check('El modal mantiene las tres decisiones', ['approveBtn', 'rejectBtn', 'requestInfoBtn'].every(id => actionsMarkup.includes(id)));
 check('Clientes consolidados = 7 (5 pre-reservas + 2 confirmadas)', parseRows('clientBody') === 7, `filas: ${parseRows('clientBody')}`);
 check('Histórico con la reserva confirmada', /Reserva confirmada/.test(doc.getElementById('decisionList')?.innerHTML || ''));
 
