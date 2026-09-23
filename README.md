@@ -44,8 +44,11 @@ js/domain.js               Reglas de negocio: estados, decisiones, filtros, KPIs
 js/data.js                 Consultas a Supabase, tolerancia a esquema, errores legibles, diagnóstico
 js/view.js                 Render del HTML (tablas, tarjetas, modales, toast)
 js/main.js                 Sesión, carga de datos, decisiones, refresco automático, exportación
-tools/verify.mjs           Pruebas automáticas sin navegador (49 comprobaciones)
+tools/verify.mjs           Pruebas automáticas sin navegador (56 comprobaciones)
 tools/smoke.mjs            Arranca la app completa con un DOM simulado (25 pasos)
+tools/audit-db.mjs         Auditoría de la base real (esquema, filas, estados, KPIs)
+tools/check-authenticated.mjs  Valida RLS y permisos con una sesión authenticated
+docs/AUDITORIA.md          Informe de la auditoría (qué estaba roto y qué se corrigió)
 supabase/APLICAR_EN_SUPABASE.sql   Migración + auditoría de la base (LEER SECCIÓN 3)
 app.js                     Obsoleto: solo redirige al código nuevo (se puede borrar)
 ```
@@ -72,6 +75,10 @@ El script:
 > Los correos autorizados están en dos sitios que deben coincidir:
 > `supabase-config.js` → `allowedEmails` y el SQL → `inside_spa_dashboard_emails()`.
 
+**La forma más rápida de saber si falta algo:** inicia sesión en el dashboard y entra a la
+sección **Diagnóstico**. Con tu propia sesión revisa permisos, políticas, RPC y escritura, y
+dice exactamente qué ejecutar.
+
 ---
 
 ## 4. Acceso (login)
@@ -92,10 +99,11 @@ de Supabase limita a pocos correos por hora.
 
 | Elemento | Cálculo |
 | --- | --- |
-| Pre-reservas por gestionar | Pre-reservas en estado pendiente, por revisar, información solicitada o en confirmación |
-| Confirmadas hoy | Reservas de `reservas` con `pabau_confirmado_at` de hoy + pre-reservas aprobadas hoy |
+| Pre-reservas por gestionar | Pre-reservas en estado pendiente, por revisar, información solicitada, en confirmación o creando retención |
+| Confirmadas hoy | Reservas de `reservas` con `pabau_confirmado_at` de hoy + pre-reservas aprobadas hoy (día según la zona horaria del spa) |
 | Ingresos confirmados hoy | Suma de montos de quienes se confirmaron hoy (acepta montos en texto: `"$1,200.50"`) |
 | Clientes por atender | Reservas confirmadas con servicio en las próximas 24 horas |
+
 | Ocupación de hoy | Confirmadas + pre-reservas con fecha de hoy sobre 18 cupos (`CAPACITY` en `js/main.js`) |
 | Comprobantes | Un comprobante por pre-reserva (se conserva el más reciente) con enlace al archivo y datos de pago |
 | Clientes | Consolidado por correo/teléfono de pre-reservas y confirmadas |
@@ -157,8 +165,10 @@ Entra a la sección **Diagnóstico** y pulsa *Revisar ahora*. Revisa, con tu pro
 ## 8. Verificación local (sin navegador)
 
 ```powershell
-node tools/verify.mjs   # 49 comprobaciones de lógica y estructura
-node tools/smoke.mjs    # 25 pasos: arranca la app completa con un DOM simulado
+node tools/verify.mjs             # 56 comprobaciones de lógica y estructura
+node tools/smoke.mjs              # 25 pasos: arranca la app completa con un DOM simulado
+node tools/audit-db.mjs           # audita la base real (esquema, filas, estados y KPIs)
+node tools/check-authenticated.mjs # valida RLS/permisos con una sesión autenticada
 ```
 
 - **`verify.mjs`**: sintaxis, que cada `#id` usado por JS exista en el HTML, que cada enlace del
@@ -167,6 +177,12 @@ node tools/smoke.mjs    # 25 pasos: arranca la app completa con un DOM simulado
 - **`smoke.mjs`**: monta un DOM con los `#id` reales, sustituye la librería de Supabase por un
   doble y ejecuta `js/main.js`: arranque, carga de las 4 tablas, render de todas las vistas,
   filtros, diagnóstico, modal de detalle y refresco. Falla si algo lanza una excepción.
+- **`audit-db.mjs`**: contra la base real. Sin credenciales solo comprueba el acceso público; con
+  `SUPABASE_SERVICE_ROLE_KEY` en `.env.local` lista el esquema real, cuenta filas, resume estados y
+  calcula los KPIs del dashboard con datos de producción (`--json`, `--sample N`).
+- **`check-authenticated.mjs`**: firma un JWT de prueba con el rol `authenticated` (requiere
+  `SUPABASE_JWT_SECRET` en `.env.local`) y comprueba exactamente lo que verá el navegador del
+  equipo: lectura de las 4 tablas y el RPC de decisiones bajo RLS.
 
 ---
 
@@ -175,17 +191,25 @@ node tools/smoke.mjs    # 25 pasos: arranca la app completa con un DOM simulado
 | Quiero cambiar | Dónde |
 | --- | --- |
 | Correos con acceso | `supabase-config.js` **y** `inside_spa_dashboard_emails()` en el SQL |
+| Zona horaria de la operación | `timeZone` en `supabase-config.js` (por defecto `America/Mexico_City`) |
 | Capacidad diaria (18 cupos) | `CAPACITY` en `js/main.js` |
 | Frecuencia de refresco (60 s) | `REFRESH_MS` en `js/main.js` |
 | Estados reconocidos | `CONFIRMED_STATES`, `REVIEW_STATES`, `PROCESSING_STATES`, `REJECTED_STATES` en `js/domain.js` |
+| Textos de los motivos de revisión de n8n | `PAYMENT_REASON_LABELS` en `js/domain.js` |
 | Color/estilo de un badge | `dashboard.css` |
 
 ---
 
 ## 10. Límites conocidos
 
-- Se leen hasta 500 filas por tabla (por rendimiento). Si la operación supera ese volumen
-  conviene paginar o filtrar por fecha desde el servidor.
+- Se leen hasta 500 filas por tabla (por rendimiento). Hoy hay 18 pre-reservas y 10 confirmadas,
+  así que entra todo; si la operación crece conviene paginar o filtrar por fecha en el servidor.
+- En esta base `reservas_draft.monto_pagado` está vacío: el monto se lee de
+  `comprobante_revision_datos` (`monto_documento`). El dashboard indica en pantalla el origen del dato.
+- Algunas pre-reservas no tienen monto en ningún lado porque el cliente todavía no paga; esas
+  aparecen sin valor y suman a "por gestionar", no a "por confirmar".
 - El diagnóstico inserta un registro de prueba en `dashboard_reservation_decisions` y lo borra;
   si el borrado no está permitido, solo deja el aviso (la decisión no se ve afectada).
 - El correo del usuario queda guardado en el histórico de decisiones (`decided_by_email`).
+
+El detalle completo de la auditoría está en `docs/AUDITORIA.md`.

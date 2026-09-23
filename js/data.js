@@ -1,8 +1,10 @@
-﻿/* Capa de datos: consultas a Supabase tolerantes a diferencias de esquema.
-   Nunca inventa datos: si algo falta o estÃ¡ bloqueado, lo reporta. */
+/* Capa de datos: consultas a Supabase tolerantes a diferencias de esquema.
+   Nunca inventa datos: si algo falta o está bloqueado, lo reporta. */
 
 import { pick } from './core.js?v=2.0.0';
-import { normalizeConfirmed, normalizeDecision, normalizeDraft, normalizeReceipt } from './domain.js?v=2.0.0';
+import {
+  normalizeConfirmed, normalizeDecision, normalizeDraft, normalizeReceipt, receiptFromEvidence, visibleAmount
+} from './domain.js?v=2.0.0';
 
 export const TABLE = {
   drafts: 'reservas_draft',
@@ -14,29 +16,29 @@ export const TABLE = {
 export const DECISION_RPC = 'process_dashboard_reservation_decision';
 export const PAGE_LIMIT = 500;
 
-/* Columnas confirmadas por auditorÃ­a externa. Si alguna no existe en el
-   proyecto, la consulta cae automÃ¡ticamente a select('*'). */
+/* Columnas reales del proyecto (verificadas contra la base). Si alguna no
+   existiera, la consulta cae automáticamente a select('*'). */
 const COLUMNS = {
-  reservas_draft: 'id,nombre,email,phone,telefono,nombre_servicio,servicio,masaje_inicio,jacuzzi_inicio,fecha_reserva,monto_pagado,moneda_pago,estado_reserva,reserva_confirmada,comprobante_revision_at,actualizado_at,updated_at',
-  reservas: 'id,nombre,email,phone,telefono,nombre_servicio,masaje_inicio,jacuzzi_inicio,fecha_reserva,monto_pagado,moneda_pago,reserva_confirmada,pabau_confirmado_at,sucursal,updated_at',
-  spa_comprobantes_pago: 'reserva_draft_id,estado,datos,media_url,url,monto_pago,fecha_pago,referencia,metodo,creado_at,actualizado_at',
+  reservas_draft: 'id,nombre,email,phone,nombre_servicio,servicio,masaje_inicio,jacuzzi_inicio,monto_pagado,moneda_pago,estado_reserva,reserva_confirmada,pago_recibido,horario_pendiente,motivo_revision,comprobante_revision_at,comprobante_revision_datos,updated_at',
+  reservas: 'id,nombre,email,phone,nombre_servicio,masaje_inicio,jacuzzi_inicio,monto_pagado,moneda_pago,reserva_confirmada,pabau_confirmado_at,sucursal,updated_at',
+  spa_comprobantes_pago: 'huella,reserva_draft_id,subscriber_id,estado,datos,creado_at,actualizado_at',
   dashboard_reservation_decisions: 'id,reservation_draft_id,action,note,previous_status,resulting_status,decided_by_email,created_at'
 };
 
 const ORDER_CANDIDATES = {
-  reservas_draft: ['comprobante_revision_at', 'actualizado_at', 'updated_at', 'id'],
-  reservas: ['pabau_confirmado_at', 'updated_at', 'id'],
+  reservas_draft: ['comprobante_revision_at', 'id'],
+  reservas: ['pabau_confirmado_at', 'id'],
   spa_comprobantes_pago: ['actualizado_at', 'creado_at', 'reserva_draft_id'],
   dashboard_reservation_decisions: ['created_at', 'id']
 };
 
 const MESSAGES = {
-  not_logged: 'Inicia sesiÃ³n con una cuenta autorizada para ver los datos.',
+  not_logged: 'Inicia sesión con una cuenta autorizada para ver los datos.',
   missing_table: table => `La tabla ${table} no existe en este proyecto de Supabase.`,
-  missing_column: (table, message) => `Falta una columna esperada en ${table} (${message}). Revisa la migraciÃ³n SQL.`,
-  permission: table => `Tu cuenta no tiene permiso de lectura sobre ${table} (falta GRANT/RLS). Hay que ejecutar la migraciÃ³n SQL.`,
-  rls: table => `Las polÃ­ticas RLS de ${table} no permiten ver estas filas a tu cuenta. Hay que ejecutar la migraciÃ³n SQL.`,
-  network: 'No se pudo conectar con Supabase. Revisa tu conexiÃ³n a internet.'
+  missing_column: (table, message) => `Falta una columna esperada en ${table} (${message}). Revisa la migración SQL.`,
+  permission: table => `Tu cuenta no tiene permiso de lectura sobre ${table} (falta GRANT/RLS). Hay que ejecutar la migración SQL.`,
+  rls: table => `Las políticas RLS de ${table} no permiten ver estas filas a tu cuenta. Hay que ejecutar la migración SQL.`,
+  network: 'No se pudo conectar con Supabase. Revisa tu conexión a internet.'
 };
 
 export class DataError extends Error {
@@ -142,6 +144,27 @@ export async function loadDashboard(supabase, { onProgress } = {}) {
     });
 
   const drafts = (draftsResult.data || []).map(normalizeDraft).filter(row => Number.isFinite(row.id));
+
+  /* La evidencia guardada en la pre-reserva completa lo que falte del comprobante
+     (monto, archivo, motivos de revisión) cuando no hay fila en la tabla. */
+  drafts.forEach(draft => {
+    const stored = receipts.get(draft.id);
+    const fromEvidence = receiptFromEvidence(draft);
+    if (!stored && fromEvidence) { receipts.set(draft.id, fromEvidence); return; }
+    if (stored && fromEvidence) {
+      receipts.set(draft.id, {
+        ...fromEvidence,
+        ...Object.fromEntries(Object.entries(stored).filter(([, value]) => value !== null && value !== undefined && value !== '' && !(Array.isArray(value) && !value.length))),
+        datos: { ...fromEvidence.datos, ...stored.datos },
+        fromEvidence: false
+      });
+    }
+    if (!draft.monto) {
+      const resolved = visibleAmount(draft, receipts.get(draft.id));
+      if (resolved.amount) draft.monto = resolved.amount;
+    }
+  });
+
   const decisions = (decisionsResult.data || []).map(normalizeDecision);
   const confirmed = (confirmedResult.data || []).map(normalizeConfirmed).filter(row => Number.isFinite(row.id));
 
@@ -163,8 +186,8 @@ export async function loadDashboard(supabase, { onProgress } = {}) {
 const NEXT_STATE = { approved: 'confirmado', rejected: 'rechazado', needs_info: 'requiere_revision' };
 
 /**
- * Registra una decisiÃ³n. Primero intenta el RPC oficial; si no existe,
- * usa una vÃ­a alternativa equivalente y avisa cuÃ¡l se usÃ³.
+ * Registra una decisión. Primero intenta el RPC oficial; si no existe,
+ * usa una vía alternativa equivalente y avisa cuál se usó.
  */
 export async function decide(supabase, { draftId, action, note, previousStatus, userEmail }) {
   const rpc = await supabase.rpc(DECISION_RPC, {
@@ -179,7 +202,7 @@ export async function decide(supabase, { draftId, action, note, previousStatus, 
     throw new DataError(rpcKind === 'permission' ? 'permission' : rpcKind, describeError(rpc.error, TABLE.decisions), { step: 'rpc', error: rpc.error });
   }
 
-  // VÃ­a alternativa: registrar la decisiÃ³n y actualizar el estado de la pre-reserva.
+  // Vía alternativa: registrar la decisión y actualizar el estado de la pre-reserva.
   const payloads = [
     { reservation_draft_id: Number(draftId), action, note: note ? String(note) : null, previous_status: previousStatus || null, resulting_status: NEXT_STATE[action] || null, decided_by_email: userEmail || null },
     { reservation_draft_id: Number(draftId), action, note: note ? String(note) : null },
@@ -196,7 +219,7 @@ export async function decide(supabase, { draftId, action, note, previousStatus, 
 
   const stateError = await applyDraftState(supabase, draftId, action);
   if (!inserted && stateError) {
-    throw new DataError('fallback_failed', `No se pudo registrar la decisiÃ³n: ${describeError(stateError, TABLE.drafts)}`, { insertError, stateError });
+    throw new DataError('fallback_failed', `No se pudo registrar la decisión: ${describeError(stateError, TABLE.drafts)}`, { insertError, stateError });
   }
   if (!inserted && !stateError) return { via: 'status_only' };
   if (inserted && stateError) return { via: 'decision_only', warning: describeError(stateError, TABLE.drafts) };
@@ -221,26 +244,26 @@ async function applyDraftState(supabase, draftId, action) {
   return lastError;
 }
 
-/* ---------- DiagnÃ³stico ---------- */
+/* ---------- Diagnóstico ---------- */
 
 export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], session }) {
   const checks = [];
   const push = (name, status, detail, extra = {}) => checks.push({ name, status, detail, ...extra });
 
   const config = window.INSIDE_SPA_SUPABASE || {};
-  push('Clave pÃºblica configurada', config.publishableKey?.startsWith?.('sb_') ? 'ok' : 'fail',
+  push('Clave pública configurada', config.publishableKey?.startsWith?.('sb_') ? 'ok' : 'fail',
     config.publishableKey ? 'Clave publishable detectada.' : 'No hay publishableKey en supabase-config.js.');
-  push('Proyecto Supabase', /^https:\/\/.+\.supabase\.co$/.test(String(config.url || '')) ? 'ok' : 'fail', config.url || 'URL invÃ¡lida.');
+  push('Proyecto Supabase', /^https:\/\/.+\.supabase\.co$/.test(String(config.url || '')) ? 'ok' : 'fail', config.url || 'URL inválida.');
 
   if (!session?.user) {
-    push('SesiÃ³n', 'fail', 'No hay sesiÃ³n activa.');
+    push('Sesión', 'fail', 'No hay sesión activa.');
   } else {
-    push('SesiÃ³n', 'ok', `SesiÃ³n iniciada como ${session.user.email}.`);
+    push('Sesión', 'ok', `Sesión iniciada como ${session.user.email}.`);
     const authorized = !allowedEmails.length || allowedEmails.includes(String(userEmail || '').toLowerCase());
-    push('Correo autorizado', authorized ? 'ok' : 'fail', authorized ? 'El correo estÃ¡ en la lista permitida.' : 'El correo no estÃ¡ en allowedEmails.');
+    push('Correo autorizado', authorized ? 'ok' : 'fail', authorized ? 'El correo está en la lista permitida.' : 'El correo no está en allowedEmails.');
     const expires = session.expires_at ? new Date(session.expires_at * 1000) : null;
     push('Vigencia del token', expires && expires.getTime() > Date.now() ? 'ok' : 'warn',
-      expires ? `Vence el ${expires.toLocaleString('es-MX')}.` : 'No se pudo leer la expiraciÃ³n.');
+      expires ? `Vence el ${expires.toLocaleString('es-MX')}.` : 'No se pudo leer la expiración.');
   }
 
   for (const [label, table] of [['Pre-reservas', TABLE.drafts], ['Comprobantes', TABLE.receipts], ['Decisiones', TABLE.decisions], ['Reservas confirmadas', TABLE.confirmed]]) {
@@ -248,12 +271,12 @@ export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], 
     if (probe.error) {
       const kind = classifyError(probe.error, table);
       const status = kind === 'missing_table' ? 'fail' : kind === 'permission' || kind === 'rls' ? 'fail' : 'warn';
-      push(`Lectura Â· ${label}`, status, `${describeError(probe.error, table)} [${kind}${probe.error.code ? ` Â· ${probe.error.code}` : ''}]`);
+      push(`Lectura · ${label}`, status, `${describeError(probe.error, table)} [${kind}${probe.error.code ? ` · ${probe.error.code}` : ''}]`);
       continue;
     }
     const count = await supabase.from(table).select('*', { count: 'exact', head: true });
     const total = count.error ? null : count.count;
-    push(`Lectura Â· ${label}`, 'ok', total === null ? 'Accesible.' : `Accesible Â· ${total} fila(s) visibles para tu cuenta.`);
+    push(`Lectura · ${label}`, 'ok', total === null ? 'Accesible.' : `Accesible · ${total} fila(s) visibles para tu cuenta.`);
   }
 
   const rpcProbe = await supabase.rpc(DECISION_RPC, {
@@ -262,12 +285,12 @@ export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], 
     p_note: 'diagnostico'
   });
   if (!rpcProbe.error) {
-    push('DecisiÃ³n Â· RPC', 'warn', 'El RPC respondiÃ³ sin error para una reserva inexistente; revisa la validaciÃ³n interna.');
+    push('Decisión · RPC', 'warn', 'El RPC respondió sin error para una reserva inexistente; revisa la validación interna.');
   } else {
     const kind = classifyError(rpcProbe.error, TABLE.decisions);
-    if (kind === 'missing_function') push('DecisiÃ³n Â· RPC', 'fail', `La funciÃ³n ${DECISION_RPC} no estÃ¡ en el esquema.`);
-    else if (/not authorized|no autorizado/i.test(String(rpcProbe.error.message))) push('DecisiÃ³n Â· RPC', 'ok', 'La funciÃ³n existe y valida al usuario autorizado.');
-    else push('DecisiÃ³n Â· RPC', kind === 'permission' ? 'fail' : 'warn', `${rpcProbe.error.message} [${kind}]`);
+    if (kind === 'missing_function') push('Decisión · RPC', 'fail', `La función ${DECISION_RPC} no está en el esquema.`);
+    else if (/not authorized|no autorizado/i.test(String(rpcProbe.error.message))) push('Decisión · RPC', 'ok', 'La función existe y valida al usuario autorizado.');
+    else push('Decisión · RPC', kind === 'permission' ? 'fail' : 'warn', `${rpcProbe.error.message} [${kind}]`);
   }
 
   const insertProbe = await supabase.from(TABLE.decisions).insert({
@@ -276,22 +299,22 @@ export async function runDiagnostics(supabase, { userEmail, allowedEmails = [], 
     note: 'diagnostico-automatico-descartable'
   }).select().limit(1);
   if (!insertProbe.error) {
-    push('Escritura Â· decisiones', 'ok', 'La tabla de decisiones acepta registros del dashboard.');
+    push('Escritura · decisiones', 'ok', 'La tabla de decisiones acepta registros del dashboard.');
     const created = insertProbe.data?.[0];
     const id = pick(created || {}, 'id');
     if (id !== null && id !== undefined) {
       const cleanup = await supabase.from(TABLE.decisions).delete().eq('id', id);
-      push('Limpieza Â· registro de prueba', cleanup.error ? 'warn' : 'ok', cleanup.error ? `No se pudo borrar el registro de prueba: ${cleanup.error.message}` : 'Registro de prueba eliminado.');
+      push('Limpieza · registro de prueba', cleanup.error ? 'warn' : 'ok', cleanup.error ? `No se pudo borrar el registro de prueba: ${cleanup.error.message}` : 'Registro de prueba eliminado.');
     }
   } else {
     const kind = classifyError(insertProbe.error, TABLE.decisions);
-    push('Escritura Â· decisiones', 'fail', `${describeError(insertProbe.error, TABLE.decisions)} [${kind}]`);
+    push('Escritura · decisiones', 'fail', `${describeError(insertProbe.error, TABLE.decisions)} [${kind}]`);
   }
 
   return checks;
 }
 
-/* ---------- SesiÃ³n ---------- */
+/* ---------- Sesión ---------- */
 
 export async function getSession(supabase) {
   const { data, error } = await supabase.auth.getSession();

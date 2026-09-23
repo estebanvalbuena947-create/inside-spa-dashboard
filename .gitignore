@@ -1,1 +1,8 @@
+# Secretos locales: nunca se suben al repositorio.
+.env.local
 supabase/.temp/
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store

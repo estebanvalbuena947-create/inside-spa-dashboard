@@ -1,0 +1,97 @@
+# Informe de auditoría · Dashboard de reservas Inside Spa
+
+Fecha: 23 de septiembre de 2026
+Proyecto Supabase auditado: `ncutewymydclypuqlbfk` (SPA)
+Producción: https://inside-spa-dashboard.vercel.app
+
+## 1. Cómo está conectado GitHub
+
+| Pieza | Estado |
+| --- | --- |
+| Repositorio | `estebanvalbuena947-create/inside-spa-dashboard` (rama `main`) |
+| Publicación | Vercel conectado al repositorio: cada `push` a `main` publica solo |
+| Build | Ninguno: son archivos estáticos (HTML + CSS + módulos ES) |
+| Proyecto Supabase | `ncutewymydclypuqlbfk` (`https://ncutewymydclypuqlbfk.supabase.co`) |
+| Clave del navegador | `sb_publishable_...` (pública por diseño) + RLS |
+| Acceso | Magic link de Supabase Auth, correos permitidos en `supabase-config.js` |
+
+Verificación hecha: `https://inside-spa-dashboard.vercel.app` responde 200 y sirve el dashboard,
+y el commit local `988851f` está en GitHub, así que la cadena GitHub → Vercel funciona.
+
+## 2. Qué estaba roto (encontrado con auditoría real)
+
+| # | Problema | Evidencia | Impacto |
+| --- | --- | --- | --- |
+| 1 | `spa_comprobantes_pago` sin `GRANT SELECT` | `42501 permission denied for table spa_comprobantes_pago` | El dashboard no podía leer ningún comprobante |
+| 2 | `monto_pagado` de `reservas_draft` es `null` en las 18 filas | consulta con `service_role` | El valor siempre salía vacío aunque el comprobante tuviera monto |
+| 3 | El monto real vive en `comprobante_revision_datos` (JSONB) | `monto_documento: 1000` en 8 de 9 pre-reservas con evidencia | El dashboard no veía el ingreso real |
+| 4 | Ocupación y variaciones inventadas en el HTML | `72%`, `13/18`, `↑ 12% vs. ayer`, fecha fija | Datos falsos mostrados al equipo |
+| 5 | Estados reales no reconocidos: `creando_retencion`, `expirado_sin_pago` | conteo por `estado_reserva` | Reservas mal clasificadas |
+| 6 | Filtro por día con desfase de zona horaria | `toISOString()` sobre fecha local | "Hoy" se calculaba con el día equivocado |
+| 7 | Estados del menú `Comprobantes` y `Clientes` sin sección | `index.html` | Enlaces que no llevaban a ninguna parte |
+| 8 | Sin diagnóstico ni manejo claro de errores | — | Errores silenciosos: el panel se veía en ceros |
+
+## 3. Datos reales hoy (23 sep 2026)
+
+| Tabla | Filas |
+| --- | --- |
+| `reservas_draft` (pre-reservas) | 18 |
+| `reservas` (confirmadas) | 10 |
+| `spa_comprobantes_pago` | 14 |
+| `dashboard_reservation_decisions` | 0 (aún sin decisiones) |
+
+Estados reales de las pre-reservas:
+
+| Estado | Reservas | Se muestra como |
+| --- | --- | --- |
+| `requiere_revision_pago` | 8 | Por revisar |
+| `pendiente_pago` | 6 | Pendiente de pago |
+| `creando_retencion` | 1 | En confirmación |
+| `confirmado` | 1 | Confirmada |
+| `requiere_revision` | 1 | Por revisar |
+| `expirado_sin_pago` | 1 | Rechazada o expirada |
+
+KPIs calculados con esos datos reales (misma lógica del dashboard):
+
+| KPI | Valor |
+| --- | --- |
+| Por gestionar | 16 (6 pendientes + 9 por revisar/info + 1 en confirmación) |
+| Rechazadas o expiradas | 1 |
+| Monto por confirmar | $8,000 |
+| Ingresos confirmados hoy | $0 (la última confirmación fue el 22 sep 21:12, hora de Ciudad de México) |
+| Comprobantes visibles | 13 (8 recuperados de la evidencia de la propia pre-reserva) |
+| Clientes consolidados | 27 |
+| Confirmadas con servicio en 24 h | 0 |
+
+## 4. Cambios aplicados al dashboard
+
+- Código reescrito en módulos: `js/core.js`, `js/domain.js`, `js/data.js`, `js/view.js`, `js/main.js`.
+- Montos reales con origen explícito: reserva, comprobante o monto esperado (se indica en pantalla y en el CSV).
+- Evidencias del comprobante en el detalle: banco, beneficiario, cuenta, referencia, tipo de pago,
+  confianza del clasificador y los **motivos de revisión que ya calcula n8n** traducidos a texto claro.
+- Estados reales de la operación reconocidos (incluye `creando_retencion` y `expirado_sin_pago`).
+- "Hoy" se calcula con la zona horaria del negocio (`America/Mexico_City`), no con la del navegador.
+- Se eliminaron la ocupación fija, las variaciones inventadas, la fecha del encabezado y el usuario fijo.
+- Secciones nuevas y funcionales: **Comprobantes**, **Clientes** y **Diagnóstico**.
+- Decisiones con confirmación previa, nota opcional, bloqueo de doble clic, vía alternativa si el RPC
+  no existe, y registro en el histórico con el correo del usuario.
+- Refresco automático cada 60 s, refresco manual, exportación CSV con BOM y avisos legibles por error.
+- Migración SQL en `supabase/APLICAR_EN_SUPABASE.sql` (permisos, RLS y RPC de decisiones).
+
+## 5. Pendiente de confirmar
+
+1. Permisos + RLS de la **sesión autenticada**: se validan con el panel *Diagnóstico* del dashboard
+   o con `node tools/check-authenticated.mjs` (requiere `SUPABASE_JWT_SECRET` en `.env.local`).
+2. Ejecutar el SQL si el Diagnóstico reporta `FALTA` en permisos, políticas o RPC.
+3. Subir el commit a GitHub para que Vercel publique (`git push origin main`).
+
+## 6. Herramientas de verificación
+
+| Comando | Qué comprueba |
+| --- | --- |
+| `node tools/verify.mjs` | 56 comprobaciones de lógica, estados, montos, fechas, filtros y estructura |
+| `node tools/smoke.mjs` | Arranca la app completa con un DOM simulado (25 pasos) |
+| `node tools/audit-db.mjs` | Esquema real, filas reales y KPIs reales desde Supabase |
+| `node tools/check-authenticated.mjs` | Lectura de las 4 tablas y RPC con una sesión `authenticated` |
+
+> `supabase/openapi-schema.json` guarda el esquema real del proyecto (16 tablas) como referencia.

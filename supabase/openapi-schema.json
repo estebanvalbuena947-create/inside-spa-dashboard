@@ -1,0 +1,7423 @@
+{
+ "swagger": "2.0",
+ "info": {
+  "description": "",
+  "title": "standard public schema",
+  "version": "14.5"
+ },
+ "host": "ncutewymydclypuqlbfk.supabase.co:443",
+ "basePath": "/",
+ "schemes": [
+  "https"
+ ],
+ "consumes": [
+  "application/json",
+  "application/vnd.pgrst.object+json;nulls=stripped",
+  "application/vnd.pgrst.object+json",
+  "text/csv"
+ ],
+ "produces": [
+  "application/json",
+  "application/vnd.pgrst.object+json;nulls=stripped",
+  "application/vnd.pgrst.object+json",
+  "text/csv"
+ ],
+ "paths": {
+  "/": {
+   "get": {
+    "produces": [
+     "application/openapi+json",
+     "application/json"
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "summary": "OpenAPI description (this document)",
+    "tags": [
+     "Introspection"
+    ]
+   }
+  },
+  "/spa_reservation_state": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.session_key"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.reservation_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.channel"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.first_name"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.last_name"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.telefono"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.correo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.fecha"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.horario"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.numero_personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.alternatives"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.payment_link"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.payment_provider_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.link_sent_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.handoff_reason"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.version"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.last_inbound_message_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.created_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.updated_at"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/spa_reservation_state"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "spa_reservation_state"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.spa_reservation_state"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "spa_reservation_state"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.session_key"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.reservation_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.channel"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.first_name"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.last_name"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.telefono"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.correo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.fecha"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.horario"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.numero_personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.alternatives"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.payment_link"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.payment_provider_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.link_sent_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.handoff_reason"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.version"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.last_inbound_message_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.created_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.updated_at"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "spa_reservation_state"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.session_key"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.reservation_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.channel"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.first_name"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.last_name"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.telefono"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.correo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.fecha"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.horario"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.numero_personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.alternatives"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.payment_link"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.payment_provider_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.link_sent_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.handoff_reason"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.version"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.last_inbound_message_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.created_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_reservation_state.updated_at"
+     },
+     {
+      "$ref": "#/parameters/body.spa_reservation_state"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "spa_reservation_state"
+    ]
+   }
+  },
+  "/dashboard_reservation_decisions": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.reservation_draft_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.action"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.previous_status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.resulting_status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.note"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.decided_by"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.decided_by_email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.created_at"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/dashboard_reservation_decisions"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "dashboard_reservation_decisions"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.dashboard_reservation_decisions"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "dashboard_reservation_decisions"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.reservation_draft_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.action"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.previous_status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.resulting_status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.note"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.decided_by"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.decided_by_email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.created_at"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "dashboard_reservation_decisions"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.reservation_draft_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.action"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.previous_status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.resulting_status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.note"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.decided_by"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.decided_by_email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.dashboard_reservation_decisions.created_at"
+     },
+     {
+      "$ref": "#/parameters/body.dashboard_reservation_decisions"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "dashboard_reservation_decisions"
+    ]
+   }
+  },
+  "/FAQs": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.FAQs.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.FAQs.Preguntas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.FAQs.Respuestas"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/FAQs"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "FAQs"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.FAQs"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "FAQs"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.FAQs.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.FAQs.Preguntas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.FAQs.Respuestas"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "FAQs"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.FAQs.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.FAQs.Preguntas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.FAQs.Respuestas"
+     },
+     {
+      "$ref": "#/parameters/body.FAQs"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "FAQs"
+    ]
+   }
+  },
+  "/n8n_execution_context": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.execution_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.workflow_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.workflow_name"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.created_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.updated_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.url_n8n"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.live_chat_url"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.nombre"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/n8n_execution_context"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "n8n_execution_context"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.n8n_execution_context"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "n8n_execution_context"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.execution_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.workflow_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.workflow_name"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.created_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.updated_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.url_n8n"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.live_chat_url"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.nombre"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "n8n_execution_context"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.execution_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.workflow_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.workflow_name"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.created_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.updated_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.url_n8n"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.live_chat_url"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_execution_context.nombre"
+     },
+     {
+      "$ref": "#/parameters/body.n8n_execution_context"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "n8n_execution_context"
+    ]
+   }
+  },
+  "/reservas_draft_historico": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.reserva_draft_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.datos_originales"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.retencion_pabau_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.archivado_en"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.motivo_archivo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.prueba_cancelacion"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/reservas_draft_historico"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "summary": "Copia completa previa al borrado por flujo 4.1; conserva la fecha original para el reporte diario. Sin FK al borrador para sobrevivir a su eliminación.",
+    "tags": [
+     "reservas_draft_historico"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.reservas_draft_historico"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "summary": "Copia completa previa al borrado por flujo 4.1; conserva la fecha original para el reporte diario. Sin FK al borrador para sobrevivir a su eliminación.",
+    "tags": [
+     "reservas_draft_historico"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.reserva_draft_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.datos_originales"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.retencion_pabau_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.archivado_en"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.motivo_archivo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.prueba_cancelacion"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "summary": "Copia completa previa al borrado por flujo 4.1; conserva la fecha original para el reporte diario. Sin FK al borrador para sobrevivir a su eliminación.",
+    "tags": [
+     "reservas_draft_historico"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.reserva_draft_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.datos_originales"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.retencion_pabau_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.archivado_en"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.motivo_archivo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft_historico.prueba_cancelacion"
+     },
+     {
+      "$ref": "#/parameters/body.reservas_draft_historico"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "summary": "Copia completa previa al borrado por flujo 4.1; conserva la fecha original para el reporte diario. Sin FK al borrador para sobrevivir a su eliminación.",
+    "tags": [
+     "reservas_draft_historico"
+    ]
+   }
+  },
+  "/pagos_stripe_pendientes": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.nombre_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.email_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.estado_pago_reportado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.motivo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.candidatos_reserva"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.fuente_registro"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.creado_at"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/pagos_stripe_pendientes"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "summary": "Eventos de pago pendientes de asociar. Una fila aquí no confirma pago ni reserva en reservas_draft.",
+    "tags": [
+     "pagos_stripe_pendientes"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.pagos_stripe_pendientes"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "summary": "Eventos de pago pendientes de asociar. Una fila aquí no confirma pago ni reserva en reservas_draft.",
+    "tags": [
+     "pagos_stripe_pendientes"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.nombre_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.email_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.estado_pago_reportado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.motivo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.candidatos_reserva"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.fuente_registro"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.creado_at"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "summary": "Eventos de pago pendientes de asociar. Una fila aquí no confirma pago ni reserva en reservas_draft.",
+    "tags": [
+     "pagos_stripe_pendientes"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.nombre_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.email_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.estado_pago_reportado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.motivo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.candidatos_reserva"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.fuente_registro"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.pagos_stripe_pendientes.creado_at"
+     },
+     {
+      "$ref": "#/parameters/body.pagos_stripe_pendientes"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "summary": "Eventos de pago pendientes de asociar. Una fila aquí no confirma pago ni reserva en reservas_draft.",
+    "tags": [
+     "pagos_stripe_pendientes"
+    ]
+   }
+  },
+  "/spa_comprobantes_pago": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.huella"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.reserva_draft_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.estado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.datos"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.creado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.actualizado_at"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/spa_comprobantes_pago"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "summary": "Registro de comprobantes para revisión y validación bancaria; huella única evita reutilización entre reservas. Sin FK a reservas_draft para conservar evidencia tras borrar el borrador.",
+    "tags": [
+     "spa_comprobantes_pago"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.spa_comprobantes_pago"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "summary": "Registro de comprobantes para revisión y validación bancaria; huella única evita reutilización entre reservas. Sin FK a reservas_draft para conservar evidencia tras borrar el borrador.",
+    "tags": [
+     "spa_comprobantes_pago"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.huella"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.reserva_draft_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.estado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.datos"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.creado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.actualizado_at"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "summary": "Registro de comprobantes para revisión y validación bancaria; huella única evita reutilización entre reservas. Sin FK a reservas_draft para conservar evidencia tras borrar el borrador.",
+    "tags": [
+     "spa_comprobantes_pago"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.huella"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.reserva_draft_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.estado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.datos"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.creado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_comprobantes_pago.actualizado_at"
+     },
+     {
+      "$ref": "#/parameters/body.spa_comprobantes_pago"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "summary": "Registro de comprobantes para revisión y validación bancaria; huella única evita reutilización entre reservas. Sin FK a reservas_draft para conservar evidencia tras borrar el borrador.",
+    "tags": [
+     "spa_comprobantes_pago"
+    ]
+   }
+  },
+  "/spa_outbox": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.event_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.reservation_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.event_type"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.payload"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.idempotency_key"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.sent_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.error_message"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.created_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.updated_at"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/spa_outbox"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "spa_outbox"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.spa_outbox"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "spa_outbox"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.event_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.reservation_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.event_type"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.payload"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.idempotency_key"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.sent_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.error_message"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.created_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.updated_at"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "spa_outbox"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.event_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.reservation_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.event_type"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.payload"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.status"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.idempotency_key"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.sent_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.error_message"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.created_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_outbox.updated_at"
+     },
+     {
+      "$ref": "#/parameters/body.spa_outbox"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "spa_outbox"
+    ]
+   }
+  },
+  "/inside_spa_conversation_state": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.inside_spa_conversation_state.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.inside_spa_conversation_state.ultima_interaccion"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/inside_spa_conversation_state"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "inside_spa_conversation_state"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.inside_spa_conversation_state"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "inside_spa_conversation_state"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.inside_spa_conversation_state.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.inside_spa_conversation_state.ultima_interaccion"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "inside_spa_conversation_state"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.inside_spa_conversation_state.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.inside_spa_conversation_state.ultima_interaccion"
+     },
+     {
+      "$ref": "#/parameters/body.inside_spa_conversation_state"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "inside_spa_conversation_state"
+    ]
+   }
+  },
+  "/reservas": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas.contact_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.recurso_agua_asignado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.cabinas_asignadas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.camillas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeutas_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.jacuzzi_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.masaje_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_1"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_2"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_3"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_4"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_5"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_6"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.disponible"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.link_enviado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pago_recibido"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.reserva_confirmada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.fecha_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.phone"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.service_agua_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.service_terapeuta_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.nombre_servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_reservado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.cabinas_disponibles"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.cabinas_mixtas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.rooftop_pendiente_configuracion"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.rooftop_recurso_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.rooftop_interviene_disponibilidad"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_citas_agua_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_citas_masaje_ids"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/reservas"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "reservas"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.reservas"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "reservas"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas.contact_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.recurso_agua_asignado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.cabinas_asignadas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.camillas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeutas_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.jacuzzi_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.masaje_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_1"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_2"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_3"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_4"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_5"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_6"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.disponible"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.link_enviado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pago_recibido"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.reserva_confirmada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.fecha_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.phone"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.service_agua_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.service_terapeuta_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.nombre_servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_reservado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.cabinas_disponibles"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.cabinas_mixtas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.rooftop_pendiente_configuracion"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.rooftop_recurso_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.rooftop_interviene_disponibilidad"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_citas_agua_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_citas_masaje_ids"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "reservas"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas.contact_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.recurso_agua_asignado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.cabinas_asignadas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.camillas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeutas_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.jacuzzi_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.masaje_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_1"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_2"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_3"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_4"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_5"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.terapeuta_6"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.disponible"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.link_enviado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pago_recibido"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.reserva_confirmada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.fecha_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.phone"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.service_agua_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.service_terapeuta_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.nombre_servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_reservado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.cabinas_disponibles"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.cabinas_mixtas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.rooftop_pendiente_configuracion"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.rooftop_recurso_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.rooftop_interviene_disponibilidad"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_citas_agua_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas.pabau_citas_masaje_ids"
+     },
+     {
+      "$ref": "#/parameters/body.reservas"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "reservas"
+    ]
+   }
+  },
+  "/spa_processed_events": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_processed_events.channel"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_processed_events.inbound_message_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_processed_events.processed_at"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/spa_processed_events"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "spa_processed_events"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.spa_processed_events"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "spa_processed_events"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_processed_events.channel"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_processed_events.inbound_message_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_processed_events.processed_at"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "spa_processed_events"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.spa_processed_events.channel"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_processed_events.inbound_message_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.spa_processed_events.processed_at"
+     },
+     {
+      "$ref": "#/parameters/body.spa_processed_events"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "spa_processed_events"
+    ]
+   }
+  },
+  "/booking_state": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.estado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.servicio_usuario"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.fecha"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.horario"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.numero_personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.telefono"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.correo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.ultimo_campo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.link_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.updated_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.plantilla_enviada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.ultima_accion_bot"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.contexto_operativo"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/booking_state"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "booking_state"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.booking_state"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "booking_state"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.estado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.servicio_usuario"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.fecha"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.horario"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.numero_personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.telefono"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.correo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.ultimo_campo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.link_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.updated_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.plantilla_enviada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.ultima_accion_bot"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.contexto_operativo"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "booking_state"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.estado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.servicio_usuario"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.fecha"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.horario"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.numero_personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.telefono"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.correo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.ultimo_campo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.link_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.updated_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.plantilla_enviada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.ultima_accion_bot"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.booking_state.contexto_operativo"
+     },
+     {
+      "$ref": "#/parameters/body.booking_state"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "booking_state"
+    ]
+   }
+  },
+  "/reservas_draft": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.contact_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.recurso_agua_asignado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.cabinas_asignadas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.camillas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeutas_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.jacuzzi_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.masaje_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_1"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_2"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_3"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_4"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_5"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_6"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.disponible"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.link_enviado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pago_recibido"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.reserva_confirmada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.fecha_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.phone"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.service_agua_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.service_terapeuta_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.nombre_servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.estado_reserva"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.intentos_datos"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.procesando_desde"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_reservado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.numero_personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.recursos_agua_asignados"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.jacuzzis_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.horario_pendiente"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_7"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_8"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_9"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_10"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_11"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_12"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_13"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_14"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_15"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_16"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_17"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_18"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.cabinas_disponibles"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.cabinas_mixtas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.rooftop_pendiente_configuracion"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.rooftop_recurso_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.rooftop_interviene_disponibilidad"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_citas_agua_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_citas_masaje_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.retencion_pabau_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.retencion_expira_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.retencion_cancelada_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.intentos_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.motivo_revision"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.solicitud_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.bloqueo_liberacion_por_comprobante"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.comprobante_revision_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.comprobante_revision_datos"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/reservas_draft"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "reservas_draft"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.reservas_draft"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "reservas_draft"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.contact_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.recurso_agua_asignado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.cabinas_asignadas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.camillas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeutas_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.jacuzzi_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.masaje_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_1"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_2"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_3"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_4"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_5"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_6"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.disponible"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.link_enviado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pago_recibido"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.reserva_confirmada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.fecha_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.phone"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.service_agua_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.service_terapeuta_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.nombre_servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.estado_reserva"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.intentos_datos"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.procesando_desde"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_reservado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.numero_personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.recursos_agua_asignados"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.jacuzzis_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.horario_pendiente"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_7"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_8"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_9"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_10"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_11"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_12"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_13"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_14"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_15"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_16"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_17"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_18"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.cabinas_disponibles"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.cabinas_mixtas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.rooftop_pendiente_configuracion"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.rooftop_recurso_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.rooftop_interviene_disponibilidad"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_citas_agua_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_citas_masaje_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.retencion_pabau_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.retencion_expira_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.retencion_cancelada_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.intentos_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.motivo_revision"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.solicitud_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.bloqueo_liberacion_por_comprobante"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.comprobante_revision_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.comprobante_revision_datos"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "reservas_draft"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.contact_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.recurso_agua_asignado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.cabinas_asignadas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.camillas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeutas_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.jacuzzi_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.masaje_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_1"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_2"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_3"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_4"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_5"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_6"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.disponible"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.link_enviado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pago_recibido"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.reserva_confirmada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.fecha_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.phone"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.service_agua_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.service_terapeuta_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.nombre_servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.estado_reserva"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.intentos_datos"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.procesando_desde"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_reservado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.numero_personas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.recursos_agua_asignados"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.jacuzzis_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.horario_pendiente"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_7"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_8"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_9"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_10"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_11"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_12"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_13"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_14"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_15"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_16"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_17"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.terapeuta_18"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.cabinas_disponibles"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.cabinas_mixtas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.rooftop_pendiente_configuracion"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.rooftop_recurso_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.rooftop_interviene_disponibilidad"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_citas_agua_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.pabau_citas_masaje_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.retencion_pabau_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.retencion_expira_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.retencion_cancelada_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.intentos_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.motivo_revision"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.solicitud_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.bloqueo_liberacion_por_comprobante"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.comprobante_revision_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_draft.comprobante_revision_datos"
+     },
+     {
+      "$ref": "#/parameters/body.reservas_draft"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "reservas_draft"
+    ]
+   }
+  },
+  "/documents": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.documents.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.documents.content"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.documents.metadata"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.documents.embedding"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/documents"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "documents"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.documents"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "documents"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.documents.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.documents.content"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.documents.metadata"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.documents.embedding"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "documents"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.documents.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.documents.content"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.documents.metadata"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.documents.embedding"
+     },
+     {
+      "$ref": "#/parameters/body.documents"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "documents"
+    ]
+   }
+  },
+  "/reservas_historico": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.contact_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.recurso_agua_asignado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.cabinas_asignadas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.camillas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeutas_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.jacuzzi_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.masaje_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_1"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_2"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_3"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_4"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_5"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_6"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.disponible"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.link_enviado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pago_recibido"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.reserva_confirmada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.fecha_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.phone"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.service_agua_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.service_terapeuta_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.nombre_servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_reservado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.cabinas_disponibles"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.cabinas_mixtas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.rooftop_pendiente_configuracion"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.rooftop_recurso_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.rooftop_interviene_disponibilidad"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_citas_agua_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_citas_masaje_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.archivado_en"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.ejecucion_archivo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.datos_originales"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/reservas_historico"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "summary": "Reservas de días anteriores, copiadas íntegramente antes de retirarlas de public.reservas. No cancela citas de Pabau ni modifica pagos.",
+    "tags": [
+     "reservas_historico"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.reservas_historico"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "summary": "Reservas de días anteriores, copiadas íntegramente antes de retirarlas de public.reservas. No cancela citas de Pabau ni modifica pagos.",
+    "tags": [
+     "reservas_historico"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.contact_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.recurso_agua_asignado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.cabinas_asignadas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.camillas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeutas_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.jacuzzi_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.masaje_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_1"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_2"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_3"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_4"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_5"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_6"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.disponible"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.link_enviado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pago_recibido"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.reserva_confirmada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.fecha_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.phone"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.service_agua_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.service_terapeuta_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.nombre_servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_reservado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.cabinas_disponibles"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.cabinas_mixtas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.rooftop_pendiente_configuracion"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.rooftop_recurso_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.rooftop_interviene_disponibilidad"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_citas_agua_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_citas_masaje_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.archivado_en"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.ejecucion_archivo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.datos_originales"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "summary": "Reservas de días anteriores, copiadas íntegramente antes de retirarlas de public.reservas. No cancela citas de Pabau ni modifica pagos.",
+    "tags": [
+     "reservas_historico"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.contact_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.subscriber_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.recurso_agua_asignado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.cabinas_asignadas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.camillas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeutas_necesarios"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.jacuzzi_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.masaje_inicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_1"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_2"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_3"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.sucursal"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_4"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_5"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.terapeuta_6"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.disponible"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.link_enviado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pago_recibido"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.reserva_confirmada"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.fecha_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.phone"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.email"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.service_agua_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.service_terapeuta_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.nombre"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.nombre_servicio"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.stripe_checkout_session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.stripe_payment_intent_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.evento_stripe_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_reservado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_confirmado_at"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.cabinas_disponibles"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.cabinas_mixtas"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.rooftop_pendiente_configuracion"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.rooftop_recurso_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.rooftop_interviene_disponibilidad"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.monto_pagado"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.moneda_pago"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_citas_agua_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.pabau_citas_masaje_ids"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.archivado_en"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.ejecucion_archivo"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.reservas_historico.datos_originales"
+     },
+     {
+      "$ref": "#/parameters/body.reservas_historico"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "summary": "Reservas de días anteriores, copiadas íntegramente antes de retirarlas de public.reservas. No cancela citas de Pabau ni modifica pagos.",
+    "tags": [
+     "reservas_historico"
+    ]
+   }
+  },
+  "/n8n_chat_histories": {
+   "get": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.message"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.created_at"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/order"
+     },
+     {
+      "$ref": "#/parameters/range"
+     },
+     {
+      "$ref": "#/parameters/rangeUnit"
+     },
+     {
+      "$ref": "#/parameters/offset"
+     },
+     {
+      "$ref": "#/parameters/limit"
+     },
+     {
+      "$ref": "#/parameters/preferCount"
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "OK",
+      "schema": {
+       "items": {
+        "$ref": "#/definitions/n8n_chat_histories"
+       },
+       "type": "array"
+      }
+     },
+     "206": {
+      "description": "Partial Content"
+     }
+    },
+    "tags": [
+     "n8n_chat_histories"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/body.n8n_chat_histories"
+     },
+     {
+      "$ref": "#/parameters/select"
+     },
+     {
+      "$ref": "#/parameters/preferPost"
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Created"
+     }
+    },
+    "tags": [
+     "n8n_chat_histories"
+    ]
+   },
+   "delete": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.message"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.created_at"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "n8n_chat_histories"
+    ]
+   },
+   "patch": {
+    "parameters": [
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.session_id"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.message"
+     },
+     {
+      "$ref": "#/parameters/rowFilter.n8n_chat_histories.created_at"
+     },
+     {
+      "$ref": "#/parameters/body.n8n_chat_histories"
+     },
+     {
+      "$ref": "#/parameters/preferReturn"
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "No Content"
+     }
+    },
+    "tags": [
+     "n8n_chat_histories"
+    ]
+   }
+  },
+  "/rpc/validar_integridad_citas_pabau": {
+   "get": {
+    "parameters": [
+     {
+      "format": "bigint",
+      "in": "query",
+      "name": "p_draft_id",
+      "required": true,
+      "type": "integer"
+     },
+     {
+      "format": "text",
+      "in": "query",
+      "name": "p_subscriber_id",
+      "required": true,
+      "type": "string"
+     }
+    ],
+    "produces": [
+     "application/json",
+     "application/vnd.pgrst.object+json;nulls=stripped",
+     "application/vnd.pgrst.object+json"
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "tags": [
+     "(rpc) validar_integridad_citas_pabau"
+    ]
+   },
+   "post": {
+    "parameters": [
+     {
+      "in": "body",
+      "name": "args",
+      "required": true,
+      "schema": {
+       "properties": {
+        "p_draft_id": {
+         "format": "bigint",
+         "type": "integer"
+        },
+        "p_subscriber_id": {
+         "format": "text",
+         "type": "string"
+        }
+       },
+       "required": [
+        "p_draft_id",
+        "p_subscriber_id"
+       ],
+       "type": "object"
+      }
+     },
+     {
+      "$ref": "#/parameters/preferParams"
+     }
+    ],
+    "produces": [
+     "application/json",
+     "application/vnd.pgrst.object+json;nulls=stripped",
+     "application/vnd.pgrst.object+json"
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "tags": [
+     "(rpc) validar_integridad_citas_pabau"
+    ]
+   }
+  },
+  "/rpc/process_dashboard_reservation_decision": {
+   "post": {
+    "parameters": [
+     {
+      "in": "body",
+      "name": "args",
+      "required": true,
+      "schema": {
+       "properties": {
+        "p_action": {
+         "format": "text",
+         "type": "string"
+        },
+        "p_note": {
+         "format": "text",
+         "type": "string"
+        },
+        "p_reservation_draft_id": {
+         "format": "bigint",
+         "type": "integer"
+        }
+       },
+       "required": [
+        "p_reservation_draft_id",
+        "p_action"
+       ],
+       "type": "object"
+      }
+     },
+     {
+      "$ref": "#/parameters/preferParams"
+     }
+    ],
+    "produces": [
+     "application/json",
+     "application/vnd.pgrst.object+json;nulls=stripped",
+     "application/vnd.pgrst.object+json"
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "tags": [
+     "(rpc) process_dashboard_reservation_decision"
+    ]
+   }
+  },
+  "/rpc/guardar_citas_retencion_pabau": {
+   "post": {
+    "parameters": [
+     {
+      "in": "body",
+      "name": "args",
+      "required": true,
+      "schema": {
+       "properties": {
+        "p_citas_agua": {
+         "format": "jsonb"
+        },
+        "p_citas_masaje": {
+         "format": "jsonb"
+        },
+        "p_reserva_draft_id": {
+         "format": "bigint",
+         "type": "integer"
+        },
+        "p_retencion_pabau_at": {
+         "format": "timestamp with time zone",
+         "type": "string"
+        },
+        "p_subscriber_id": {
+         "format": "text",
+         "type": "string"
+        }
+       },
+       "required": [
+        "p_reserva_draft_id",
+        "p_subscriber_id",
+        "p_citas_agua",
+        "p_citas_masaje",
+        "p_retencion_pabau_at"
+       ],
+       "type": "object"
+      }
+     },
+     {
+      "$ref": "#/parameters/preferParams"
+     }
+    ],
+    "produces": [
+     "application/json",
+     "application/vnd.pgrst.object+json;nulls=stripped",
+     "application/vnd.pgrst.object+json"
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "tags": [
+     "(rpc) guardar_citas_retencion_pabau"
+    ]
+   }
+  },
+  "/rpc/match_documents": {
+   "post": {
+    "parameters": [
+     {
+      "in": "body",
+      "name": "args",
+      "required": true,
+      "schema": {
+       "properties": {
+        "filter": {
+         "format": "jsonb"
+        },
+        "match_count": {
+         "format": "integer",
+         "type": "integer"
+        },
+        "query_embedding": {
+         "format": "extensions.vector",
+         "type": "string"
+        }
+       },
+       "required": [
+        "query_embedding"
+       ],
+       "type": "object"
+      }
+     },
+     {
+      "$ref": "#/parameters/preferParams"
+     }
+    ],
+    "produces": [
+     "application/json",
+     "application/vnd.pgrst.object+json;nulls=stripped",
+     "application/vnd.pgrst.object+json"
+    ],
+    "responses": {
+     "200": {
+      "description": "OK"
+     }
+    },
+    "tags": [
+     "(rpc) match_documents"
+    ]
+   }
+  }
+ },
+ "definitions": {
+  "spa_reservation_state": {
+   "required": [
+    "session_key",
+    "reservation_id",
+    "channel",
+    "subscriber_id",
+    "status",
+    "alternatives",
+    "version",
+    "created_at",
+    "updated_at"
+   ],
+   "properties": {
+    "session_key": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "text",
+     "type": "string"
+    },
+    "reservation_id": {
+     "default": "gen_random_uuid()",
+     "format": "uuid",
+     "type": "string"
+    },
+    "channel": {
+     "format": "text",
+     "type": "string"
+    },
+    "subscriber_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "status": {
+     "default": "COLLECTING",
+     "format": "text",
+     "type": "string"
+    },
+    "first_name": {
+     "format": "text",
+     "type": "string"
+    },
+    "last_name": {
+     "format": "text",
+     "type": "string"
+    },
+    "telefono": {
+     "format": "text",
+     "type": "string"
+    },
+    "correo": {
+     "format": "text",
+     "type": "string"
+    },
+    "servicio": {
+     "format": "text",
+     "type": "string"
+    },
+    "sucursal": {
+     "format": "text",
+     "type": "string"
+    },
+    "fecha": {
+     "format": "date",
+     "type": "string"
+    },
+    "horario": {
+     "format": "text",
+     "type": "string"
+    },
+    "numero_personas": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "alternatives": {
+     "format": "jsonb"
+    },
+    "payment_link": {
+     "format": "text",
+     "type": "string"
+    },
+    "payment_provider_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "link_sent_at": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "handoff_reason": {
+     "format": "text",
+     "type": "string"
+    },
+    "version": {
+     "default": 0,
+     "format": "integer",
+     "type": "integer"
+    },
+    "last_inbound_message_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "created_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "updated_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "dashboard_reservation_decisions": {
+   "required": [
+    "id",
+    "reservation_draft_id",
+    "action",
+    "previous_status",
+    "resulting_status",
+    "decided_by",
+    "decided_by_email",
+    "created_at"
+   ],
+   "properties": {
+    "id": {
+     "default": "gen_random_uuid()",
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "uuid",
+     "type": "string"
+    },
+    "reservation_draft_id": {
+     "description": "Note:\nThis is a Foreign Key to `reservas_draft.id`.<fk table='reservas_draft' column='id'/>",
+     "format": "bigint",
+     "type": "integer"
+    },
+    "action": {
+     "format": "text",
+     "type": "string"
+    },
+    "previous_status": {
+     "format": "text",
+     "type": "string"
+    },
+    "resulting_status": {
+     "format": "text",
+     "type": "string"
+    },
+    "note": {
+     "format": "text",
+     "type": "string"
+    },
+    "decided_by": {
+     "default": "auth.uid()",
+     "format": "uuid",
+     "type": "string"
+    },
+    "decided_by_email": {
+     "default": "lower((auth.jwt() ->> 'email'::text))",
+     "format": "text",
+     "type": "string"
+    },
+    "created_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "FAQs": {
+   "required": [
+    "id"
+   ],
+   "properties": {
+    "id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "smallint",
+     "type": "integer"
+    },
+    "Preguntas": {
+     "format": "text",
+     "type": "string"
+    },
+    "Respuestas": {
+     "format": "text",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "n8n_execution_context": {
+   "required": [
+    "execution_id",
+    "workflow_id",
+    "subscriber_id",
+    "created_at",
+    "updated_at"
+   ],
+   "properties": {
+    "execution_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "workflow_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "workflow_name": {
+     "format": "text",
+     "type": "string"
+    },
+    "subscriber_id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "text",
+     "type": "string"
+    },
+    "created_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "updated_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "url_n8n": {
+     "format": "text",
+     "type": "string"
+    },
+    "live_chat_url": {
+     "format": "text",
+     "type": "string"
+    },
+    "nombre": {
+     "description": "Nombre de perfil recibido de ManyChat: name, o first_name y last_name si name está vacío.",
+     "format": "text",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "reservas_draft_historico": {
+   "description": "Copia completa previa al borrado por flujo 4.1; conserva la fecha original para el reporte diario. Sin FK al borrador para sobrevivir a su eliminación.",
+   "required": [
+    "reserva_draft_id",
+    "datos_originales",
+    "archivado_en",
+    "motivo_archivo",
+    "prueba_cancelacion"
+   ],
+   "properties": {
+    "reserva_draft_id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "bigint",
+     "type": "integer"
+    },
+    "datos_originales": {
+     "format": "jsonb"
+    },
+    "retencion_pabau_at": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "pabau_confirmado_at": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "archivado_en": {
+     "default": "statement_timestamp()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "motivo_archivo": {
+     "default": "expirado_sin_pago",
+     "format": "text",
+     "type": "string"
+    },
+    "prueba_cancelacion": {
+     "format": "jsonb"
+    }
+   },
+   "type": "object"
+  },
+  "pagos_stripe_pendientes": {
+   "description": "Eventos de pago pendientes de asociar. Una fila aquí no confirma pago ni reserva en reservas_draft.",
+   "required": [
+    "stripe_checkout_session_id",
+    "evento_stripe_id",
+    "estado_pago_reportado",
+    "motivo",
+    "candidatos_reserva",
+    "fuente_registro",
+    "creado_at"
+   ],
+   "properties": {
+    "stripe_checkout_session_id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "text",
+     "type": "string"
+    },
+    "evento_stripe_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "stripe_payment_intent_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "nombre_pago": {
+     "format": "text",
+     "type": "string"
+    },
+    "email_pago": {
+     "format": "text",
+     "type": "string"
+    },
+    "monto_pagado": {
+     "format": "numeric",
+     "type": "number"
+    },
+    "moneda_pago": {
+     "format": "text",
+     "type": "string"
+    },
+    "estado_pago_reportado": {
+     "format": "text",
+     "type": "string"
+    },
+    "motivo": {
+     "format": "text",
+     "type": "string"
+    },
+    "candidatos_reserva": {
+     "format": "jsonb"
+    },
+    "fuente_registro": {
+     "default": "flujo_4_2",
+     "format": "text",
+     "type": "string"
+    },
+    "creado_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "spa_comprobantes_pago": {
+   "description": "Registro de comprobantes para revisión y validación bancaria; huella única evita reutilización entre reservas. Sin FK a reservas_draft para conservar evidencia tras borrar el borrador.",
+   "required": [
+    "huella",
+    "reserva_draft_id",
+    "subscriber_id",
+    "estado",
+    "datos",
+    "creado_at",
+    "actualizado_at"
+   ],
+   "properties": {
+    "huella": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "text",
+     "type": "string"
+    },
+    "reserva_draft_id": {
+     "format": "bigint",
+     "type": "integer"
+    },
+    "subscriber_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "estado": {
+     "default": "revision",
+     "format": "text",
+     "type": "string"
+    },
+    "datos": {
+     "format": "jsonb"
+    },
+    "creado_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "actualizado_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "spa_outbox": {
+   "required": [
+    "event_id",
+    "reservation_id",
+    "event_type",
+    "payload",
+    "status",
+    "idempotency_key",
+    "created_at",
+    "updated_at"
+   ],
+   "properties": {
+    "event_id": {
+     "default": "gen_random_uuid()",
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "uuid",
+     "type": "string"
+    },
+    "reservation_id": {
+     "description": "Note:\nThis is a Foreign Key to `spa_reservation_state.reservation_id`.<fk table='spa_reservation_state' column='reservation_id'/>",
+     "format": "uuid",
+     "type": "string"
+    },
+    "event_type": {
+     "format": "text",
+     "type": "string"
+    },
+    "payload": {
+     "format": "jsonb"
+    },
+    "status": {
+     "default": "PENDING",
+     "format": "text",
+     "type": "string"
+    },
+    "idempotency_key": {
+     "format": "text",
+     "type": "string"
+    },
+    "sent_at": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "error_message": {
+     "format": "text",
+     "type": "string"
+    },
+    "created_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "updated_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "inside_spa_conversation_state": {
+   "required": [
+    "subscriber_id",
+    "ultima_interaccion"
+   ],
+   "properties": {
+    "subscriber_id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "text",
+     "type": "string"
+    },
+    "ultima_interaccion": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "reservas": {
+   "required": [
+    "id",
+    "cabinas_mixtas",
+    "rooftop_pendiente_configuracion",
+    "rooftop_interviene_disponibilidad",
+    "pabau_citas_agua_ids",
+    "pabau_citas_masaje_ids"
+   ],
+   "properties": {
+    "contact_id": {
+     "format": "bigint",
+     "type": "integer"
+    },
+    "subscriber_id": {
+     "format": "bigint",
+     "type": "integer"
+    },
+    "recurso_agua_asignado": {
+     "format": "text",
+     "type": "string"
+    },
+    "cabinas_asignadas": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "camillas": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "terapeutas_necesarios": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "jacuzzi_inicio": {
+     "format": "timestamp without time zone",
+     "type": "string"
+    },
+    "masaje_inicio": {
+     "format": "timestamp without time zone",
+     "type": "string"
+    },
+    "terapeuta_1": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_2": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_3": {
+     "format": "text",
+     "type": "string"
+    },
+    "sucursal": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_4": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_5": {
+     "format": "text",
+     "type": "string"
+    },
+    "id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "bigint",
+     "type": "integer"
+    },
+    "terapeuta_6": {
+     "format": "text",
+     "type": "string"
+    },
+    "disponible": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "link_enviado": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "pago_recibido": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "reserva_confirmada": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "fecha_pago": {
+     "format": "text",
+     "type": "string"
+    },
+    "phone": {
+     "format": "text",
+     "type": "string"
+    },
+    "email": {
+     "format": "text",
+     "type": "string"
+    },
+    "service_agua_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "service_terapeuta_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "nombre": {
+     "format": "text",
+     "type": "string"
+    },
+    "nombre_servicio": {
+     "format": "text",
+     "type": "string"
+    },
+    "stripe_checkout_session_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "stripe_payment_intent_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "evento_stripe_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "pabau_reservado": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "pabau_confirmado_at": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "cabinas_disponibles": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "cabinas_mixtas": {
+     "default": false,
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "rooftop_pendiente_configuracion": {
+     "default": false,
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "rooftop_recurso_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "rooftop_interviene_disponibilidad": {
+     "default": false,
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "monto_pagado": {
+     "description": "Importe efectivamente abonado y validado por el proveedor de pago.",
+     "format": "numeric",
+     "type": "number"
+    },
+    "moneda_pago": {
+     "description": "Código de moneda del abono validado, por ejemplo MXN.",
+     "format": "text",
+     "type": "string"
+    },
+    "pabau_citas_agua_ids": {
+     "description": "IDs reales de las citas de agua devueltos por Pabau y conservados desde reservas_draft.",
+     "format": "jsonb"
+    },
+    "pabau_citas_masaje_ids": {
+     "description": "IDs reales de las citas de masaje devueltos por Pabau y conservados desde reservas_draft.",
+     "format": "jsonb"
+    }
+   },
+   "type": "object"
+  },
+  "spa_processed_events": {
+   "required": [
+    "channel",
+    "inbound_message_id",
+    "processed_at"
+   ],
+   "properties": {
+    "channel": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "text",
+     "type": "string"
+    },
+    "inbound_message_id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "text",
+     "type": "string"
+    },
+    "processed_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "booking_state": {
+   "required": [
+    "subscriber_id",
+    "updated_at",
+    "plantilla_enviada",
+    "contexto_operativo"
+   ],
+   "properties": {
+    "subscriber_id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "text",
+     "type": "string"
+    },
+    "estado": {
+     "default": "SIN_RESERVA",
+     "format": "text",
+     "type": "string"
+    },
+    "servicio": {
+     "format": "text",
+     "type": "string"
+    },
+    "servicio_usuario": {
+     "format": "text",
+     "type": "string"
+    },
+    "sucursal": {
+     "format": "text",
+     "type": "string"
+    },
+    "fecha": {
+     "format": "text",
+     "type": "string"
+    },
+    "horario": {
+     "format": "text",
+     "type": "string"
+    },
+    "numero_personas": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "nombre": {
+     "format": "text",
+     "type": "string"
+    },
+    "telefono": {
+     "format": "text",
+     "type": "string"
+    },
+    "correo": {
+     "format": "text",
+     "type": "string"
+    },
+    "ultimo_campo": {
+     "format": "text",
+     "type": "string"
+    },
+    "link_pago": {
+     "format": "text",
+     "type": "string"
+    },
+    "updated_at": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "plantilla_enviada": {
+     "default": false,
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "ultima_accion_bot": {
+     "format": "text",
+     "type": "string"
+    },
+    "contexto_operativo": {
+     "description": "Contexto operativo del bot: franja horaria, sucursales alternativas y validación de fecha; no confirma pagos ni citas.",
+     "format": "jsonb"
+    }
+   },
+   "type": "object"
+  },
+  "reservas_draft": {
+   "required": [
+    "id",
+    "pago_recibido",
+    "intentos_datos",
+    "pabau_reservado",
+    "recursos_agua_asignados",
+    "jacuzzis_necesarios",
+    "horario_pendiente",
+    "cabinas_mixtas",
+    "rooftop_pendiente_configuracion",
+    "rooftop_interviene_disponibilidad",
+    "pabau_citas_agua_ids",
+    "pabau_citas_masaje_ids",
+    "intentos_pago",
+    "bloqueo_liberacion_por_comprobante"
+   ],
+   "properties": {
+    "contact_id": {
+     "format": "bigint",
+     "type": "integer"
+    },
+    "subscriber_id": {
+     "format": "bigint",
+     "type": "integer"
+    },
+    "recurso_agua_asignado": {
+     "format": "text",
+     "type": "string"
+    },
+    "cabinas_asignadas": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "camillas": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "terapeutas_necesarios": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "jacuzzi_inicio": {
+     "format": "timestamp without time zone",
+     "type": "string"
+    },
+    "masaje_inicio": {
+     "format": "timestamp without time zone",
+     "type": "string"
+    },
+    "terapeuta_1": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_2": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_3": {
+     "format": "text",
+     "type": "string"
+    },
+    "sucursal": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_4": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_5": {
+     "format": "text",
+     "type": "string"
+    },
+    "id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "bigint",
+     "type": "integer"
+    },
+    "terapeuta_6": {
+     "format": "text",
+     "type": "string"
+    },
+    "disponible": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "link_enviado": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "pago_recibido": {
+     "default": false,
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "reserva_confirmada": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "fecha_pago": {
+     "format": "text",
+     "type": "string"
+    },
+    "phone": {
+     "format": "text",
+     "type": "string"
+    },
+    "email": {
+     "format": "text",
+     "type": "string"
+    },
+    "service_agua_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "service_terapeuta_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "nombre": {
+     "format": "text",
+     "type": "string"
+    },
+    "nombre_servicio": {
+     "format": "text",
+     "type": "string"
+    },
+    "estado_reserva": {
+     "default": "esperando_pago",
+     "format": "text",
+     "type": "string"
+    },
+    "stripe_checkout_session_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "stripe_payment_intent_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "evento_stripe_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "intentos_datos": {
+     "default": 0,
+     "format": "smallint",
+     "type": "integer"
+    },
+    "procesando_desde": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "pabau_reservado": {
+     "default": false,
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "pabau_confirmado_at": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "servicio": {
+     "format": "text",
+     "type": "string"
+    },
+    "personas": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "numero_personas": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "recursos_agua_asignados": {
+     "format": "jsonb"
+    },
+    "jacuzzis_necesarios": {
+     "default": 1,
+     "format": "smallint",
+     "type": "integer"
+    },
+    "horario_pendiente": {
+     "default": false,
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "terapeuta_7": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_8": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_9": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_10": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_11": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_12": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_13": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_14": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_15": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_16": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_17": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_18": {
+     "format": "text",
+     "type": "string"
+    },
+    "cabinas_disponibles": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "cabinas_mixtas": {
+     "default": false,
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "rooftop_pendiente_configuracion": {
+     "default": false,
+     "description": "Roma: rooftop identificado pero pendiente de definir recurso y reglas de reserva.",
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "rooftop_recurso_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "rooftop_interviene_disponibilidad": {
+     "default": false,
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "pabau_citas_agua_ids": {
+     "format": "jsonb"
+    },
+    "pabau_citas_masaje_ids": {
+     "format": "jsonb"
+    },
+    "retencion_pabau_at": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "retencion_expira_at": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "retencion_cancelada_at": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "intentos_pago": {
+     "default": 0,
+     "format": "integer",
+     "type": "integer"
+    },
+    "motivo_revision": {
+     "format": "text",
+     "type": "string"
+    },
+    "monto_pagado": {
+     "description": "Importe efectivamente abonado y validado por el proveedor de pago.",
+     "format": "numeric",
+     "type": "number"
+    },
+    "moneda_pago": {
+     "description": "Código de moneda del abono validado, por ejemplo MXN.",
+     "format": "text",
+     "type": "string"
+    },
+    "solicitud_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "bloqueo_liberacion_por_comprobante": {
+     "default": false,
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "comprobante_revision_at": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "comprobante_revision_datos": {
+     "format": "jsonb"
+    }
+   },
+   "type": "object"
+  },
+  "documents": {
+   "required": [
+    "id"
+   ],
+   "properties": {
+    "id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "bigint",
+     "type": "integer"
+    },
+    "content": {
+     "format": "text",
+     "type": "string"
+    },
+    "metadata": {
+     "format": "jsonb"
+    },
+    "embedding": {
+     "format": "extensions.vector(1536)",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "reservas_historico": {
+   "description": "Reservas de días anteriores, copiadas íntegramente antes de retirarlas de public.reservas. No cancela citas de Pabau ni modifica pagos.",
+   "required": [
+    "id",
+    "cabinas_mixtas",
+    "rooftop_pendiente_configuracion",
+    "rooftop_interviene_disponibilidad",
+    "pabau_citas_agua_ids",
+    "pabau_citas_masaje_ids",
+    "archivado_en",
+    "ejecucion_archivo",
+    "datos_originales"
+   ],
+   "properties": {
+    "contact_id": {
+     "format": "bigint",
+     "type": "integer"
+    },
+    "subscriber_id": {
+     "format": "bigint",
+     "type": "integer"
+    },
+    "recurso_agua_asignado": {
+     "format": "text",
+     "type": "string"
+    },
+    "cabinas_asignadas": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "camillas": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "terapeutas_necesarios": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "jacuzzi_inicio": {
+     "format": "timestamp without time zone",
+     "type": "string"
+    },
+    "masaje_inicio": {
+     "format": "timestamp without time zone",
+     "type": "string"
+    },
+    "terapeuta_1": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_2": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_3": {
+     "format": "text",
+     "type": "string"
+    },
+    "sucursal": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_4": {
+     "format": "text",
+     "type": "string"
+    },
+    "terapeuta_5": {
+     "format": "text",
+     "type": "string"
+    },
+    "id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "bigint",
+     "type": "integer"
+    },
+    "terapeuta_6": {
+     "format": "text",
+     "type": "string"
+    },
+    "disponible": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "link_enviado": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "pago_recibido": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "reserva_confirmada": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "fecha_pago": {
+     "format": "text",
+     "type": "string"
+    },
+    "phone": {
+     "format": "text",
+     "type": "string"
+    },
+    "email": {
+     "format": "text",
+     "type": "string"
+    },
+    "service_agua_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "service_terapeuta_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "nombre": {
+     "format": "text",
+     "type": "string"
+    },
+    "nombre_servicio": {
+     "format": "text",
+     "type": "string"
+    },
+    "stripe_checkout_session_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "stripe_payment_intent_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "evento_stripe_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "pabau_reservado": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "pabau_confirmado_at": {
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "cabinas_disponibles": {
+     "format": "integer",
+     "type": "integer"
+    },
+    "cabinas_mixtas": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "rooftop_pendiente_configuracion": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "rooftop_recurso_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "rooftop_interviene_disponibilidad": {
+     "format": "boolean",
+     "type": "boolean"
+    },
+    "monto_pagado": {
+     "format": "numeric",
+     "type": "number"
+    },
+    "moneda_pago": {
+     "format": "text",
+     "type": "string"
+    },
+    "pabau_citas_agua_ids": {
+     "format": "jsonb"
+    },
+    "pabau_citas_masaje_ids": {
+     "format": "jsonb"
+    },
+    "archivado_en": {
+     "default": "now()",
+     "format": "timestamp with time zone",
+     "type": "string"
+    },
+    "ejecucion_archivo": {
+     "format": "text",
+     "type": "string"
+    },
+    "datos_originales": {
+     "format": "jsonb"
+    }
+   },
+   "type": "object"
+  },
+  "n8n_chat_histories": {
+   "required": [
+    "id",
+    "session_id",
+    "message"
+   ],
+   "properties": {
+    "id": {
+     "description": "Note:\nThis is a Primary Key.<pk/>",
+     "format": "integer",
+     "type": "integer"
+    },
+    "session_id": {
+     "format": "text",
+     "type": "string"
+    },
+    "message": {
+     "format": "jsonb"
+    },
+    "created_at": {
+     "default": "CURRENT_TIMESTAMP",
+     "format": "timestamp without time zone",
+     "type": "string"
+    }
+   },
+   "type": "object"
+  }
+ },
+ "parameters": {
+  "preferParams": {
+   "name": "Prefer",
+   "description": "Preference",
+   "required": false,
+   "in": "header",
+   "type": "string"
+  },
+  "preferReturn": {
+   "name": "Prefer",
+   "description": "Preference",
+   "required": false,
+   "enum": [
+    "return=representation",
+    "return=minimal",
+    "return=none"
+   ],
+   "in": "header",
+   "type": "string"
+  },
+  "preferCount": {
+   "name": "Prefer",
+   "description": "Preference",
+   "required": false,
+   "enum": [
+    "count=none"
+   ],
+   "in": "header",
+   "type": "string"
+  },
+  "preferPost": {
+   "name": "Prefer",
+   "description": "Preference",
+   "required": false,
+   "enum": [
+    "return=representation",
+    "return=minimal",
+    "return=none",
+    "resolution=ignore-duplicates",
+    "resolution=merge-duplicates"
+   ],
+   "in": "header",
+   "type": "string"
+  },
+  "select": {
+   "name": "select",
+   "description": "Filtering Columns",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "on_conflict": {
+   "name": "on_conflict",
+   "description": "On Conflict",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "order": {
+   "name": "order",
+   "description": "Ordering",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "range": {
+   "name": "Range",
+   "description": "Limiting and Pagination",
+   "required": false,
+   "in": "header",
+   "type": "string"
+  },
+  "rangeUnit": {
+   "name": "Range-Unit",
+   "description": "Limiting and Pagination",
+   "required": false,
+   "default": "items",
+   "in": "header",
+   "type": "string"
+  },
+  "offset": {
+   "name": "offset",
+   "description": "Limiting and Pagination",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "limit": {
+   "name": "limit",
+   "description": "Limiting and Pagination",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.spa_reservation_state": {
+   "name": "spa_reservation_state",
+   "description": "spa_reservation_state",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/spa_reservation_state"
+   }
+  },
+  "rowFilter.spa_reservation_state.session_key": {
+   "name": "session_key",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.reservation_id": {
+   "name": "reservation_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.channel": {
+   "name": "channel",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.subscriber_id": {
+   "name": "subscriber_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.status": {
+   "name": "status",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.first_name": {
+   "name": "first_name",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.last_name": {
+   "name": "last_name",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.telefono": {
+   "name": "telefono",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.correo": {
+   "name": "correo",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.servicio": {
+   "name": "servicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.sucursal": {
+   "name": "sucursal",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.fecha": {
+   "name": "fecha",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.horario": {
+   "name": "horario",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.numero_personas": {
+   "name": "numero_personas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.alternatives": {
+   "name": "alternatives",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.payment_link": {
+   "name": "payment_link",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.payment_provider_id": {
+   "name": "payment_provider_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.link_sent_at": {
+   "name": "link_sent_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.handoff_reason": {
+   "name": "handoff_reason",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.version": {
+   "name": "version",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.last_inbound_message_id": {
+   "name": "last_inbound_message_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.created_at": {
+   "name": "created_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_reservation_state.updated_at": {
+   "name": "updated_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.dashboard_reservation_decisions": {
+   "name": "dashboard_reservation_decisions",
+   "description": "dashboard_reservation_decisions",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/dashboard_reservation_decisions"
+   }
+  },
+  "rowFilter.dashboard_reservation_decisions.id": {
+   "name": "id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.dashboard_reservation_decisions.reservation_draft_id": {
+   "name": "reservation_draft_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.dashboard_reservation_decisions.action": {
+   "name": "action",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.dashboard_reservation_decisions.previous_status": {
+   "name": "previous_status",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.dashboard_reservation_decisions.resulting_status": {
+   "name": "resulting_status",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.dashboard_reservation_decisions.note": {
+   "name": "note",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.dashboard_reservation_decisions.decided_by": {
+   "name": "decided_by",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.dashboard_reservation_decisions.decided_by_email": {
+   "name": "decided_by_email",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.dashboard_reservation_decisions.created_at": {
+   "name": "created_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.FAQs": {
+   "name": "FAQs",
+   "description": "FAQs",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/FAQs"
+   }
+  },
+  "rowFilter.FAQs.id": {
+   "name": "id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.FAQs.Preguntas": {
+   "name": "Preguntas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.FAQs.Respuestas": {
+   "name": "Respuestas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.n8n_execution_context": {
+   "name": "n8n_execution_context",
+   "description": "n8n_execution_context",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/n8n_execution_context"
+   }
+  },
+  "rowFilter.n8n_execution_context.execution_id": {
+   "name": "execution_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.n8n_execution_context.workflow_id": {
+   "name": "workflow_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.n8n_execution_context.workflow_name": {
+   "name": "workflow_name",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.n8n_execution_context.subscriber_id": {
+   "name": "subscriber_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.n8n_execution_context.created_at": {
+   "name": "created_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.n8n_execution_context.updated_at": {
+   "name": "updated_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.n8n_execution_context.url_n8n": {
+   "name": "url_n8n",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.n8n_execution_context.live_chat_url": {
+   "name": "live_chat_url",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.n8n_execution_context.nombre": {
+   "name": "nombre",
+   "description": "Nombre de perfil recibido de ManyChat: name, o first_name y last_name si name está vacío.",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.reservas_draft_historico": {
+   "name": "reservas_draft_historico",
+   "description": "reservas_draft_historico",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/reservas_draft_historico"
+   }
+  },
+  "rowFilter.reservas_draft_historico.reserva_draft_id": {
+   "name": "reserva_draft_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft_historico.datos_originales": {
+   "name": "datos_originales",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft_historico.retencion_pabau_at": {
+   "name": "retencion_pabau_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft_historico.pabau_confirmado_at": {
+   "name": "pabau_confirmado_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft_historico.archivado_en": {
+   "name": "archivado_en",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft_historico.motivo_archivo": {
+   "name": "motivo_archivo",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft_historico.prueba_cancelacion": {
+   "name": "prueba_cancelacion",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.pagos_stripe_pendientes": {
+   "name": "pagos_stripe_pendientes",
+   "description": "pagos_stripe_pendientes",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/pagos_stripe_pendientes"
+   }
+  },
+  "rowFilter.pagos_stripe_pendientes.stripe_checkout_session_id": {
+   "name": "stripe_checkout_session_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.pagos_stripe_pendientes.evento_stripe_id": {
+   "name": "evento_stripe_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.pagos_stripe_pendientes.stripe_payment_intent_id": {
+   "name": "stripe_payment_intent_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.pagos_stripe_pendientes.nombre_pago": {
+   "name": "nombre_pago",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.pagos_stripe_pendientes.email_pago": {
+   "name": "email_pago",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.pagos_stripe_pendientes.monto_pagado": {
+   "name": "monto_pagado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.pagos_stripe_pendientes.moneda_pago": {
+   "name": "moneda_pago",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.pagos_stripe_pendientes.estado_pago_reportado": {
+   "name": "estado_pago_reportado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.pagos_stripe_pendientes.motivo": {
+   "name": "motivo",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.pagos_stripe_pendientes.candidatos_reserva": {
+   "name": "candidatos_reserva",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.pagos_stripe_pendientes.fuente_registro": {
+   "name": "fuente_registro",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.pagos_stripe_pendientes.creado_at": {
+   "name": "creado_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.spa_comprobantes_pago": {
+   "name": "spa_comprobantes_pago",
+   "description": "spa_comprobantes_pago",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/spa_comprobantes_pago"
+   }
+  },
+  "rowFilter.spa_comprobantes_pago.huella": {
+   "name": "huella",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_comprobantes_pago.reserva_draft_id": {
+   "name": "reserva_draft_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_comprobantes_pago.subscriber_id": {
+   "name": "subscriber_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_comprobantes_pago.estado": {
+   "name": "estado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_comprobantes_pago.datos": {
+   "name": "datos",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_comprobantes_pago.creado_at": {
+   "name": "creado_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_comprobantes_pago.actualizado_at": {
+   "name": "actualizado_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.spa_outbox": {
+   "name": "spa_outbox",
+   "description": "spa_outbox",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/spa_outbox"
+   }
+  },
+  "rowFilter.spa_outbox.event_id": {
+   "name": "event_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_outbox.reservation_id": {
+   "name": "reservation_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_outbox.event_type": {
+   "name": "event_type",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_outbox.payload": {
+   "name": "payload",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_outbox.status": {
+   "name": "status",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_outbox.idempotency_key": {
+   "name": "idempotency_key",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_outbox.sent_at": {
+   "name": "sent_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_outbox.error_message": {
+   "name": "error_message",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_outbox.created_at": {
+   "name": "created_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_outbox.updated_at": {
+   "name": "updated_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.inside_spa_conversation_state": {
+   "name": "inside_spa_conversation_state",
+   "description": "inside_spa_conversation_state",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/inside_spa_conversation_state"
+   }
+  },
+  "rowFilter.inside_spa_conversation_state.subscriber_id": {
+   "name": "subscriber_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.inside_spa_conversation_state.ultima_interaccion": {
+   "name": "ultima_interaccion",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.reservas": {
+   "name": "reservas",
+   "description": "reservas",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/reservas"
+   }
+  },
+  "rowFilter.reservas.contact_id": {
+   "name": "contact_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.subscriber_id": {
+   "name": "subscriber_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.recurso_agua_asignado": {
+   "name": "recurso_agua_asignado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.cabinas_asignadas": {
+   "name": "cabinas_asignadas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.camillas": {
+   "name": "camillas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.terapeutas_necesarios": {
+   "name": "terapeutas_necesarios",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.jacuzzi_inicio": {
+   "name": "jacuzzi_inicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.masaje_inicio": {
+   "name": "masaje_inicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.terapeuta_1": {
+   "name": "terapeuta_1",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.terapeuta_2": {
+   "name": "terapeuta_2",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.terapeuta_3": {
+   "name": "terapeuta_3",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.sucursal": {
+   "name": "sucursal",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.terapeuta_4": {
+   "name": "terapeuta_4",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.terapeuta_5": {
+   "name": "terapeuta_5",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.id": {
+   "name": "id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.terapeuta_6": {
+   "name": "terapeuta_6",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.disponible": {
+   "name": "disponible",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.link_enviado": {
+   "name": "link_enviado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.pago_recibido": {
+   "name": "pago_recibido",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.reserva_confirmada": {
+   "name": "reserva_confirmada",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.fecha_pago": {
+   "name": "fecha_pago",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.phone": {
+   "name": "phone",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.email": {
+   "name": "email",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.service_agua_id": {
+   "name": "service_agua_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.service_terapeuta_id": {
+   "name": "service_terapeuta_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.nombre": {
+   "name": "nombre",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.nombre_servicio": {
+   "name": "nombre_servicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.stripe_checkout_session_id": {
+   "name": "stripe_checkout_session_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.stripe_payment_intent_id": {
+   "name": "stripe_payment_intent_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.evento_stripe_id": {
+   "name": "evento_stripe_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.pabau_reservado": {
+   "name": "pabau_reservado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.pabau_confirmado_at": {
+   "name": "pabau_confirmado_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.cabinas_disponibles": {
+   "name": "cabinas_disponibles",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.cabinas_mixtas": {
+   "name": "cabinas_mixtas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.rooftop_pendiente_configuracion": {
+   "name": "rooftop_pendiente_configuracion",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.rooftop_recurso_id": {
+   "name": "rooftop_recurso_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.rooftop_interviene_disponibilidad": {
+   "name": "rooftop_interviene_disponibilidad",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.monto_pagado": {
+   "name": "monto_pagado",
+   "description": "Importe efectivamente abonado y validado por el proveedor de pago.",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.moneda_pago": {
+   "name": "moneda_pago",
+   "description": "Código de moneda del abono validado, por ejemplo MXN.",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.pabau_citas_agua_ids": {
+   "name": "pabau_citas_agua_ids",
+   "description": "IDs reales de las citas de agua devueltos por Pabau y conservados desde reservas_draft.",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas.pabau_citas_masaje_ids": {
+   "name": "pabau_citas_masaje_ids",
+   "description": "IDs reales de las citas de masaje devueltos por Pabau y conservados desde reservas_draft.",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.spa_processed_events": {
+   "name": "spa_processed_events",
+   "description": "spa_processed_events",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/spa_processed_events"
+   }
+  },
+  "rowFilter.spa_processed_events.channel": {
+   "name": "channel",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_processed_events.inbound_message_id": {
+   "name": "inbound_message_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.spa_processed_events.processed_at": {
+   "name": "processed_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.booking_state": {
+   "name": "booking_state",
+   "description": "booking_state",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/booking_state"
+   }
+  },
+  "rowFilter.booking_state.subscriber_id": {
+   "name": "subscriber_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.estado": {
+   "name": "estado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.servicio": {
+   "name": "servicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.servicio_usuario": {
+   "name": "servicio_usuario",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.sucursal": {
+   "name": "sucursal",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.fecha": {
+   "name": "fecha",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.horario": {
+   "name": "horario",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.numero_personas": {
+   "name": "numero_personas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.nombre": {
+   "name": "nombre",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.telefono": {
+   "name": "telefono",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.correo": {
+   "name": "correo",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.ultimo_campo": {
+   "name": "ultimo_campo",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.link_pago": {
+   "name": "link_pago",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.updated_at": {
+   "name": "updated_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.plantilla_enviada": {
+   "name": "plantilla_enviada",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.ultima_accion_bot": {
+   "name": "ultima_accion_bot",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.booking_state.contexto_operativo": {
+   "name": "contexto_operativo",
+   "description": "Contexto operativo del bot: franja horaria, sucursales alternativas y validación de fecha; no confirma pagos ni citas.",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.reservas_draft": {
+   "name": "reservas_draft",
+   "description": "reservas_draft",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/reservas_draft"
+   }
+  },
+  "rowFilter.reservas_draft.contact_id": {
+   "name": "contact_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.subscriber_id": {
+   "name": "subscriber_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.recurso_agua_asignado": {
+   "name": "recurso_agua_asignado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.cabinas_asignadas": {
+   "name": "cabinas_asignadas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.camillas": {
+   "name": "camillas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeutas_necesarios": {
+   "name": "terapeutas_necesarios",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.jacuzzi_inicio": {
+   "name": "jacuzzi_inicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.masaje_inicio": {
+   "name": "masaje_inicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_1": {
+   "name": "terapeuta_1",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_2": {
+   "name": "terapeuta_2",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_3": {
+   "name": "terapeuta_3",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.sucursal": {
+   "name": "sucursal",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_4": {
+   "name": "terapeuta_4",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_5": {
+   "name": "terapeuta_5",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.id": {
+   "name": "id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_6": {
+   "name": "terapeuta_6",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.disponible": {
+   "name": "disponible",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.link_enviado": {
+   "name": "link_enviado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.pago_recibido": {
+   "name": "pago_recibido",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.reserva_confirmada": {
+   "name": "reserva_confirmada",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.fecha_pago": {
+   "name": "fecha_pago",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.phone": {
+   "name": "phone",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.email": {
+   "name": "email",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.service_agua_id": {
+   "name": "service_agua_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.service_terapeuta_id": {
+   "name": "service_terapeuta_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.nombre": {
+   "name": "nombre",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.nombre_servicio": {
+   "name": "nombre_servicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.estado_reserva": {
+   "name": "estado_reserva",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.stripe_checkout_session_id": {
+   "name": "stripe_checkout_session_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.stripe_payment_intent_id": {
+   "name": "stripe_payment_intent_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.evento_stripe_id": {
+   "name": "evento_stripe_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.intentos_datos": {
+   "name": "intentos_datos",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.procesando_desde": {
+   "name": "procesando_desde",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.pabau_reservado": {
+   "name": "pabau_reservado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.pabau_confirmado_at": {
+   "name": "pabau_confirmado_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.servicio": {
+   "name": "servicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.personas": {
+   "name": "personas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.numero_personas": {
+   "name": "numero_personas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.recursos_agua_asignados": {
+   "name": "recursos_agua_asignados",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.jacuzzis_necesarios": {
+   "name": "jacuzzis_necesarios",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.horario_pendiente": {
+   "name": "horario_pendiente",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_7": {
+   "name": "terapeuta_7",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_8": {
+   "name": "terapeuta_8",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_9": {
+   "name": "terapeuta_9",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_10": {
+   "name": "terapeuta_10",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_11": {
+   "name": "terapeuta_11",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_12": {
+   "name": "terapeuta_12",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_13": {
+   "name": "terapeuta_13",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_14": {
+   "name": "terapeuta_14",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_15": {
+   "name": "terapeuta_15",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_16": {
+   "name": "terapeuta_16",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_17": {
+   "name": "terapeuta_17",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.terapeuta_18": {
+   "name": "terapeuta_18",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.cabinas_disponibles": {
+   "name": "cabinas_disponibles",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.cabinas_mixtas": {
+   "name": "cabinas_mixtas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.rooftop_pendiente_configuracion": {
+   "name": "rooftop_pendiente_configuracion",
+   "description": "Roma: rooftop identificado pero pendiente de definir recurso y reglas de reserva.",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.rooftop_recurso_id": {
+   "name": "rooftop_recurso_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.rooftop_interviene_disponibilidad": {
+   "name": "rooftop_interviene_disponibilidad",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.pabau_citas_agua_ids": {
+   "name": "pabau_citas_agua_ids",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.pabau_citas_masaje_ids": {
+   "name": "pabau_citas_masaje_ids",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.retencion_pabau_at": {
+   "name": "retencion_pabau_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.retencion_expira_at": {
+   "name": "retencion_expira_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.retencion_cancelada_at": {
+   "name": "retencion_cancelada_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.intentos_pago": {
+   "name": "intentos_pago",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.motivo_revision": {
+   "name": "motivo_revision",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.monto_pagado": {
+   "name": "monto_pagado",
+   "description": "Importe efectivamente abonado y validado por el proveedor de pago.",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.moneda_pago": {
+   "name": "moneda_pago",
+   "description": "Código de moneda del abono validado, por ejemplo MXN.",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.solicitud_id": {
+   "name": "solicitud_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.bloqueo_liberacion_por_comprobante": {
+   "name": "bloqueo_liberacion_por_comprobante",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.comprobante_revision_at": {
+   "name": "comprobante_revision_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_draft.comprobante_revision_datos": {
+   "name": "comprobante_revision_datos",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.documents": {
+   "name": "documents",
+   "description": "documents",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/documents"
+   }
+  },
+  "rowFilter.documents.id": {
+   "name": "id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.documents.content": {
+   "name": "content",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.documents.metadata": {
+   "name": "metadata",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.documents.embedding": {
+   "name": "embedding",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.reservas_historico": {
+   "name": "reservas_historico",
+   "description": "reservas_historico",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/reservas_historico"
+   }
+  },
+  "rowFilter.reservas_historico.contact_id": {
+   "name": "contact_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.subscriber_id": {
+   "name": "subscriber_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.recurso_agua_asignado": {
+   "name": "recurso_agua_asignado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.cabinas_asignadas": {
+   "name": "cabinas_asignadas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.camillas": {
+   "name": "camillas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.terapeutas_necesarios": {
+   "name": "terapeutas_necesarios",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.jacuzzi_inicio": {
+   "name": "jacuzzi_inicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.masaje_inicio": {
+   "name": "masaje_inicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.terapeuta_1": {
+   "name": "terapeuta_1",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.terapeuta_2": {
+   "name": "terapeuta_2",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.terapeuta_3": {
+   "name": "terapeuta_3",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.sucursal": {
+   "name": "sucursal",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.terapeuta_4": {
+   "name": "terapeuta_4",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.terapeuta_5": {
+   "name": "terapeuta_5",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.id": {
+   "name": "id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.terapeuta_6": {
+   "name": "terapeuta_6",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.disponible": {
+   "name": "disponible",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.link_enviado": {
+   "name": "link_enviado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.pago_recibido": {
+   "name": "pago_recibido",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.reserva_confirmada": {
+   "name": "reserva_confirmada",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.fecha_pago": {
+   "name": "fecha_pago",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.phone": {
+   "name": "phone",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.email": {
+   "name": "email",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.service_agua_id": {
+   "name": "service_agua_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.service_terapeuta_id": {
+   "name": "service_terapeuta_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.nombre": {
+   "name": "nombre",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.nombre_servicio": {
+   "name": "nombre_servicio",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.stripe_checkout_session_id": {
+   "name": "stripe_checkout_session_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.stripe_payment_intent_id": {
+   "name": "stripe_payment_intent_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.evento_stripe_id": {
+   "name": "evento_stripe_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.pabau_reservado": {
+   "name": "pabau_reservado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.pabau_confirmado_at": {
+   "name": "pabau_confirmado_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.cabinas_disponibles": {
+   "name": "cabinas_disponibles",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.cabinas_mixtas": {
+   "name": "cabinas_mixtas",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.rooftop_pendiente_configuracion": {
+   "name": "rooftop_pendiente_configuracion",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.rooftop_recurso_id": {
+   "name": "rooftop_recurso_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.rooftop_interviene_disponibilidad": {
+   "name": "rooftop_interviene_disponibilidad",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.monto_pagado": {
+   "name": "monto_pagado",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.moneda_pago": {
+   "name": "moneda_pago",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.pabau_citas_agua_ids": {
+   "name": "pabau_citas_agua_ids",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.pabau_citas_masaje_ids": {
+   "name": "pabau_citas_masaje_ids",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.archivado_en": {
+   "name": "archivado_en",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.ejecucion_archivo": {
+   "name": "ejecucion_archivo",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.reservas_historico.datos_originales": {
+   "name": "datos_originales",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "body.n8n_chat_histories": {
+   "name": "n8n_chat_histories",
+   "description": "n8n_chat_histories",
+   "required": false,
+   "in": "body",
+   "schema": {
+    "$ref": "#/definitions/n8n_chat_histories"
+   }
+  },
+  "rowFilter.n8n_chat_histories.id": {
+   "name": "id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.n8n_chat_histories.session_id": {
+   "name": "session_id",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.n8n_chat_histories.message": {
+   "name": "message",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  },
+  "rowFilter.n8n_chat_histories.created_at": {
+   "name": "created_at",
+   "required": false,
+   "in": "query",
+   "type": "string"
+  }
+ },
+ "externalDocs": {
+  "description": "PostgREST Documentation",
+  "url": "https://postgrest.org/en/v14/references/api.html"
+ }
+}

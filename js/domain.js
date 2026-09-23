@@ -1,22 +1,22 @@
-﻿/* Reglas de negocio del dashboard: estados, decisiones, filtros y KPIs.
-   Todo aquÃ­ es lÃ³gica pura para poder probarla sin navegador. */
+/* Reglas de negocio del dashboard: estados, decisiones, filtros y KPIs.
+   Todo aquí es lógica pura para poder probarla sin navegador. */
 
 import { dayKey, firstValue, isToday, isWithinHours, parseDate, toAmount } from './core.js?v=2.0.0';
 
-/** Acciones de decisiÃ³n permitidas (deben coincidir con el SQL del RPC). */
+/** Acciones de decisión permitidas (deben coincidir con el SQL del RPC). */
 export const DECISION_ACTIONS = ['approved', 'rejected', 'needs_info'];
 
 export const ACTION_LABELS = {
-  approved: { short: 'Aprobada', title: 'Comprobante aprobado', toast: 'Comprobante aprobado correctamente.', past: 'aprobÃ³ el comprobante de' },
-  rejected: { short: 'Rechazada', title: 'Comprobante rechazado', toast: 'Comprobante rechazado.', past: 'rechazÃ³ el comprobante de' },
-  needs_info: { short: 'InformaciÃ³n', title: 'InformaciÃ³n solicitada', toast: 'Se marcÃ³ la reserva como informaciÃ³n pendiente.', past: 'solicitÃ³ informaciÃ³n a' }
+  approved: { short: 'Aprobada', title: 'Comprobante aprobado', toast: 'Comprobante aprobado correctamente.', past: 'aprobó el comprobante de' },
+  rejected: { short: 'Rechazada', title: 'Comprobante rechazado', toast: 'Comprobante rechazado.', past: 'rechazó el comprobante de' },
+  needs_info: { short: 'Información', title: 'Información solicitada', toast: 'Se marcó la reserva como información pendiente.', past: 'solicitó información a' }
 };
 
 export const STATUS_LABELS = {
   pending: 'Pendiente de pago',
   review: 'Por revisar',
-  info: 'InformaciÃ³n solicitada',
-  processing: 'En confirmaciÃ³n',
+  info: 'Información solicitada',
+  processing: 'En confirmación',
   confirmed: 'Confirmada',
   rejected: 'Comprobante rechazado'
 };
@@ -24,30 +24,80 @@ export const STATUS_LABELS = {
 /** Claves de estado que el filtro puede mostrar (orden de la barra). */
 export const STATUS_ORDER = ['pending', 'review', 'info', 'processing', 'confirmed', 'rejected'];
 
-/** Estados que cuentan como "por gestionar" (requieren acciÃ³n del equipo). */
+/** Estados que cuentan como "por gestionar" (requieren acción del equipo). */
 export const MANAGE_STATUSES = ['pending', 'review', 'info', 'processing'];
 
 const asText = value => String(value ?? '').trim().toLowerCase();
 
-/* ---------- NormalizaciÃ³n de filas ---------- */
+/* ---------- Normalización de filas ---------- */
+
+/** Monto del comprobante: el dato que hoy usa la operación.
+ *  En esta base `reservas_draft.monto_pagado` casi siempre es null; el monto
+ *  real vive en `comprobante_revision_datos` (monto_documento / monto_pago). */
+export function evidenceAmount(draft) {
+  const evidence = draft?.evidencia || draft?.comprobante_revision_datos;
+  if (evidence && typeof evidence === 'object') {
+    const value = firstValue(evidence.monto_documento, evidence.monto_pago, evidence.monto, evidence.importe);
+    if (value !== null) return toAmount(value);
+  }
+  return 0;
+}
+
+/** Monto visible de una pre-reserva, con el origen del dato. */
+export function visibleAmount(draft, receipt) {
+  const fromDraft = toAmount(firstValue(draft?.monto_pagado, draft?.monto));
+  if (fromDraft) return { amount: fromDraft, source: 'reserva' };
+  const fromReceipt = toAmount(firstValue(receipt?.amount, receipt?.datos?.monto_pago, receipt?.datos?.monto_documento));
+  if (fromReceipt) return { amount: fromReceipt, source: 'comprobante' };
+  const fromEvidence = evidenceAmount(draft);
+  if (fromEvidence) return { amount: fromEvidence, source: 'comprobante' };
+  const expected = toAmount(firstValue(draft?.montoEsperado, draft?.monto_esperado));
+  if (expected) return { amount: expected, source: 'esperado' };
+  return { amount: 0, source: 'sin monto' };
+}
+
+export const AMOUNT_SOURCE_LABELS = {
+  reserva: 'monto registrado en la reserva',
+  comprobante: 'monto leído del comprobante',
+  esperado: 'monto esperado del servicio',
+  'sin monto': 'sin monto registrado'
+};
+
+/** Motivos en texto legible que ya calcula n8n al clasificar el comprobante. */
+export const PAYMENT_REASON_LABELS = {
+  ESTADO_PAGO_NO_CORROBORADO: 'El estado del pago no está corroborado',
+  SIN_RASTREO_NI_REFERENCIA_BANCARIA: 'Sin clave de rastreo ni referencia bancaria',
+  FALTA_FOLIO_PARA_IDENTIFICAR_COMPROBANTE: 'Falta folio para identificar el comprobante',
+  TITULAR_INCOMPLETO_O_NO_VISIBLE: 'Titular incompleto o no visible',
+  MONTO_INSUFICIENTE_O_NO_LEGIBLE: 'Monto insuficiente o no legible'
+};
 
 export function normalizeDraft(row) {
   const schedule = firstValue(row.masaje_inicio, row.jacuzzi_inicio, row.fecha_reserva, row.fecha_servicio, row.inicio);
+  const evidence = row.comprobante_revision_datos && typeof row.comprobante_revision_datos === 'object' ? row.comprobante_revision_datos : null;
   return {
     ...row,
     id: Number(row.id),
-    nombre: firstValue(row.nombre, row.cliente, row.nombre_cliente),
-    email: firstValue(row.email, row.correo),
-    phone: firstValue(row.phone, row.telefono, row.whatsapp, row.celular),
+    nombre: firstValue(row.nombre, row.cliente, row.nombre_cliente, evidence?.nombre_reserva, evidence?.nombre_perfil),
+    email: firstValue(row.email, row.correo, evidence?.email),
+    phone: firstValue(row.phone, row.telefono, row.whatsapp, row.celular, evidence?.phone),
     servicio: firstValue(row.nombre_servicio, row.servicio, row.servicios),
-    monto: toAmount(firstValue(row.monto_pagado, row.monto, row.valor, row.total)),
+    servicioCodigo: firstValue(row.servicio, row.service_agua_id),
+    monto: toAmount(firstValue(row.monto_pagado, evidence?.monto_documento, evidence?.monto_pago, row.monto, row.valor, row.total)),
+    montoEsperado: toAmount(firstValue(evidence?.monto_esperado, evidence?.monto_documento)),
     estado: asText(row.estado_reserva),
     confirmada: Boolean(row.reserva_confirmada),
+    pagoRecibido: Boolean(row.pago_recibido),
+    horarioPendiente: Boolean(row.horario_pendiente),
+    motivoRevision: firstValue(row.motivo_revision, evidence?.motivo_clasificacion),
+    motivosPago: Array.isArray(evidence?.motivos_revision_pago) ? evidence.motivos_revision_pago : [],
+    evidencia: evidence,
     scheduleAt: schedule,
     scheduleDate: parseDate(schedule),
     reviewAt: firstValue(row.comprobante_revision_at, row.actualizado_at, row.updated_at),
     createdAt: firstValue(row.created_at, row.creado_at, row.fecha_creacion, row.comprobante_revision_at),
-    updatedAt: firstValue(row.updated_at, row.actualizado_at, row.comprobante_revision_at)
+    updatedAt: firstValue(row.updated_at, row.actualizado_at, row.comprobante_revision_at),
+    confirmedAt: firstValue(row.pabau_confirmado_at, row.confirmado_at)
   };
 }
 
@@ -85,20 +135,56 @@ export function normalizeDecision(row) {
 export function normalizeReceipt(row) {
   const datos = row.datos && typeof row.datos === 'object' ? row.datos : {};
   const mediaUrl = firstValue(row.media_url, row.url, row.comprobante_url, datos.media_url, datos.url, datos.comprobante_url);
-  const amount = toAmount(firstValue(row.monto_pago, row.monto, datos.monto_pago, datos.monto));
-  const paidAt = firstValue(row.fecha_pago, datos.fecha_pago, row.created_at, row.creado_at);
+  const amount = toAmount(firstValue(row.monto_pago, row.monto, datos.monto_pago, datos.monto_documento, datos.monto));
+  const paidAt = firstValue(row.fecha_pago, datos.fecha_pago, datos.fecha_pago_documento, datos.fecha_pago_es_hoy ? row.creado_at : null);
   return {
     ...row,
     draftId: Number(firstValue(row.reserva_draft_id, row.draft_id, row.reservation_draft_id)),
-    estado: asText(firstValue(row.estado, row.status, 'revision')),
+    estado: asText(firstValue(row.estado, row.status, datos.comprobante_estado, datos.estado, 'revision')),
     datos,
     mediaUrl: mediaUrl || null,
     amount,
     paidAt,
     receivedAt: firstValue(row.creado_at, row.created_at, row.actualizado_at, row.updated_at),
-    updatedAt: firstValue(row.updated_at, row.actualizado_at, row.creado_at, row.created_at),
-    reference: firstValue(row.referencia, row.reference, datos.referencia, datos.folio, datos.reference),
-    method: firstValue(row.metodo, row.metodo_pago, datos.metodo, datos.metodo_pago)
+    updatedAt: firstValue(row.actualizado_at, row.updated_at, row.creado_at, row.created_at),
+    reference: firstValue(row.referencia, row.reference, datos.rastreo, datos.folio, datos.referencia, datos.numero_comprobante),
+    method: firstValue(row.metodo, row.metodo_pago, datos.metodo, datos.metodo_pago, datos.tipo_pago),
+    bank: firstValue(datos.banco_emisor, datos.banco_receptor),
+    holder: firstValue(datos.nombre_beneficiario, datos.nombre_ordenante),
+    account: firstValue(datos.cuenta_visible, datos.cuenta_beneficiaria_visible),
+    reasons: Array.isArray(datos.motivos_revision_pago) ? datos.motivos_revision_pago : [],
+    confidence: typeof datos.confianza_pago === 'number' ? datos.confianza_pago : null,
+    expectedAmount: toAmount(firstValue(datos.monto_esperado, datos.monto_documento))
+  };
+}
+
+/** Construye un comprobante a partir de la evidencia guardada en la pre-reserva.
+ *  Sirve cuando la tabla spa_comprobantes_pago todavía no tiene fila para esa
+ *  reserva: el dashboard muestra igual el archivo, el monto y los motivos. */
+export function receiptFromEvidence(draft) {
+  const evidence = draft?.evidencia || draft?.comprobante_revision_datos;
+  if (!draft || !evidence || typeof evidence !== 'object') return null;
+  const mediaUrl = firstValue(evidence.media_url, evidence.url, evidence.comprobante_url);
+  const amount = evidenceAmount(draft);
+  if (!mediaUrl && !amount && !evidence.fecha_pago_documento) return null;
+  return {
+    draftId: draft.id,
+    estado: asText(firstValue(evidence.comprobante_estado, evidence.estado, 'revision')),
+    datos: evidence,
+    mediaUrl: mediaUrl || null,
+    amount,
+    paidAt: firstValue(evidence.fecha_pago_documento, evidence.fecha_pago),
+    receivedAt: firstValue(draft.reviewAt, draft.updatedAt),
+    updatedAt: firstValue(draft.reviewAt, draft.updatedAt),
+    reference: firstValue(evidence.rastreo, evidence.folio, evidence.numero_comprobante),
+    method: firstValue(evidence.tipo_pago, evidence.metodo_pago),
+    bank: firstValue(evidence.banco_emisor, evidence.banco_receptor),
+    holder: firstValue(evidence.nombre_beneficiario, evidence.nombre_ordenante),
+    account: firstValue(evidence.cuenta_visible, evidence.cuenta_beneficiaria_visible),
+    reasons: Array.isArray(evidence.motivos_revision_pago) ? evidence.motivos_revision_pago : [],
+    confidence: typeof evidence.confianza_pago === 'number' ? evidence.confianza_pago : null,
+    expectedAmount: toAmount(firstValue(evidence.monto_esperado, evidence.monto_documento)),
+    fromEvidence: true
   };
 }
 
@@ -106,8 +192,8 @@ export function normalizeReceipt(row) {
 
 const CONFIRMED_STATES = ['confirmado', 'confirmada', 'confirmed', 'completado', 'completada', 'pagado', 'reserva_confirmada', 'aprobado'];
 const REVIEW_STATES = ['requiere_revision', 'requiere_revision_pago', 'revision_pago', 'en_revision', 'comprobante_en_revision', 'requiere_verificacion'];
-const PROCESSING_STATES = ['procesando_pabau', 'procesando', 'en_proceso', 'pendiente_pabau', 'esperando_pabau', 'en_confirmacion'];
-const REJECTED_STATES = ['rechazado', 'rechazada', 'pago_rechazado', 'cancelado', 'cancelada', 'expirado', 'expirada', 'abandonado'];
+const PROCESSING_STATES = ['procesando_pabau', 'procesando', 'en_proceso', 'pendiente_pabau', 'esperando_pabau', 'en_confirmacion', 'creando_retencion'];
+const REJECTED_STATES = ['rechazado', 'rechazada', 'pago_rechazado', 'cancelado', 'cancelada', 'expirado', 'expirado_sin_pago', 'expirada', 'abandonado'];
 
 export function isConfirmed(row) {
   if (!row) return false;
@@ -121,7 +207,7 @@ export function isReviewable(row) {
 
 /**
  * Estado visible de una pre-reserva.
- * Prioridad: confirmada por reservas > Ãºltima decisiÃ³n > estado de la tabla.
+ * Prioridad: confirmada por reservas > última decisión > estado de la tabla.
  */
 export function statusOf(row, latestDecision) {
   if (isConfirmed(row)) return { key: 'confirmed', label: STATUS_LABELS.confirmed };
@@ -138,16 +224,16 @@ export function statusOf(row, latestDecision) {
   return { key: 'pending', label: 'Sin estado registrado' };
 }
 
-/** Motivo para pedir informaciÃ³n o rechazar, sugerido segÃºn el estado real. */
+/** Motivo para pedir información o rechazar, sugerido según el estado real. */
 export function reviewHint(row) {
-  if (!row) return 'Sin comprobante asociado todavÃ­a.';
-  if (row.estado === 'procesando_pabau') return 'El pago estÃ¡ en proceso de confirmaciÃ³n automÃ¡tica.';
-  if (row.estado === 'requiere_revision_pago') return 'El comprobante requiere verificaciÃ³n manual del equipo.';
-  if (row.estado === 'requiere_revision') return 'La reserva requiere revisiÃ³n manual.';
+  if (!row) return 'Sin comprobante asociado todavía.';
+  if (row.estado === 'procesando_pabau') return 'El pago está en proceso de confirmación automática.';
+  if (row.estado === 'requiere_revision_pago') return 'El comprobante requiere verificación manual del equipo.';
+  if (row.estado === 'requiere_revision') return 'La reserva requiere revisión manual.';
   return 'Revisa el comprobante antes de decidir.';
 }
 
-/* ---------- Ãndices ---------- */
+/* ---------- Índices ---------- */
 
 export function indexDecisions(decisions) {
   const map = new Map();
@@ -180,13 +266,18 @@ export function buildKpis(drafts, confirmed, decisions, receiptMap) {
   const manageable = [...pending, ...review, ...processing];
   const draftsConfirmedToday = drafts.filter(row => keyOf(row) === 'confirmed' && isToday(row.reviewAt || row.updatedAt));
   const confirmedToday = confirmed.filter(row => isToday(row.confirmedAt));
+  const amountOf = row => {
+    const receipt = receiptMap.get(row.id) || receiptFromEvidence(row);
+    return visibleAmount(row, receipt).amount;
+  };
   const confirmedAmountToday = [...confirmedToday, ...draftsConfirmedToday].reduce((total, row) => total + toAmount(row.monto), 0);
-  const pendingAmount = manageable.reduce((total, row) => {
-    const receipt = receiptMap.get(row.id);
-    return total + toAmount(row.monto || receipt?.amount);
-  }, 0);
+  const pendingAmount = manageable.reduce((total, row) => total + amountOf(row), 0);
   const upcoming = confirmed.filter(row => isWithinHours(row.scheduleDate, 24));
   const receiptsToCheck = drafts.filter(row => Boolean(receiptMap.get(row.id))).length;
+  const lastConfirmedAt = [...confirmedToday, ...draftsConfirmedToday].reduce((latest, row) => {
+    const time = parseDate(row.confirmedAt || row.reviewAt || row.updatedAt)?.getTime() ?? 0;
+    return time > latest ? time : latest;
+  }, 0);
   const lastDecisionAt = decisions.reduce((latest, decision) => {
     const time = parseDate(decision.createdAt)?.getTime() ?? 0;
     return time > latest ? time : latest;
@@ -204,11 +295,12 @@ export function buildKpis(drafts, confirmed, decisions, receiptMap) {
     pendingAmount,
     upcomingCount: upcoming.length,
     receiptsToCheck,
+    lastConfirmedAt: lastConfirmedAt ? new Date(lastConfirmedAt) : null,
     lastDecisionAt: lastDecisionAt ? new Date(lastDecisionAt) : null
   };
 }
 
-/** Filtra pre-reservas segÃºn la barra de filtros. */
+/** Filtra pre-reservas según la barra de filtros. */
 export function filterDrafts(drafts, statuses, { query = '', service = '', status = '', date = '' } = {}) {
   const text = query.trim().toLowerCase();
   const targetDay = date ? dayKey(date) : null;
@@ -264,7 +356,7 @@ export function buildClients(drafts, confirmed) {
     const client = ensure(row);
     client.total += 1;
     client.pendingCount += 1;
-    client.amount += toAmount(row.monto);
+    client.amount += visibleAmount(row, null).amount;
     if (row.servicio) client.services.add(row.servicio);
     const when = row.scheduleDate || parseDate(row.reviewAt);
     if (when && (!client.lastAt || when > client.lastAt)) client.lastAt = when;
@@ -283,12 +375,22 @@ export function buildClients(drafts, confirmed) {
     .sort((a, b) => (b.lastAt?.getTime() ?? 0) - (a.lastAt?.getTime() ?? 0));
 }
 
-/** Comprobantes en formato de lista, con la pre-reserva asociada. */
+/** Comprobantes en formato de lista, con la pre-reserva asociada.
+ *  Incluye los que solo existen como evidencia dentro de la pre-reserva. */
 export function buildReceipts(drafts, receiptMap) {
-  return [...receiptMap.values()]
-    .map(receipt => {
-      const draft = drafts.find(row => row.id === receipt.draftId) || null;
-      return { ...receipt, draft };
-    })
-    .sort((a, b) => (parseDate(b.updatedAt)?.getTime() ?? 0) - (parseDate(a.updatedAt)?.getTime() ?? 0));
+  const items = [...receiptMap.values()].map(receipt => ({
+    ...receipt,
+    draft: drafts.find(row => row.id === receipt.draftId) || null
+  }));
+  const covered = new Set(items.map(item => item.draftId));
+  drafts.forEach(draft => {
+    if (covered.has(draft.id)) return;
+    const synthetic = receiptFromEvidence(draft);
+    if (synthetic) items.push({ ...synthetic, draft });
+  });
+  return items.sort((a, b) => {
+    const aTime = parseDate(a.updatedAt)?.getTime() ?? 0;
+    const bTime = parseDate(b.updatedAt)?.getTime() ?? 0;
+    return bTime - aTime;
+  });
 }

@@ -1,10 +1,10 @@
-﻿/* Inside Spa Â· Dashboard de reservas
-   Orquesta sesiÃ³n, carga de datos, decisiones y refresco. */
+/* Inside Spa · Dashboard de reservas
+   Orquesta sesión, carga de datos, decisiones y refresco. */
 
-import { buildCsv, downloadText, formatDate, formatWeekday, initials, safe } from './core.js?v=2.0.0';
+import { buildCsv, downloadText, formatDate, formatWeekday, initials, safe, setTimeZone, timeAgo } from './core.js?v=2.0.0';
 import {
   buildClients, buildKpis, buildReceipts, filterDrafts, indexByDraftId, isConfirmed,
-  serviceOptions
+  serviceOptions, visibleAmount, AMOUNT_SOURCE_LABELS
 } from './domain.js?v=2.0.0';
 import {
   classifyError, DataError, decide as commitDecision, describeError,
@@ -31,7 +31,7 @@ async function loadSupabaseLibrary() {
       lastError = error;
     }
   }
-  throw new Error(`No se pudo cargar la librerÃ­a de Supabase (${lastError?.message || 'sin detalle'}).`);
+  throw new Error(`No se pudo cargar la librería de Supabase (${lastError?.message || 'sin detalle'}).`);
 }
 
 const state = {
@@ -58,6 +58,7 @@ const state = {
 };
 
 const config = window.INSIDE_SPA_SUPABASE || {};
+setTimeZone(config.timeZone);
 const allowedEmails = (config.allowedEmails || []).map(email => String(email).toLowerCase());
 const isAllowed = email => allowedEmails.includes(String(email || '').toLowerCase());
 
@@ -69,7 +70,7 @@ async function boot() {
     ({ createClient } = await loadSupabaseLibrary());
   } catch (error) {
     view.alertMessage(error.message);
-    view.renderHeader({ todayLabel: formatWeekday(), greeting: greetingFor(), sync: 'Sin conexiÃ³n a la librerÃ­a', connected: false });
+    view.renderHeader({ todayLabel: formatWeekday(), greeting: greetingFor(), sync: 'Sin conexión a la librería', connected: false });
     return;
   }
   if (!config.url || !config.publishableKey) {
@@ -95,14 +96,14 @@ function setHeaderLabels() {
   view.renderHeader({
     todayLabel: formatWeekday(),
     greeting: greetingFor(),
-    sync: state.session ? 'Sincronizandoâ€¦' : 'Conecta tu cuenta',
+    sync: state.session ? 'Sincronizando…' : 'Conecta tu cuenta',
     connected: Boolean(state.session)
   });
 }
 
 function greetingFor() {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Buenos dÃ­as';
+  if (hour < 12) return 'Buenos días';
   if (hour < 19) return 'Buenas tardes';
   return 'Buenas noches';
 }
@@ -120,7 +121,7 @@ function startAutoRefresh() {
   });
 }
 
-/* ---------- SesiÃ³n ---------- */
+/* ---------- Sesión ---------- */
 
 async function applySession(session) {
   if (!session?.user) {
@@ -134,7 +135,7 @@ async function applySession(session) {
   }
   const email = String(session.user.email || '').toLowerCase();
   if (!isAllowed(email)) {
-    view.alertMessage('Tu cuenta no estÃ¡ autorizada para este dashboard.');
+    view.alertMessage('Tu cuenta no está autorizada para este dashboard.');
     await signOut(state.supabase);
     return;
   }
@@ -152,8 +153,8 @@ async function handleAuthChange(event, session) {
     clearData();
     setProfile(null);
     renderAll();
-    view.renderHeader({ todayLabel: formatWeekday(), greeting: greetingFor(), sync: 'SesiÃ³n cerrada', connected: false });
-    view.alertMessage('SesiÃ³n cerrada.');
+    view.renderHeader({ todayLabel: formatWeekday(), greeting: greetingFor(), sync: 'Sesión cerrada', connected: false });
+    view.alertMessage('Sesión cerrada.');
     return;
   }
   if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION', 'USER_UPDATED'].includes(event)) {
@@ -168,19 +169,19 @@ function setProfile(email) {
   const button = document.querySelector('#loginBtn');
   const authButton = document.querySelector('#authBtn');
   if (!email) {
-    if (node) node.textContent = 'Sin sesiÃ³n';
+    if (node) node.textContent = 'Sin sesión';
     if (role) role.textContent = 'Conecta tu cuenta';
     if (avatar) avatar.textContent = 'IS';
-    if (button) button.textContent = 'Iniciar sesiÃ³n';
-    if (authButton) authButton.title = 'Iniciar sesiÃ³n';
+    if (button) button.textContent = 'Iniciar sesión';
+    if (authButton) authButton.title = 'Iniciar sesión';
     return;
   }
   const short = email.split('@')[0].replace(/[._-]+/g, ' ');
   if (node) node.textContent = short.replace(/\b\w/g, letter => letter.toUpperCase());
-  if (role) role.textContent = 'Administradora Â· Inside Spa';
+  if (role) role.textContent = 'Administradora · Inside Spa';
   if (avatar) avatar.textContent = initials(short.replace(/[._-]+/g, ' '));
-  if (button) button.textContent = 'Cerrar sesiÃ³n';
-  if (authButton) authButton.title = 'Cerrar sesiÃ³n';
+  if (button) button.textContent = 'Cerrar sesión';
+  if (authButton) authButton.title = 'Cerrar sesión';
 }
 
 function clearData() {
@@ -218,7 +219,7 @@ async function refresh({ reason = 'manual', silent = false } = {}) {
   if (!state.supabase) return;
   if (state.busy) return;
   state.busy = true;
-  if (!silent) view.setLoading(true, 'Sincronizandoâ€¦');
+  if (!silent) view.setLoading(true, 'Sincronizando…');
   try {
     const result = await loadDashboard(state.supabase);
     state.drafts = result.drafts;
@@ -242,7 +243,7 @@ async function refresh({ reason = 'manual', silent = false } = {}) {
     const kind = classifyError(error);
     const message = kind === 'network' ? 'No se pudo conectar con Supabase.' : `Error al cargar datos: ${error.message}`;
     state.problems = [{ table: 'general', message, kind: 'unknown' }];
-    view.renderHeader({ todayLabel: formatWeekday(), greeting: greetingFor(), sync: 'Error de conexiÃ³n', connected: false });
+    view.renderHeader({ todayLabel: formatWeekday(), greeting: greetingFor(), sync: 'Error de conexión', connected: false });
     if (!silent) view.alertMessage(message);
     renderAll();
   } finally {
@@ -251,8 +252,8 @@ async function refresh({ reason = 'manual', silent = false } = {}) {
 }
 
 function syncLabel(result) {
-  if (result.problems.length) return 'SincronizaciÃ³n con avisos';
-  if (!state.drafts.length && !state.confirmed.length) return 'Sincronizado Â· sin datos aÃºn';
+  if (result.problems.length) return 'Sincronización con avisos';
+  if (!state.drafts.length && !state.confirmed.length) return 'Sincronizado · sin datos aún';
   return 'Datos sincronizados';
 }
 
@@ -342,18 +343,18 @@ async function runDecision(draft, action, note) {
       userEmail: state.userEmail
     });
     view.closeDialog('#reservationDialog');
-    const labels = { approved: 'aprobado', rejected: 'rechazado', needs_info: 'marcado para informaciÃ³n adicional' };
+    const labels = { approved: 'aprobado', rejected: 'rechazado', needs_info: 'marcado para información adicional' };
     view.alertMessage(`Comprobante ${labels[action]} correctamente.`);
     if (result.via === 'fallback' || result.via === 'decision_only' || result.via === 'status_only') {
       view.alertMessage(result.warning
-        ? `DecisiÃ³n guardada, pero el estado no se pudo actualizar: ${result.warning}`
-        : 'DecisiÃ³n guardada por la vÃ­a alternativa (el RPC del dashboard no existe todavÃ­a).');
+        ? `Decisión guardada, pero el estado no se pudo actualizar: ${result.warning}`
+        : 'Decisión guardada por la vía alternativa (el RPC del dashboard no existe todavía).');
     }
     state.loaded = false;
     await refresh({ reason: 'decision', silent: true });
   } catch (error) {
     const detail = error instanceof DataError ? error.message : describeError(error, TABLE.drafts);
-    view.alertMessage(`No se pudo guardar la decisiÃ³n: ${detail}`);
+    view.alertMessage(`No se pudo guardar la decisión: ${detail}`);
   } finally {
     state.busy = false;
     setActionButtonsDisabled(false);
@@ -367,12 +368,13 @@ function setActionButtonsDisabled(disabled) {
   });
 }
 
-/* ---------- ExportaciÃ³n ---------- */
+/* ---------- Exportación ---------- */
 
 function exportCsv() {
   const rows = (state.visibleDrafts.length ? state.visibleDrafts : state.drafts).map(row => {
     const status = state.statuses.get(row.id) || { label: '' };
     const receipt = state.receipts.get(row.id);
+    const { amount, source } = visibleAmount(row, receipt);
     return [
       row.id,
       row.nombre || '',
@@ -380,21 +382,22 @@ function exportCsv() {
       row.phone || '',
       row.servicio || '',
       row.scheduleDate ? `${formatDate(row.scheduleDate)} ${new Intl.DateTimeFormat('es-MX', { hour: 'numeric', minute: '2-digit' }).format(row.scheduleDate)}` : '',
-      row.monto || receipt?.amount || 0,
+      amount,
+      AMOUNT_SOURCE_LABELS[source] || '',
       status.label,
       receipt ? (receipt.estado || 'revision') : 'sin comprobante',
-      isConfirmed(row) ? 'sÃ­' : 'no'
+      isConfirmed(row) ? 'sí' : 'no'
     ];
   });
   const csv = buildCsv(
-    ['CÃ³digo', 'Cliente', 'Correo', 'TelÃ©fono', 'Servicio', 'Fecha y hora del servicio', 'Valor', 'Estado', 'Comprobante', 'Confirmada'],
+    ['Código', 'Cliente', 'Correo', 'Teléfono', 'Servicio', 'Fecha y hora del servicio', 'Valor', 'Origen del valor', 'Estado', 'Comprobante', 'Confirmada'],
     rows
   );
   downloadText(`pre-reservas-inside-spa-${new Date().toISOString().slice(0, 10)}.csv`, csv);
   view.alertMessage(`Exportadas ${rows.length} filas.`);
 }
 
-/* ---------- DiagnÃ³stico ---------- */
+/* ---------- Diagnóstico ---------- */
 
 async function diagnostics({ announce = true } = {}) {
   if (!state.supabase) return;
@@ -408,7 +411,7 @@ async function diagnostics({ announce = true } = {}) {
   view.renderDiagnostics(checks, failures
     ? `${failures} punto(s) con error. Corrige lo indicado y vuelve a revisar.`
     : 'Todo correcto: el dashboard puede leer y escribir en Supabase.');
-  if (announce) view.alertMessage(failures ? `DiagnÃ³stico: ${failures} problema(s) encontrado(s).` : 'DiagnÃ³stico sin problemas.');
+  if (announce) view.alertMessage(failures ? `Diagnóstico: ${failures} problema(s) encontrado(s).` : 'Diagnóstico sin problemas.');
 }
 
 /* ---------- Eventos ---------- */
@@ -426,7 +429,7 @@ function bindEvents() {
   document.querySelector('#runDiagnosticsBtn')?.addEventListener('click', () => diagnostics());
   document.querySelector('#helpBtn')?.addEventListener('click', () => {
     document.querySelector('#diagnostico')?.scrollIntoView({ behavior: 'smooth' });
-    view.alertMessage('Revisa el DiagnÃ³stico para ver el estado de la conexiÃ³n con Supabase.');
+    view.alertMessage('Revisa el Diagnóstico para ver el estado de la conexión con Supabase.');
   });
   document.querySelector('#loginBtn')?.addEventListener('click', handleAuthButton);
   document.querySelector('#authBtn')?.addEventListener('click', handleAuthButton);
@@ -469,11 +472,11 @@ async function sendAccessLink(event) {
     return;
   }
   if (window.location.protocol === 'file:') {
-    if (feedback) feedback.textContent = 'Publica el dashboard en un dominio HTTPS antes de iniciar sesiÃ³n.';
+    if (feedback) feedback.textContent = 'Publica el dashboard en un dominio HTTPS antes de iniciar sesión.';
     return;
   }
   if (button) button.disabled = true;
-  if (feedback) feedback.textContent = 'Enviando enlace seguroâ€¦';
+  if (feedback) feedback.textContent = 'Enviando enlace seguro…';
   const redirectTo = `${window.location.origin}${window.location.pathname}`;
   const { error } = await supabaseSignIn(email, redirectTo);
   if (button) button.disabled = false;
@@ -498,7 +501,7 @@ async function supabaseSignIn(email, redirectTo) {
   }
 }
 
-/* NavegaciÃ³n: si el hash apunta a una secciÃ³n inexistente, lleva al resumen. */
+/* Navegación: si el hash apunta a una sección inexistente, lleva al resumen. */
 function guardHashNavigation() {
   const valid = ['#dashboard', '#reservas', '#comprobantes', '#clientes', '#historico', '#diagnostico'];
   if (window.location.hash && !valid.includes(window.location.hash)) {

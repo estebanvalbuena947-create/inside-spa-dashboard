@@ -46,8 +46,8 @@ const fakeFound = fakePatterns.filter(([pattern]) => pattern.test(html)).map(([,
 check('No quedan métricas ni fechas inventadas en el HTML', fakeFound.length === 0, fakeFound.join(', '));
 
 /* ---------- 4. Lógica de negocio ---------- */
-const { buildKpis, buildClients, buildReceipts, filterDrafts, indexByDraftId, isConfirmed, normalizeDecision, normalizeDraft, normalizeReceipt, serviceOptions, statusOf } = await import(pathToFileURL(join(root, 'js/domain.js')).href);
-const { toAmount, buildCsv, parseDate, isToday, dayKey } = await import(pathToFileURL(join(root, 'js/core.js')).href);
+const { buildKpis, buildClients, buildReceipts, filterDrafts, indexByDraftId, isConfirmed, normalizeConfirmed, normalizeDecision, normalizeDraft, normalizeReceipt, receiptFromEvidence, serviceOptions, statusOf, visibleAmount } = await import(pathToFileURL(join(root, 'js/domain.js')).href);
+const { toAmount, buildCsv, parseDate, isToday, dayKey, dayKeyInZone, todayKey } = await import(pathToFileURL(join(root, 'js/core.js')).href);
 
 check('toAmount convierte "$1,200.50"', toAmount('$1,200.50') === 1200.5, String(toAmount('$1,200.50')));
 check('toAmount convierte "1500"', toAmount('1500') === 1500, String(toAmount('1500')));
@@ -60,27 +60,33 @@ const iso = date => date.toISOString();
 const inTwoHours = new Date(today.getTime() + 2 * 3600 * 1000);
 const tomorrow = new Date(today.getTime() + 26 * 3600 * 1000);
 
+/* Fixtures con la MISMA forma que la base real: `monto_pagado` vacío y el dato
+   económico dentro de `comprobante_revision_datos`. */
+const evidenceOne = {
+  media_url: 'https://files.test/c2.jpg',
+  monto_documento: 1000,
+  fecha_pago_documento: iso(today),
+  comprobante_estado: 'revision',
+  tipo_pago: 'transferencia',
+  banco_emisor: 'BBVA',
+  nombre_beneficiario: 'Juan Ricardo C',
+  cuenta_visible: '•9553',
+  motivos_revision_pago: ['ESTADO_PAGO_NO_CORROBORADO', 'FALTA_FOLIO_PARA_IDENTIFICAR_COMPROBANTE']
+};
 const draftRows = [
-  { id: 1, nombre: 'Ana López', email: 'ana@test.com', nombre_servicio: 'Masaje relajante', masaje_inicio: iso(inTwoHours), monto_pagado: '1200', estado_reserva: 'requiere_revision_pago', comprobante_revision_at: iso(today) },
-  { id: 2, nombre: 'Luis Pérez', email: 'luis@test.com', nombre_servicio: 'Jacuzzi', jacuzzi_inicio: iso(tomorrow), monto_pagado: '$900.50', estado_reserva: 'procesando_pabau' },
-  { id: 3, nombre: 'Marta Ruiz', nombre_servicio: 'Facial', estado_reserva: 'confirmado', reserva_confirmada: true, monto_pagado: 800, comprobante_revision_at: iso(today) },
-  { id: 4, nombre: 'Ana López', email: 'ana@test.com', nombre_servicio: 'Facial', estado_reserva: 'requiere_revision' }
-].map(row => ({
-  ...row,
-  monto: row.monto_pagado,
-  estado: row.estado_reserva,
-  confirmada: row.reserva_confirmada,
-  creado_at: row.comprobante_revision_at,
-  actualizado_at: row.comprobante_revision_at
-}));
+  { id: 1, nombre: 'Ana López', email: 'ana@test.com', nombre_servicio: 'Masaje relajante', servicio: 'masaje_relajante', masaje_inicio: iso(inTwoHours), monto_pagado: '1200', estado_reserva: 'requiere_revision_pago', comprobante_revision_at: iso(today) },
+  { id: 2, nombre: 'Luis Pérez', email: 'luis@test.com', nombre_servicio: 'Jacuzzi', servicio: 'jacuzzi', jacuzzi_inicio: iso(tomorrow), monto_pagado: null, monto_esperado: 1000, comprobante_revision_datos: evidenceOne, estado_reserva: 'procesando_pabau', comprobante_revision_at: iso(today) },
+  { id: 3, nombre: 'Marta Ruiz', nombre_servicio: 'Facial', servicio: 'facial', estado_reserva: 'confirmado', reserva_confirmada: true, monto_pagado: 800, comprobante_revision_at: iso(today) },
+  { id: 4, nombre: 'Ana López', email: 'ana@test.com', nombre_servicio: 'Facial', servicio: 'facial', estado_reserva: 'requiere_revision' },
+  { id: 5, nombre: 'Sofía Nava', email: 'sofia@test.com', nombre_servicio: 'Jacuzzi', servicio: 'jacuzzi', jacuzzi_inicio: iso(inTwoHours), monto_pagado: null, estado_reserva: 'creando_retencion' }
+];
 const confirmedRows = [
   { id: 91, nombre: 'Carlos Díaz', email: 'carlos@test.com', nombre_servicio: 'Masaje profundo', masaje_inicio: iso(inTwoHours), monto_pagado: 1500, pabau_confirmado_at: iso(today), reserva_confirmada: true },
   { id: 92, nombre: 'Carlos Díaz', email: 'carlos@test.com', nombre_servicio: 'Jacuzzi', jacuzzi_inicio: iso(tomorrow), monto_pagado: '700', pabau_confirmado_at: iso(new Date(today.getTime() - 3 * 86400000)) }
-].map(row => ({ ...row, monto: row.monto_pagado, confirmada: row.reserva_confirmada, actualizado_at: row.pabau_confirmado_at }));
+];
 const receiptRows = [
-  { reserva_draft_id: 1, estado: 'revision', datos: { monto_pago: '1200', media_url: 'https://files.test/c1.jpg', fecha_pago: iso(today), referencia: 'REF-1' }, actualizado_at: iso(today) },
-  { reserva_draft_id: 1, estado: 'revision', datos: { monto_pago: '1200' }, actualizado_at: iso(new Date(today.getTime() - 86400000)) },
-  { reserva_draft_id: 2, estado: 'pendiente', datos: {}, actualizado_at: iso(today) }
+  { reserva_draft_id: 1, estado: 'revision', datos: { monto_pago: '1200', media_url: 'https://files.test/c1.jpg', fecha_pago: iso(today), folio: 'REF-1', tipo_pago: 'transferencia' }, creado_at: iso(today), actualizado_at: iso(today) },
+  { reserva_draft_id: 1, estado: 'revision', datos: { monto_pago: '1200' }, creado_at: iso(new Date(today.getTime() - 86400000)), actualizado_at: iso(new Date(today.getTime() - 86400000)) }
 ];
 const decisionRows = [
   { id: 5, reservation_draft_id: 4, action: 'rejected', previous_status: 'requiere_revision', resulting_status: 'rechazado', decided_by_email: 'contacto@insidespa.com.mx', created_at: iso(today) },
@@ -89,7 +95,7 @@ const decisionRows = [
 const drafts = draftRows.map(normalizeDraft);
 /* Copia sin decisiones aplicadas, para probar los filtros sobre el estado base. */
 const renormalized = drafts.map(row => ({ ...row, monto: toAmount(row.monto) }));
-const confirmed = confirmedRows.map(normalizeConfirmedRow);
+const confirmed = confirmedRows.map(normalizeConfirmed);
 const decisions = decisionRows.map(normalizeDecision);
 const receipts = new Map();
 receiptRows.map(normalizeReceipt).forEach(receipt => {
@@ -99,22 +105,24 @@ receiptRows.map(normalizeReceipt).forEach(receipt => {
   if (!current || a >= b) receipts.set(receipt.draftId, receipt);
 });
 
-function normalizeConfirmedRow(row) {
-  return { ...row, id: row.id, nombre: row.nombre, servicio: row.nombre_servicio, monto: toAmount(row.monto_pagado), scheduleDate: parseDate(row.masaje_inicio || row.jacuzzi_inicio), scheduleAt: row.masaje_inicio || row.jacuzzi_inicio, confirmedAt: row.pabau_confirmado_at };
-}
-
-check('Comprobante más reciente por reserva', receipts.get(1).datos.referencia === 'REF-1');
-check('Normaliza monto de texto con símbolo', drafts[1].monto === 900.5, String(drafts[1].monto));
+check('Comprobante más reciente por reserva (folio)', receipts.get(1).reference === 'REF-1', String(receipts.get(1).reference));
+check('Monto del comprobante leído de datos.monto_pago', receipts.get(1).amount === 1200, String(receipts.get(1).amount));
+check('Monto de la reserva se usa cuando existe', visibleAmount(drafts[0], receipts.get(1)).amount === 1200 && visibleAmount(drafts[0], receipts.get(1)).source === 'reserva');
+check('Monto tomado de la evidencia cuando monto_pagado es null', drafts[1].monto === 1000, String(drafts[1].monto));
+check('Evidencia produce comprobante aunque no haya fila en la tabla', Boolean(receiptFromEvidence(drafts[1])), 'sin evidencia');
+check('Motivos de revisión de n8n llegan al modelo', drafts[1].motivosPago.length === 2, String(drafts[1].motivosPago.length));
+check('Tipo de pago y banco visibles', receiptFromEvidence(drafts[1]).bank === 'BBVA' && receiptFromEvidence(drafts[1]).method === 'transferencia');
 check('Detecta confirmada por reserva_confirmada', isConfirmed(drafts[2]) === true);
 check('Estado "requiere_revision_pago" => review', statusOf(drafts[0]).key === 'review', statusOf(drafts[0]).key);
 check('Estado "procesando_pabau" => processing', statusOf(drafts[1]).key === 'processing', statusOf(drafts[1]).key);
+check('Estado "creando_retencion" => processing', statusOf(drafts[4]).key === 'processing', statusOf(drafts[4]).key);
 check('Rechazo previo manda sobre el estado base', statusOf(drafts[3], decisions.find(d => d.draftId === 4)).key === 'rejected');
 
 const kpis = buildKpis(drafts, confirmed, decisions, receipts);
-check('KPI "por gestionar" = 2 (1 con info + 1 en confirmación)', kpis.toManage === 2, String(kpis.toManage));
+check('KPI "por gestionar" = 3 (info + confirmación + retención)', kpis.toManage === 3, String(kpis.toManage));
 check('KPI confirmadas hoy = 2 (1 draft + 1 reserva)', kpis.confirmedTodayCount === 2, String(kpis.confirmedTodayCount));
 check('KPI ingresos de hoy = 2300', kpis.confirmedAmountToday === 2300, String(kpis.confirmedAmountToday));
-check('KPI pendiente por confirmar = 2100.50', Math.abs(kpis.pendingAmount - 2100.5) < 0.001, String(kpis.pendingAmount));
+check('KPI por confirmar suma reserva + comprobante = 2200', Math.abs(kpis.pendingAmount - 2200) < 0.001, String(kpis.pendingAmount));
 check('KPI próximas 24 h = 1', kpis.upcomingCount === 1, String(kpis.upcomingCount));
 check('KPI rechazadas = 1', kpis.rejectedCount === 1, String(kpis.rejectedCount));
 
@@ -124,7 +132,7 @@ check('Decisión "needs_info" produce estado propio', statuses.get(1)?.key === '
 check('Estado "en confirmación" no se pierde', statuses.get(2)?.key === 'processing', statuses.get(2)?.key);
 const onlyReview = filterDrafts(renormalized, baseStatuses, { status: 'review' });
 check('Filtro por estado "review" devuelve 2', onlyReview.length === 2, String(onlyReview.length));
-check('Sin decisiones, 3 pre-reservas por gestionar', buildKpis(renormalized, confirmed, [], receipts).toManage === 3);
+check('Sin decisiones, 4 pre-reservas por gestionar', buildKpis(renormalized, confirmed, [], receipts).toManage === 4, String(buildKpis(renormalized, confirmed, [], receipts).toManage));
 const onlyInfo = filterDrafts(drafts, statuses, { status: 'info' });
 check('Filtro por estado "info" devuelve 1', onlyInfo.length === 1, String(onlyInfo.length));
 const byQuery = filterDrafts(drafts, statuses, { query: 'ana' });
@@ -132,14 +140,15 @@ check('Búsqueda por nombre devuelve 2', byQuery.length === 2, String(byQuery.le
 const byService = filterDrafts(drafts, statuses, { service: 'Facial' });
 check('Filtro por servicio devuelve 2', byService.length === 2, String(byService.length));
 const byDay = filterDrafts(renormalized, baseStatuses, { date: new Date().toISOString().slice(0, 10) });
-check('Filtro por día de hoy devuelve 2', byDay.length === 2, String(byDay.length));
+check('Filtro por día de hoy devuelve 3', byDay.length === 3, String(byDay.length));
 check('dayKey no desfasa "YYYY-MM-DD"', dayKey('2026-09-23') === '2026-09-23', String(dayKey('2026-09-23')));
 check('dayKey usa la hora local en ISO', dayKey('2026-09-23T18:30:00Z') === (() => { const d = new Date('2026-09-23T18:30:00Z'); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(), String(dayKey('2026-09-23T18:30:00Z')));
-check('isToday acepta fecha sin hora', isToday(new Date().toISOString().slice(0, 10)) === true);
+check('isToday acepta fecha sin hora', isToday(todayKey()) === true, todayKey());
+check('dayKeyInZone usa la zona del negocio, no la del navegador', dayKeyInZone('2026-09-23T03:12:27+00:00', 'America/Mexico_City') === '2026-09-22', String(dayKeyInZone('2026-09-23T03:12:27+00:00', 'America/Mexico_City')));
 check('Opciones de servicio ordenadas', serviceOptions(drafts).join('|') === 'Facial|Jacuzzi|Masaje relajante', serviceOptions(drafts).join('|'));
 
 const clients = buildClients(drafts, confirmed);
-check('Clientes consolidados = 4', clients.length === 4, String(clients.length));
+check('Clientes consolidados = 5', clients.length === 5, String(clients.length));
 check('Cliente repetido suma 2 reservas', clients.find(client => client.email === 'ana@test.com')?.total === 2);
 check('Cliente confirmado acumula valor', clients.find(client => client.email === 'carlos@test.com')?.amount === 2200);
 

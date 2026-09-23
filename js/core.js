@@ -155,29 +155,55 @@ export function downloadText(filename, text, mime = 'text/csv;charset=utf-8') {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/** Zona horaria del negocio (se puede sobreescribir desde supabase-config.js). */
+let businessTimeZone = (typeof window !== 'undefined' && window.INSIDE_SPA_SUPABASE?.timeZone) || 'America/Mexico_City';
+
+export const getTimeZone = () => businessTimeZone;
+export const setTimeZone = zone => { if (zone && typeof zone === 'string') businessTimeZone = zone; };
+
+/**
+ * Clave YYYY-MM-DD en la zona horaria indicada (por defecto la del spa).
+ * Evita el desfase de toISOString y el de la zona del navegador: si un pago se
+ * confirma el 23 a la 01:00 en Ciudad de México, cuenta como hoy aunque quien
+ * revise el dashboard esté en otra zona horaria.
+ */
+export function dayKeyInZone(value, timeZone = businessTimeZone) {
+  if (typeof value === 'string') {
+    const plain = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (plain) return `${plain[1]}-${plain[2]}-${plain[3]}`;
+  }
+  const date = parseDate(value);
+  if (!date) return null;
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(date);
+    return parts;
+  } catch {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
+  }
+}
+
+export const todayKey = (timeZone = businessTimeZone) => dayKeyInZone(new Date(), timeZone);
+
 /** Clave local YYYY-MM-DD (evita el desfase de zona horaria de toISOString).
  *  Acepta "YYYY-MM-DD" tal cual y convierte fechas con hora a la zona local. */
 export function dayKey(value) {
   if (typeof value === 'string') {
     const plain = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (plain) return `${plain[1]}-${plain[2]}-${plain[3]}`;
-    const withTime = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})[T ]/);
-    if (withTime) {
-      const date = parseDate(value);
-      if (!date) return `${withTime[1]}-${withTime[2]}-${withTime[3]}`;
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    }
   }
-  const date = parseDate(value);
-  if (!date) return null;
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${date.getFullYear()}-${month}-${day}`;
+  return dayKeyInZone(value);
 }
 
-export const isToday = value => {
-  const key = dayKey(value);
-  return key !== null && key === dayKey(new Date());
+export const isToday = (value, timeZone = businessTimeZone) => {
+  const key = dayKeyInZone(value, timeZone);
+  return key !== null && key === todayKey(timeZone);
 };
 
 export const isWithinHours = (value, hours) => {
