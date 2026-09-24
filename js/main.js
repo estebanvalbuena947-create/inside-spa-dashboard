@@ -374,13 +374,15 @@ function exportCsv() {
     const status = state.statuses.get(row.id) || { label: '' };
     const receipt = state.receipts.get(row.id);
     const { amount, source } = visibleAmount(row, receipt);
+    const stamp = value => (value ? `${formatDate(value)} ${new Intl.DateTimeFormat('es-MX', { hour: 'numeric', minute: '2-digit' }).format(value)}` : '');
     return [
       row.id,
       row.nombre || '',
       row.email || '',
       row.phone || '',
       row.servicio || '',
-      row.scheduleDate ? `${formatDate(row.scheduleDate)} ${new Intl.DateTimeFormat('es-MX', { hour: 'numeric', minute: '2-digit' }).format(row.scheduleDate)}` : '',
+      stamp(row.enteredAt || row.reviewAt || row.createdAt),
+      stamp(row.scheduleDate),
       amount,
       AMOUNT_SOURCE_LABELS[source] || '',
       status.label,
@@ -389,7 +391,7 @@ function exportCsv() {
     ];
   });
   const csv = buildCsv(
-    ['Código', 'Cliente', 'Correo', 'Teléfono', 'Servicio', 'Fecha y hora del servicio', 'Valor', 'Origen del valor', 'Estado', 'Comprobante', 'Confirmada'],
+    ['Código', 'Cliente', 'Correo', 'Teléfono', 'Servicio', 'Ingresó', 'Cita (fecha y hora)', 'Valor', 'Origen del valor', 'Estado', 'Comprobante', 'Confirmada'],
     rows
   );
   downloadText(`pre-reservas-inside-spa-${new Date().toISOString().slice(0, 10)}.csv`, csv);

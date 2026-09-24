@@ -49,7 +49,7 @@
         <section class="overview" id="dashboard">
           <div class="section-heading">
             <div><h2>Resumen de hoy</h2><p>Datos reales de tu operación · última actualización <span id="lastUpdate">—</span>.</p></div>
-            <label class="date-button" for="dayFilter">▣ <input id="dayFilter" type="date" aria-label="Filtrar por día" /></label>
+            <label class="date-button" title="Filtra por el día en que entró la pre-reserva">▣ <input id="dayFilter" type="date" aria-label="Filtrar por el día en que entró la pre-reserva" /> <span class="date-hint">día en que ingresó</span></label>
           </div>
           <div class="metrics">
             <article class="metric-card"><div class="metric-icon sand">◷</div><div><p>Pre-reservas por gestionar</p><strong id="pendingMetric">—</strong><small id="pendingChange" class="muted">Sin datos cargados</small></div></article>
@@ -77,14 +77,14 @@
                 <option value="rejected">Rechazadas</option>
               </select>
             </div>
-            <div class="table-wrap"><table><thead><tr><th>CLIENTE</th><th>SERVICIO</th><th>FECHA Y HORA</th><th>VALOR</th><th>ESTADO</th><th aria-label="Acciones"></th></tr></thead><tbody id="reservationBody"></tbody></table></div>
+            <div class="table-wrap"><table><thead><tr><th>CLIENTE</th><th>SERVICIO</th><th>INGRESÓ</th><th>CITA</th><th>VALOR</th><th>ESTADO</th><th aria-label="Acciones"></th></tr></thead><tbody id="reservationBody"></tbody></table></div>
             <p class="empty-state" id="emptyState" hidden>No hay reservas que coincidan con los filtros.</p>
           </article>
 
           <aside class="right-column">
             <article class="panel activity-panel"><div class="panel-header"><div><h2>Actividad reciente</h2><p>Últimas decisiones del equipo</p></div><button class="more-btn" type="button" id="reloadActivity" aria-label="Actualizar actividad">⟳</button></div><ol class="activity-list" id="activityList"></ol><a class="view-history" href="#historico">Ver historial completo →</a></article>
             <article class="occupancy-card" id="occupancyCard">
-              <div><h3>Pre-reservas con fecha de hoy</h3></div>
+              <div><h3>Pre-reservas de hoy</h3></div>
               <div class="circle-progress"><span id="occupancyRatio">—<small>pre-reservas</small></span></div>
             </article>
           </aside>

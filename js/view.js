@@ -97,10 +97,14 @@ function describePending(kpis) {
 /** Cupos que se consideran ocupados en un día (solo para el dibujo del anillo). */
 const CAPACITY_POR_DIA = 18;
 
+/** Fecha en que entró la pre-reserva (no la de la cita). */
+export const draftEnteredAt = draft => draft.enteredAt || draft.reviewAt || draft.createdAt || draft.updatedAt;
+
 export function renderOccupancy(state) {
-  /* Tarjeta sencilla: cuántas pre-reservas tienen fecha de servicio hoy.
-     El anillo solo dibuja esa proporción; no se muestran porcentajes. */
-  const draftsToday = state.drafts.filter(row => isSameDay(row.scheduleDate));
+  /* Tarjeta sencilla: pre-reservas que ENTRARON hoy, contadas por su fecha de
+     creación. La fecha de la cita suele ser días después, así que no sirve. */
+  const draftsToday = state.drafts.filter(draft => isToday(draftEnteredAt(draft)));
+
   const ratioNode = $('#occupancyRatio');
   if (ratioNode) ratioNode.innerHTML = `${draftsToday.length}<small>${draftsToday.length === 1 ? 'pre-reserva' : 'pre-reservas'}</small>`;
 
@@ -110,8 +114,6 @@ export function renderOccupancy(state) {
     circle.style.setProperty('--fill', `${percent}%`);
   }
 }
-
-const isSameDay = value => isToday(value);
 
 /* ---------- Tabla de pre-reservas ---------- */
 
@@ -134,6 +136,7 @@ export function renderReservations(state) {
     return `<tr>
       <td><div class="client-cell"><div class="avatar">${safe(initials(row.nombre))}</div><div><span class="client-name">${safe(row.nombre || 'Cliente sin nombre')}</span><span class="client-email">${safe(row.email || row.phone || 'Sin contacto')}</span></div></div></td>
       <td class="service">${safe(row.servicio || 'Servicio por confirmar')}</td>
+      <td><span class="date">${safe(formatDayLabel(row.enteredAt || draftEnteredAt(row)) || DASH)}</span><span class="time">${safe(formatTime(row.enteredAt || draftEnteredAt(row)) || DASH)}</span></td>
       <td><span class="date">${safe(formatDayLabel(row.scheduleDate) || 'Horario pendiente')}</span><span class="time">${safe(formatTime(row.scheduleDate) || 'Por definir')}</span></td>
       <td class="price">${amountCell(row, receipt)}</td>
       <td><span class="badge ${safe(status.key)}">${safe(status.label)}</span></td>

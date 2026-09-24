@@ -72,10 +72,16 @@ export const PAYMENT_REASON_LABELS = {
   MONTO_INSUFICIENTE_O_NO_LEGIBLE: 'Monto insuficiente o no legible'
 };
 
+/** Fecha en que la pre-reserva entró al sistema (no la fecha de la cita).
+ *  `comprobante_revision_at` es la marca real del proyecto. */
+export const enteredAtOf = row => firstValue(row.reviewAt, row.createdAt, row.updatedAt, row.comprobante_revision_at);
+/** Fecha en que la reserva quedó confirmada (o falló). */
+export const closedAtOf = row => firstValue(row.confirmedAt, row.retencionExpiraAt, row.updatedAt, row.reviewAt, row.createdAt);
+
 export function normalizeDraft(row) {
   const schedule = firstValue(row.masaje_inicio, row.jacuzzi_inicio, row.fecha_reserva, row.fecha_servicio, row.inicio);
   const evidence = row.comprobante_revision_datos && typeof row.comprobante_revision_datos === 'object' ? row.comprobante_revision_datos : null;
-  return {
+  const draft = {
     ...row,
     id: Number(row.id),
     nombre: firstValue(row.nombre, row.cliente, row.nombre_cliente, evidence?.nombre_reserva, evidence?.nombre_perfil),
@@ -102,6 +108,11 @@ export function normalizeDraft(row) {
     updatedAt: firstValue(row.updated_at, row.actualizado_at, row.comprobante_revision_at),
     confirmedAt: firstValue(row.pabau_confirmado_at, row.confirmado_at)
   };
+  /* enteredAt: cuándo llegó la pre-reserva (la UI se rige por esta fecha, no por
+     la de la cita). closedAt: cuándo se confirmó o cuándo falló. */
+  draft.enteredAt = parseDate(enteredAtOf(draft));
+  draft.closedAt = parseDate(closedAtOf(draft));
+  return draft;
 }
 
 export function normalizeConfirmed(row) {
@@ -267,7 +278,9 @@ export function buildKpis(drafts, confirmed, decisions, receiptMap) {
   const processing = drafts.filter(row => keyOf(row) === 'processing');
   const rejected = drafts.filter(row => keyOf(row) === 'rejected');
   const manageable = [...pending, ...review, ...processing];
-  const draftsConfirmedToday = drafts.filter(row => keyOf(row) === 'confirmed' && isToday(row.reviewAt || row.updatedAt));
+  /* "Hoy" se rige por la fecha en que la reserva se confirmó, no por la fecha de
+     la cita: una pre-reserva puede entrar hoy y tener cita en otra semana. */
+  const draftsConfirmedToday = drafts.filter(row => keyOf(row) === 'confirmed' && isToday(closedAtOf(row)));
   const confirmedToday = confirmed.filter(row => isToday(row.confirmedAt));
   const amountOf = row => {
     const receipt = receiptMap.get(row.id) || receiptFromEvidence(row);
@@ -317,7 +330,8 @@ export function filterDrafts(drafts, statuses, { query = '', service = '', statu
     const state = statuses.get(row.id)?.key || 'pending';
     if (status && state !== status) return false;
     if (service && row.servicio !== service) return false;
-    if (targetDay && dayKey(row.scheduleDate || row.reviewAt || row.createdAt) !== targetDay) return false;
+    /* El filtro por día es por la fecha en que ENTRÓ la pre-reserva. */
+    if (targetDay && dayKey(row.enteredAt || enteredAtOf(row)) !== targetDay) return false;
     if (!text) return true;
     return [row.nombre, row.email, row.phone, row.id, row.servicio]
       .some(value => String(value ?? '').toLowerCase().includes(text));
@@ -343,6 +357,9 @@ export function statusCounts(drafts, statuses) {
 export function buildClients(drafts, confirmed) {
   const map = new Map();
   const keyOf = row => String(row.email || row.phone || row.nombre || row.id).toLowerCase();
+  const remember = (client, when) => {
+    if (when && (!client.lastAt || when > client.lastAt)) client.lastAt = when;
+  };
   const ensure = row => {
     const key = keyOf(row);
     if (!map.has(key)) {
@@ -367,8 +384,9 @@ export function buildClients(drafts, confirmed) {
     client.pendingCount += 1;
     client.amount += visibleAmount(row, null).amount;
     if (row.servicio) client.services.add(row.servicio);
-    const when = row.scheduleDate || parseDate(row.reviewAt);
-    if (when && (!client.lastAt || when > client.lastAt)) client.lastAt = when;
+    /* Última actividad: la más reciente entre la cita y el ingreso. */
+    remember(client, row.scheduleDate);
+    remember(client, parseDate(enteredAtOf(row)));
   });
   confirmed.forEach(row => {
     const client = ensure(row);
@@ -376,8 +394,8 @@ export function buildClients(drafts, confirmed) {
     client.confirmedCount += 1;
     client.amount += toAmount(row.monto);
     if (row.servicio) client.services.add(row.servicio);
-    const when = row.scheduleDate || parseDate(row.confirmedAt);
-    if (when && (!client.lastAt || when > client.lastAt)) client.lastAt = when;
+    remember(client, row.scheduleDate);
+    remember(client, parseDate(row.confirmedAt));
   });
   return [...map.values()]
     .map(client => ({ ...client, services: [...client.services] }))

@@ -40,26 +40,24 @@ const dom = installDom({ config });
 const view = await import(pathToFileURL(join(root, 'js/view.js')).href);
 
 const hoy = core.todayKey();
-const draftsToday = drafts.filter(row => core.isToday(row.scheduleDate));
+/* La tarjeta se rige por la fecha en que entró la pre-reserva. */
+const enteredOf = row => row.enteredAt || row.reviewAt || row.createdAt || row.updatedAt;
+const draftsToday = drafts.filter(row => core.isToday(enteredOf(row)));
 const confirmedToday = confirmed.filter(row => core.isToday(row.scheduleDate));
 
 view.renderOccupancy({ drafts, confirmed }, 18);
 
-console.log('\n=== TARJETA "PRE-RESERVAS CON FECHA DE HOY" CON DATOS REALES ===');
+console.log('\n=== TARJETA "PRE-RESERVAS DE HOY" CON DATOS REALES ===');
 console.log(`Hoy (zona del spa): ${hoy}`);
-console.log(`Pre-reservas con servicio hoy : ${draftsToday.length}`);
-draftsToday.forEach(row => console.log(`   · #${row.id} ${row.nombre || ''} — ${row.servicio || 'sin servicio'} (${row.estado})`));
-console.log(`Confirmadas con servicio hoy  : ${confirmedToday.length}`);
-confirmedToday.forEach(row => console.log(`   · #${row.id} ${row.nombre || ''} — ${row.servicio || 'sin servicio'}`));
+console.log(`Pre-reservas que INGRESARON hoy (fecha de creación) : ${draftsToday.length}`);
+draftsToday.forEach(row => console.log(`   · #${row.id} ${String(row.nombre || '').slice(0, 34)} — entró ${core.dayKey(enteredOf(row))} · cita ${row.scheduleDate ? core.dayKey(row.scheduleDate) : 'sin cita'} (${row.estado})`));
+console.log(`Confirmadas con servicio hoy (referencia) : ${confirmedToday.length}`);
 
 console.log('\n--- LO QUE MUESTRA LA TARJETA ---');
-console.log(`Título      : ${/Pre-reservas con fecha de hoy/.test(readFileSync(join(root, 'index.html'), 'utf8')) ? 'Pre-reservas con fecha de hoy' : '(no encontrado)'}`);
+console.log(`Título      : ${/Pre-reservas de hoy/.test(readFileSync(join(root, 'index.html'), 'utf8')) ? 'Pre-reservas de hoy' : '(no encontrado)'}`);
 console.log(`Número      : ${dom.markup('occupancyRatio').replace(/<[^>]+>/g, ' ').trim()}`);
-console.log(`Porcentaje  : ${dom.markup('occupancyPercent').replace(/<[^>]+>/g, ' ').trim()}`);
-console.log(`Secundario  : ${dom.text('occupancyChange')}`);
-console.log(`Nota        : ${dom.text('occupancyNote')}`);
 
 const esperado = `${draftsToday.length}`;
 const coincide = dom.markup('occupancyRatio').startsWith(esperado);
-console.log(`\n${coincide ? '✓' : '✗'} El número de la tarjeta coincide con las pre-reservas de hoy (${esperado}).`);
+console.log(`\n${coincide ? '✓' : '✗'} La tarjeta cuenta las pre-reservas que ingresaron hoy (${esperado}).`);
 process.exitCode = coincide ? 0 : 1;

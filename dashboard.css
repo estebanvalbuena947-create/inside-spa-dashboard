@@ -77,6 +77,8 @@ textarea.auth-input{resize:vertical;min-height:64px}
 /* Ocupación: el anillo usa la variable --fill que calcula app.js */
 /* El anillo toma el color del proyecto y la proporción real de pre-reservas. */
 .circle-progress{--fill:0%;background:conic-gradient(#d7b67e var(--fill),#ffffff30 0)}
+/* Filtro por día: aclara que filtra por la fecha en que entró la pre-reserva. */
+.date-hint{font-size:10px;color:#84908b;margin-left:8px}
 /* La tarjeta solo muestra el título y el número de pre-reservas de hoy. */
 .occupancy-card{grid-template-columns:1fr;justify-items:center;row-gap:14px;padding:21px 21px 24px;text-align:center}
 .occupancy-card h3{font-size:11px;font-weight:500;margin:0;color:#d5e2dc;font-family:"DM Sans",sans-serif;letter-spacing:0}

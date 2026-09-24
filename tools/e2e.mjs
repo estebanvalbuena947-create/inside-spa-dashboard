@@ -144,19 +144,22 @@ check('Se registraron las 3 decisiones', mockDb.dashboard_reservation_decisions.
 await app.refresh({ reason: 'e2e-2' });
 await wait(300);
 
-/* ---------- 5.b Tarjeta "Pre-reservas con fecha de hoy" ---------- */
+/* ---------- 5.b Tarjeta "Pre-reservas de hoy" (por fecha de ingreso) ---------- */
 const { isToday } = await import(pathToFileURL(join(root, 'js/core.js')).href);
-const draftsToday = app.state.drafts.filter(row => isToday(row.scheduleDate)).length;
+/* Cuenta por la fecha en que entró la pre-reserva, no por la de la cita. */
+const draftsToday = app.state.drafts.filter(row => isToday(row.enteredAt || row.reviewAt || row.createdAt)).length;
 const occupancyTitle = doc.getElementById('occupancyCard')?.innerHTML || doc.querySelector('#occupancyCard')?.outerHTML || '';
-check('La tarjeta se titula "Pre-reservas con fecha de hoy"',
-  /Pre-reservas con fecha de hoy/.test(occupancyTitle)
-  || /Pre-reservas con fecha de hoy/.test(readFileSync(join(root, 'index.html'), 'utf8')),
+check('La tarjeta se titula "Pre-reservas de hoy"',
+  /Pre-reservas de hoy/.test(occupancyTitle)
+  || /Pre-reservas de hoy/.test(readFileSync(join(root, 'index.html'), 'utf8')),
   occupancyTitle.slice(0, 100));
-check('El número principal son las pre-reservas de hoy',
+check('El número son las pre-reservas que ingresaron hoy',
   (doc.getElementById('occupancyRatio')?.innerHTML || '').startsWith(String(draftsToday)),
   `esperado ${draftsToday} · tiene "${doc.getElementById('occupancyRatio')?.innerHTML}"`);
 check('La tarjeta no muestra porcentaje ni notas', !doc.getElementById('occupancyPercent') && !doc.getElementById('occupancyNote'),
   `percent=${Boolean(doc.getElementById('occupancyPercent'))} note=${Boolean(doc.getElementById('occupancyNote'))}`);
+check('La tabla tiene columna de ingreso y de cita', (doc.getElementById('reservationBody')?.innerHTML || '').split('</td>').length >= 14,
+  String((doc.getElementById('reservationBody')?.innerHTML || '').split('</td>').length));
 
 /* ---------- 6. El diagnóstico no deja basura en el histórico ---------- */
 const decisionsBefore = mockDb.dashboard_reservation_decisions.length;
