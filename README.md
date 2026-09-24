@@ -243,6 +243,7 @@ node tools/check-authenticated.mjs # valida RLS/permisos con una sesión autenti
 | Estados reconocidos | `CONFIRMED_STATES`, `REVIEW_STATES`, `PROCESSING_STATES`, `REJECTED_STATES` en `js/domain.js` |
 | Textos de los motivos de revisión de n8n | `PAYMENT_REASON_LABELS` en `js/domain.js` |
 | Color/estilo de un badge | `dashboard.css` |
+| Qué cuenta como "de hoy" | `enteredAtOf()` y `closedAtOf()` en `js/domain.js`: la tarjeta y el filtro por día usan la **fecha de creación** de la pre-reserva (`comprobante_revision_at`) |
 
 ---
 
