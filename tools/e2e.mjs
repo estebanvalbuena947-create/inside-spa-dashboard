@@ -144,20 +144,34 @@ check('Se registraron las 3 decisiones', mockDb.dashboard_reservation_decisions.
 await app.refresh({ reason: 'e2e-2' });
 await wait(300);
 
-/* ---------- 5.b Indicador del día: pre-reservas de hoy + confirmadas hoy ---------- */
+/* ---------- 5.b Indicador "Reservas de hoy" ---------- */
 const { isToday } = await import(pathToFileURL(join(root, 'js/core.js')).href);
-const entradas = app.state.drafts.filter(row => isToday(row.enteredAt || row.reviewAt || row.createdAt)).length;
-const confirmadasHoy = app.state.confirmed.filter(row => isToday(row.confirmedAt)).length;
-const total = entradas + confirmadasHoy;
+/* Confirmadas hoy + las que tienen servicio hoy, sin contar dos veces. */
+const ids = new Set();
+let confirmadasHoy = 0;
+let conCitaHoy = 0;
+app.state.confirmed.forEach(row => {
+  if (ids.has(row.id)) return;
+  ids.add(row.id);
+  if (isToday(row.confirmedAt) || isToday(row.reviewAt || row.updatedAt)) confirmadasHoy += 1;
+  else if (isToday(row.scheduleDate)) conCitaHoy += 1;
+});
+app.state.drafts.filter(row => row.confirmada === true || String(row.estado || '') === 'confirmado').forEach(row => {
+  if (ids.has(row.id)) return;
+  ids.add(row.id);
+  if (isToday(row.confirmedAt) || isToday(row.reviewAt || row.updatedAt)) confirmadasHoy += 1;
+  else if (isToday(row.scheduleDate)) conCitaHoy += 1;
+});
+const total = confirmadasHoy + conCitaHoy;
 const occupancyTitle = doc.getElementById('occupancyCard')?.innerHTML || doc.querySelector('#occupancyCard')?.outerHTML || '';
-check('La tarjeta se titula "Movimiento de hoy"',
-  /Movimiento de hoy/.test(occupancyTitle) || /Movimiento de hoy/.test(readFileSync(join(root, 'index.html'), 'utf8')),
+check('La tarjeta se titula "Reservas de hoy"',
+  /Reservas de hoy/.test(occupancyTitle) || /Reservas de hoy/.test(readFileSync(join(root, 'index.html'), 'utf8')),
   occupancyTitle.slice(0, 100));
-check('El indicador suma pre-reservas de hoy y reservas confirmadas hoy',
+check('El indicador cuenta las reservas que ocurrieron hoy',
   (doc.getElementById('occupancyRatio')?.innerHTML || '').startsWith(String(total)),
-  `esperado ${total} (${entradas} pre + ${confirmadasHoy} res) · tiene "${doc.getElementById('occupancyRatio')?.innerHTML}"`);
-check('La etiqueta del anillo desglosa pre-reservas y reservas',
-  /pre ·/.test(doc.getElementById('occupancyRatio')?.innerHTML || '') || /reservas de hoy|pre-reservas/.test(doc.getElementById('occupancyRatio')?.innerHTML || ''),
+  `esperado ${total} (${confirmadasHoy} confirmadas + ${conCitaHoy} con cita) · tiene "${doc.getElementById('occupancyRatio')?.innerHTML}"`);
+check('La etiqueta del anillo describe el criterio',
+  /confirmada|con cita|sin reservas/.test(doc.getElementById('occupancyRatio')?.innerHTML || ''),
   doc.getElementById('occupancyRatio')?.innerHTML);
 check('La tarjeta no muestra porcentaje ni notas', !doc.getElementById('occupancyPercent') && !doc.getElementById('occupancyNote'),
   `percent=${Boolean(doc.getElementById('occupancyPercent'))} note=${Boolean(doc.getElementById('occupancyNote'))}`);

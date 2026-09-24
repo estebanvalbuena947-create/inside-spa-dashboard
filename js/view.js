@@ -101,17 +101,30 @@ const CAPACITY_POR_DIA = 18;
 export const draftEnteredAt = draft => draft.enteredAt || draft.reviewAt || draft.createdAt || draft.updatedAt;
 
 export function renderOccupancy(state) {
-  /* Indicador del día: pre-reservas que ENTRARON hoy (fecha de creación, no la de
-     la cita) más las reservas que se confirmaron hoy. Es el movimiento del día. */
-  const entradas = state.drafts.filter(draft => isToday(draftEnteredAt(draft))).length;
-  const confirmadas = state.confirmed.filter(row => isToday(row.confirmedAt)).length;
-  const total = entradas + confirmadas;
+  /* Reservas que ocurrieron hoy:
+     - confirmadas hoy (la confirmación cuenta como el momento en que ocurrió), y
+     - las que tienen su servicio agendado para hoy.
+     Una misma reserva no se cuenta dos veces. */
+  const ids = new Set();
+  let confirmadasHoy = 0;
+  let conCitaHoy = 0;
 
+  const sumar = row => {
+    if (ids.has(row.id)) return;
+    ids.add(row.id);
+    if (isToday(row.confirmedAt) || isToday(row.reviewAt || row.updatedAt)) confirmadasHoy += 1;
+    else if (isToday(row.scheduleDate)) conCitaHoy += 1;
+  };
+  state.confirmed.forEach(sumar);
+  state.drafts.filter(row => isConfirmedLike(row)).forEach(sumar);
+
+  const total = confirmadasHoy + conCitaHoy;
   const ratioNode = $('#occupancyRatio');
   if (ratioNode) {
-    const etiqueta = entradas && confirmadas ? `${entradas} pre · ${confirmadas} res`
-      : confirmadas ? (confirmadas === 1 ? 'reserva de hoy' : 'reservas de hoy')
-        : (entradas === 1 ? 'pre-reserva' : 'pre-reservas');
+    const etiqueta = total === 0 ? 'sin reservas hoy'
+      : confirmadasHoy && conCitaHoy ? `${confirmadasHoy} conf · ${conCitaHoy} cita`
+        : confirmadasHoy ? (confirmadasHoy === 1 ? 'confirmada hoy' : 'confirmadas hoy')
+          : (conCitaHoy === 1 ? 'con cita hoy' : 'con cita hoy');
     ratioNode.innerHTML = `${total}<small>${etiqueta}</small>`;
   }
 
@@ -120,6 +133,11 @@ export function renderOccupancy(state) {
     const percent = Math.max(0, Math.min(100, Math.round((total / CAPACITY_POR_DIA) * 100)));
     circle.style.setProperty('--fill', `${percent}%`);
   }
+}
+
+/** Una pre-reserva ya confirmada cuenta como reserva. */
+function isConfirmedLike(row) {
+  return row.confirmada === true || String(row.estado || '') === 'confirmado';
 }
 
 /* ---------- Tabla de pre-reservas ---------- */

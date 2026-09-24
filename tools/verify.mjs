@@ -46,7 +46,7 @@ const fakeFound = fakePatterns.filter(([pattern]) => pattern.test(html)).map(([,
 check('No quedan métricas ni fechas inventadas en el HTML', fakeFound.length === 0, fakeFound.join(', '));
 
 /* La tarjeta de la derecha se titula por las pre-reservas de hoy, no por "ocupación". */
-check('La tarjeta se titula "Movimiento de hoy"', html.includes('Movimiento de hoy'), 'título');
+check('La tarjeta se titula "Reservas de hoy"', html.includes('Reservas de hoy'), 'título');
 check('La tabla separa "Ingresó" de "Cita"', html.includes('<th>INGRESÓ</th>') && html.includes('<th>CITA</th>'), 'encabezados');
 check('El filtro por día aclara que es el de ingreso', html.includes('día en que ingresó'), 'filtro');
 check('Ya no se muestra el título "Ocupación de hoy"', !html.includes('Ocupación de hoy'), 'título viejo');
