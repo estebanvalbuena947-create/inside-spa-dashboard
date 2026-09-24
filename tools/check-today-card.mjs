@@ -40,24 +40,27 @@ const dom = installDom({ config });
 const view = await import(pathToFileURL(join(root, 'js/view.js')).href);
 
 const hoy = core.todayKey();
-/* La tarjeta se rige por la fecha en que entró la pre-reserva. */
+/* Indicador del día: pre-reservas que entraron hoy + reservas confirmadas hoy. */
 const enteredOf = row => row.enteredAt || row.reviewAt || row.createdAt || row.updatedAt;
 const draftsToday = drafts.filter(row => core.isToday(enteredOf(row)));
-const confirmedToday = confirmed.filter(row => core.isToday(row.scheduleDate));
+const confirmedToday = confirmed.filter(row => core.isToday(row.confirmedAt));
+const total = draftsToday.length + confirmedToday.length;
 
 view.renderOccupancy({ drafts, confirmed }, 18);
 
-console.log('\n=== TARJETA "PRE-RESERVAS DE HOY" CON DATOS REALES ===');
+console.log('\n=== INDICADOR DEL DÍA CON DATOS REALES ===');
 console.log(`Hoy (zona del spa): ${hoy}`);
-console.log(`Pre-reservas que INGRESARON hoy (fecha de creación) : ${draftsToday.length}`);
+console.log(`Pre-reservas que ENTRARON hoy (fecha de creación) : ${draftsToday.length}`);
 draftsToday.forEach(row => console.log(`   · #${row.id} ${String(row.nombre || '').slice(0, 34)} — entró ${core.dayKey(enteredOf(row))} · cita ${row.scheduleDate ? core.dayKey(row.scheduleDate) : 'sin cita'} (${row.estado})`));
-console.log(`Confirmadas con servicio hoy (referencia) : ${confirmedToday.length}`);
+console.log(`Reservas confirmadas hoy (pabau_confirmado_at)   : ${confirmedToday.length}`);
+confirmedToday.forEach(row => console.log(`   · #${row.id} ${String(row.nombre || '').slice(0, 34)} — confirmada ${core.dayKey(row.confirmedAt)} · cita ${row.scheduleDate ? core.dayKey(row.scheduleDate) : 'sin cita'}`));
+console.log(`Total del día                                     : ${total}`);
 
 console.log('\n--- LO QUE MUESTRA LA TARJETA ---');
-console.log(`Título      : ${/Pre-reservas de hoy/.test(readFileSync(join(root, 'index.html'), 'utf8')) ? 'Pre-reservas de hoy' : '(no encontrado)'}`);
+console.log(`Título      : ${/Movimiento de hoy/.test(readFileSync(join(root, 'index.html'), 'utf8')) ? 'Movimiento de hoy' : '(no encontrado)'}`);
 console.log(`Número      : ${dom.markup('occupancyRatio').replace(/<[^>]+>/g, ' ').trim()}`);
 
-const esperado = `${draftsToday.length}`;
+const esperado = `${total}`;
 const coincide = dom.markup('occupancyRatio').startsWith(esperado);
-console.log(`\n${coincide ? '✓' : '✗'} La tarjeta cuenta las pre-reservas que ingresaron hoy (${esperado}).`);
+console.log(`\n${coincide ? '✓' : '✗'} El indicador suma pre-reservas de hoy + reservas confirmadas hoy (${esperado}).`);
 process.exitCode = coincide ? 0 : 1;

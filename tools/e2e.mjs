@@ -144,18 +144,21 @@ check('Se registraron las 3 decisiones', mockDb.dashboard_reservation_decisions.
 await app.refresh({ reason: 'e2e-2' });
 await wait(300);
 
-/* ---------- 5.b Tarjeta "Pre-reservas de hoy" (por fecha de ingreso) ---------- */
+/* ---------- 5.b Indicador del día: pre-reservas de hoy + confirmadas hoy ---------- */
 const { isToday } = await import(pathToFileURL(join(root, 'js/core.js')).href);
-/* Cuenta por la fecha en que entró la pre-reserva, no por la de la cita. */
-const draftsToday = app.state.drafts.filter(row => isToday(row.enteredAt || row.reviewAt || row.createdAt)).length;
+const entradas = app.state.drafts.filter(row => isToday(row.enteredAt || row.reviewAt || row.createdAt)).length;
+const confirmadasHoy = app.state.confirmed.filter(row => isToday(row.confirmedAt)).length;
+const total = entradas + confirmadasHoy;
 const occupancyTitle = doc.getElementById('occupancyCard')?.innerHTML || doc.querySelector('#occupancyCard')?.outerHTML || '';
-check('La tarjeta se titula "Pre-reservas de hoy"',
-  /Pre-reservas de hoy/.test(occupancyTitle)
-  || /Pre-reservas de hoy/.test(readFileSync(join(root, 'index.html'), 'utf8')),
+check('La tarjeta se titula "Movimiento de hoy"',
+  /Movimiento de hoy/.test(occupancyTitle) || /Movimiento de hoy/.test(readFileSync(join(root, 'index.html'), 'utf8')),
   occupancyTitle.slice(0, 100));
-check('El número son las pre-reservas que ingresaron hoy',
-  (doc.getElementById('occupancyRatio')?.innerHTML || '').startsWith(String(draftsToday)),
-  `esperado ${draftsToday} · tiene "${doc.getElementById('occupancyRatio')?.innerHTML}"`);
+check('El indicador suma pre-reservas de hoy y reservas confirmadas hoy',
+  (doc.getElementById('occupancyRatio')?.innerHTML || '').startsWith(String(total)),
+  `esperado ${total} (${entradas} pre + ${confirmadasHoy} res) · tiene "${doc.getElementById('occupancyRatio')?.innerHTML}"`);
+check('La etiqueta del anillo desglosa pre-reservas y reservas',
+  /pre ·/.test(doc.getElementById('occupancyRatio')?.innerHTML || '') || /reservas de hoy|pre-reservas/.test(doc.getElementById('occupancyRatio')?.innerHTML || ''),
+  doc.getElementById('occupancyRatio')?.innerHTML);
 check('La tarjeta no muestra porcentaje ni notas', !doc.getElementById('occupancyPercent') && !doc.getElementById('occupancyNote'),
   `percent=${Boolean(doc.getElementById('occupancyPercent'))} note=${Boolean(doc.getElementById('occupancyNote'))}`);
 check('La tabla tiene columna de ingreso y de cita', (doc.getElementById('reservationBody')?.innerHTML || '').split('</td>').length >= 14,
