@@ -1,9 +1,9 @@
 /* Render del dashboard. Recibe estado ya calculado y escribe HTML seguro. */
 
 import {
-  dayKey, formatDate, formatDateTime, formatDayLabel, formatTime, initials, isHttpsUrl, isToday, money, moneyExact, safe, timeAgo, truncate
+  dayKey, formatDate, formatDateTime, formatDayLabel, formatTime, getTimeZone, initials, isHttpsUrl, isToday, money, moneyExact, safe, timeAgo, truncate
 } from './core.js?v=2.0.0';
-import { ACTION_LABELS, AMOUNT_SOURCE_LABELS, PAYMENT_REASON_LABELS, STATUS_LABELS, visibleAmount } from './domain.js?v=2.0.0';
+import { ACTION_LABELS, AMOUNT_SOURCE_LABELS, PAYMENT_REASON_LABELS, STATUS_LABELS, visibleAmount } from './domain.js?v=2.0.2';
 
 const $ = selector => document.querySelector(selector);
 const setText = (selector, value) => { const node = $(selector); if (node) node.textContent = value; };
@@ -40,6 +40,12 @@ export function renderMetrics(state) {
   setText('#pendingChange', hasData ? describePending(kpis) : 'Sin datos cargados');
   setText('#pendingBadge', String(kpis.toManage));
   setText('#reservationCount', String(kpis.toManage));
+  setText('#creationFilterScope', kpis.creationDate ? `Creadas el ${kpis.creationDate} · Ciudad de México` : 'Creación: todos los días');
+  const creationNotice = $('#creationDateNotice');
+  if (creationNotice) {
+    creationNotice.hidden = !hasData || !kpis.missingCreationCount;
+    creationNotice.textContent = `${kpis.missingCreationCount} prereserva(s) sin fecha de creación registrada. Se muestran sin filtro de fecha y se excluyen de días concretos.`;
+  }
   setText('#confirmedMetric', hasData ? String(kpis.confirmedTodayCount) : DASH);
   setText('#confirmedChange', hasData
     ? (kpis.confirmedTodayCount
@@ -98,7 +104,7 @@ function describePending(kpis) {
 const CAPACITY_POR_DIA = 18;
 
 /** Fecha en que entró la pre-reserva (no la de la cita). */
-export const draftEnteredAt = draft => draft.enteredAt || draft.reviewAt || draft.createdAt || draft.updatedAt;
+export const draftEnteredAt = draft => draft.enteredAt;
 
 export function renderOccupancy(state) {
   /* Reservas que ocurrieron hoy:
@@ -161,7 +167,7 @@ export function renderReservations(state) {
     return `<tr>
       <td><div class="client-cell"><div class="avatar">${safe(initials(row.nombre))}</div><div><span class="client-name">${safe(row.nombre || 'Cliente sin nombre')}</span><span class="client-email">${safe(row.email || row.phone || 'Sin contacto')}</span></div></div></td>
       <td class="service">${safe(row.servicio || 'Servicio por confirmar')}</td>
-      <td><span class="date">${safe(formatDayLabel(row.enteredAt || draftEnteredAt(row)) || DASH)}</span><span class="time">${safe(formatTime(row.enteredAt || draftEnteredAt(row)) || DASH)}</span></td>
+      <td><span class="date">${row.enteredAt ? safe(formatDate(row.enteredAt, { day: 'numeric', month: 'short', timeZone: getTimeZone() })) : 'Sin fecha de creación'}</span><span class="time">${safe(formatDate(row.enteredAt, { hour: 'numeric', minute: '2-digit', timeZone: getTimeZone() }) || DASH)}</span></td>
       <td><span class="date">${safe(formatDayLabel(row.scheduleDate) || 'Horario pendiente')}</span><span class="time">${safe(formatTime(row.scheduleDate) || 'Por definir')}</span></td>
       <td class="price">${amountCell(row, receipt)}</td>
       <td><span class="badge ${safe(status.key)}">${safe(status.label)}</span></td>

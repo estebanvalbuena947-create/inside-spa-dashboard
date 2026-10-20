@@ -37,8 +37,12 @@ const iso = date => date.toISOString();
 const drafts = [
   { id: 1, nombre: 'Ana López', email: 'ana@test.com', phone: '5551111111', nombre_servicio: 'Masaje relajante', masaje_inicio: iso(new Date(today.getTime() + 7200000)), monto_pagado: '1200', moneda_pago: 'MXN', estado_reserva: 'requiere_revision_pago', comprobante_revision_at: iso(today) },
   { id: 2, nombre: 'Luis Pérez', email: 'luis@test.com', nombre_servicio: 'Jacuzzi', jacuzzi_inicio: iso(new Date(today.getTime() + 90000000)), monto_pagado: '$1.500,00', estado_reserva: 'procesando_pabau' },
-  { id: 3, nombre: 'Marta Ruiz', nombre_servicio: 'Facial', estado_reserva: 'confirmado', reserva_confirmada: true, monto_pagado: 800, comprobante_revision_at: iso(today) }
+  { id: 3, nombre: 'Marta Ruiz', nombre_servicio: 'Facial', estado_reserva: 'confirmado', reserva_confirmada: true, monto_pagado: 800, comprobante_revision_at: iso(today) },
+  { id: 4, nombre: 'Reserva de prueba vencida', estado_reserva: 'cancelando_expirada', reserva_confirmada: false }
 ];
+drafts[0].created_at = '2026-10-20T06:00:00Z';
+drafts[1].created_at = '2026-10-19T18:00:00Z';
+drafts[3].created_at = '2026-10-20T10:00:00Z';
 const receipts = [
   { reserva_draft_id: 1, estado: 'revision', datos: { monto_pago: '1200', media_url: 'https://files.test/comprobante.jpg', fecha_pago: iso(today), referencia: 'REF-9' }, actualizado_at: iso(today) },
   { reserva_draft_id: 2, estado: 'pendiente', datos: {}, actualizado_at: iso(today) }
@@ -143,7 +147,7 @@ if (mainModule) {
     await new Promise(resolvePromise => setTimeout(resolvePromise, 250));
     const state = app.state;
     step('Arranque con sesión: email detectado', state.userEmail === 'contacto@insidespa.com.mx', String(state.userEmail));
-    step('Datos cargados desde las 4 tablas', state.drafts.length === 3 && state.confirmed.length === 1 && state.decisions.length === 1,
+    step('Datos cargados desde las 4 tablas', state.drafts.length === 4 && state.confirmed.length === 1 && state.decisions.length === 1,
       `drafts=${state.drafts.length} confirmadas=${state.confirmed.length} decisiones=${state.decisions.length}`);
     step('Comprobantes indexados por pre-reserva', state.receipts.size === 2, String(state.receipts.size));
     step('KPIs calculados', state.kpis.toManage === 2 && state.kpis.confirmedTodayCount >= 2,
@@ -156,11 +160,44 @@ if (mainModule) {
     const sync = document.getElementById('syncStatus');
     step('Estado de sincronización mostrado', /sincroniz|avisos/i.test(sync?.textContent || ''), sync?.textContent);
     const body = document.getElementById('reservationBody');
+    step('Cancelación por vencimiento visible sin inflar Por gestionar', /Cancelación por vencimiento/.test(body?.innerHTML || '') && document.getElementById('pendingMetric')?.textContent === '2');
     step('Tabla de pre-reservas renderizada', /Ana López/.test(body?.innerHTML || '') && /Pendiente de pago|Por revisar|En confirmación/.test(body?.innerHTML || ''),
       (body?.innerHTML || '').slice(0, 80));
     step('Comprobantes renderizados', /Ana López/.test(document.getElementById('receiptList')?.innerHTML || ''));
     step('Histórico con decisiones', /Comprobante aprobado/.test(document.getElementById('decisionList')?.innerHTML || ''));
     step('Clientes consolidados', /Carlos Díaz/.test(document.getElementById('clientBody')?.innerHTML || ''));
+
+    const dayFilter = document.getElementById('dayFilter');
+    dayFilter.value = '2026-10-20';
+    dayFilter.dispatch('change');
+    step('Fecha cambia tabla y contador a la misma creación', app.state.visibleDrafts.length === 2 && app.state.kpis.toManage === 1 && document.getElementById('pendingMetric')?.textContent === '1');
+    await app.refresh({ reason: 'prueba' });
+    step('Refresco conserva la fecha y su contador', app.state.visibleDrafts.length === 2 && app.state.kpis.toManage === 1);
+    dayFilter.value = '2026-10-22';
+    dayFilter.dispatch('input');
+    step('Día vacío muestra cero sin reservas de otros días', app.state.visibleDrafts.length === 0 && document.getElementById('pendingMetric')?.textContent === '0');
+    const originalCreateElement = document.createElement;
+    const originalCreateObjectURL = URL.createObjectURL;
+    let exportedBlob;
+    try {
+      document.createElement = tag => {
+        const element = originalCreateElement(tag);
+        element.click = () => {};
+        return element;
+      };
+      URL.createObjectURL = blob => { exportedBlob = blob; return 'blob:prueba-exportacion'; };
+      document.getElementById('exportBtn').dispatch('click');
+      const csv = exportedBlob.parts.join('');
+      step('Exportar un día vacío no exporta las filas de otros días', csv.split('\r\n').length === 1);
+    } finally {
+      document.createElement = originalCreateElement;
+      URL.createObjectURL = originalCreateObjectURL;
+    }
+    step('La ausencia de creación se informa al filtrar', /1 prereserva/.test(document.getElementById('creationDateNotice')?.textContent || '') && !document.getElementById('creationDateNotice')?.hidden);
+    dayFilter.value = '';
+    dayFilter.dispatch('change');
+    step('Limpiar la fecha recupera todas las filas y el conteo global', app.state.visibleDrafts.length === 4 && app.state.kpis.toManage === 2);
+    step('Creación ausente no se presenta como revisión', /Sin fecha de creación/.test(document.getElementById('reservationBody')?.innerHTML || ''));
     step('Aviso global coherente', document.getElementById('globalAlert')?.hidden === true, String(document.getElementById('globalAlert')?.hidden));
 
     /* Filtros */

@@ -49,7 +49,7 @@
         <section class="overview" id="dashboard">
           <div class="section-heading">
             <div><h2>Resumen de hoy</h2><p>Datos reales de tu operación · última actualización <span id="lastUpdate">—</span>.</p></div>
-            <label class="date-button" title="Filtra por el día en que entró la pre-reserva">▣ <input id="dayFilter" type="date" aria-label="Filtrar por el día en que entró la pre-reserva" /> <span class="date-hint">día en que ingresó</span></label>
+            <label class="date-button" title="Filtra por creación de la prereserva en Ciudad de México">▣ <input id="dayFilter" type="date" aria-label="Filtrar por fecha de creación en Ciudad de México" /> <span class="date-hint">fecha de creación</span></label>
           </div>
           <div class="metrics">
             <article class="metric-card"><div class="metric-icon sand">◷</div><div><p>Pre-reservas por gestionar</p><strong id="pendingMetric">—</strong><small id="pendingChange" class="muted">Sin datos cargados</small></div></article>
@@ -63,6 +63,8 @@
 
         <section class="content-grid" id="reservas">
           <article class="panel reservation-panel">
+            <p class="muted" id="creationFilterScope">Creación: todos los días</p>
+            <p class="muted" id="creationDateNotice" role="status" hidden></p>
             <div class="panel-header"><div><h2>Pre-reservas por gestionar <span id="reservationCount">0</span></h2><p>Revisa pagos y toma una decisión.</p></div><a href="#historico">Ver todas <span>→</span></a></div>
             <div class="filter-row">
               <label class="search"><span>⌕</span><input id="searchInput" type="search" placeholder="Buscar por cliente, correo o código" /></label>
@@ -150,6 +152,6 @@
     <dialog id="toast"><p id="toastMessage"></p></dialog>
 
     <script src="supabase-config.js"></script>
-    <script type="module" src="js/main.js?v=2.0.0"></script>
+    <script type="module" src="js/main.js?v=2.0.2"></script>
   </body>
 </html>

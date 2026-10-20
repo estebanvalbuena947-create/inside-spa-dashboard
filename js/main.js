@@ -1,16 +1,16 @@
 /* Inside Spa · Dashboard de reservas
    Orquesta sesión, carga de datos, decisiones y refresco. */
 
-import { buildCsv, downloadText, formatDate, formatWeekday, initials, safe, setTimeZone, timeAgo } from './core.js?v=2.0.0';
+import { buildCsv, downloadText, formatDate, formatWeekday, getTimeZone, initials, safe, setTimeZone, timeAgo } from './core.js?v=2.0.0';
 import {
   buildClients, buildKpis, buildReceipts, filterDrafts, indexByDraftId, isConfirmed,
   serviceOptions, visibleAmount, AMOUNT_SOURCE_LABELS
-} from './domain.js?v=2.0.0';
+} from './domain.js?v=2.0.2';
 import {
   classifyError, DataError, decide as commitDecision, describeError,
   loadDashboard, runDiagnostics, signOut, TABLE, getSession
-} from './data.js?v=2.0.0';
-import * as view from './view.js?v=2.0.0';
+} from './data.js?v=2.0.2';
+import * as view from './view.js?v=2.0.2';
 
 const SUPABASE_VERSION = '2.116.0';
 const REFRESH_MS = 60000;
@@ -259,7 +259,7 @@ function syncLabel(result) {
 function recompute() {
   state.decisionsByDraft = indexByDraftId(state.decisions, 'draftId');
   state.draftById = new Map(state.drafts.map(row => [row.id, row]));
-  state.kpis = buildKpis(state.drafts, state.confirmed, state.decisions, state.receipts);
+  state.kpis = buildKpis(state.drafts, state.confirmed, state.decisions, state.receipts, { date: currentFilters().date });
   state.statuses = state.kpis.statuses;
   state.receiptsList = buildReceipts(state.drafts, state.receipts);
   state.clients = buildClients(state.drafts, state.confirmed);
@@ -290,7 +290,8 @@ function renderAll() {
 }
 
 function renderTable() {
-  state.visibleDrafts = computeVisible();
+  recompute();
+  view.renderMetrics(state);
   view.renderReservations(state);
 }
 
@@ -370,18 +371,18 @@ function setActionButtonsDisabled(disabled) {
 /* ---------- Exportación ---------- */
 
 function exportCsv() {
-  const rows = (state.visibleDrafts.length ? state.visibleDrafts : state.drafts).map(row => {
+  const rows = state.visibleDrafts.map(row => {
     const status = state.statuses.get(row.id) || { label: '' };
     const receipt = state.receipts.get(row.id);
     const { amount, source } = visibleAmount(row, receipt);
-    const stamp = value => (value ? `${formatDate(value)} ${new Intl.DateTimeFormat('es-MX', { hour: 'numeric', minute: '2-digit' }).format(value)}` : '');
+    const stamp = value => (value ? `${formatDate(value, { dateStyle: 'medium', timeZone: getTimeZone() })} ${new Intl.DateTimeFormat('es-MX', { hour: 'numeric', minute: '2-digit', timeZone: getTimeZone() }).format(value)}` : '');
     return [
       row.id,
       row.nombre || '',
       row.email || '',
       row.phone || '',
       row.servicio || '',
-      stamp(row.enteredAt || row.reviewAt || row.createdAt),
+      stamp(row.enteredAt),
       stamp(row.scheduleDate),
       amount,
       AMOUNT_SOURCE_LABELS[source] || '',

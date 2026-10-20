@@ -1,7 +1,7 @@
 /* Reglas de negocio del dashboard: estados, decisiones, filtros y KPIs.
    Todo aquí es lógica pura para poder probarla sin navegador. */
 
-import { dayKey, firstValue, isToday, isWithinHours, parseDate, toAmount } from './core.js?v=2.0.0';
+import { dayKeyInZone, firstValue, isToday, isWithinHours, parseDate, toAmount } from './core.js?v=2.0.0';
 
 /** Acciones de decisión permitidas (deben coincidir con el SQL del RPC). */
 export const DECISION_ACTIONS = ['approved', 'rejected', 'needs_info'];
@@ -72,9 +72,8 @@ export const PAYMENT_REASON_LABELS = {
   MONTO_INSUFICIENTE_O_NO_LEGIBLE: 'Monto insuficiente o no legible'
 };
 
-/** Fecha en que la pre-reserva entró al sistema (no la fecha de la cita).
- *  `comprobante_revision_at` es la marca real del proyecto. */
-export const enteredAtOf = row => firstValue(row.reviewAt, row.createdAt, row.updatedAt, row.comprobante_revision_at);
+/** Creación real; ninguna fecha de actividad puede sustituirla. */
+export const enteredAtOf = row => firstValue(row.createdAt, row.created_at, row.creado_at, row.fecha_creacion);
 /** Fecha en que la reserva quedó confirmada (o falló). */
 export const closedAtOf = row => firstValue(row.confirmedAt, row.retencionExpiraAt, row.updatedAt, row.reviewAt, row.createdAt);
 
@@ -104,7 +103,7 @@ export function normalizeDraft(row) {
     scheduleAt: schedule,
     scheduleDate: parseDate(schedule),
     reviewAt: firstValue(row.comprobante_revision_at, row.actualizado_at, row.updated_at),
-    createdAt: firstValue(row.created_at, row.creado_at, row.fecha_creacion, row.comprobante_revision_at),
+    createdAt: firstValue(row.created_at, row.creado_at, row.fecha_creacion),
     updatedAt: firstValue(row.updated_at, row.actualizado_at, row.comprobante_revision_at),
     confirmedAt: firstValue(row.pabau_confirmado_at, row.confirmado_at)
   };
@@ -231,6 +230,8 @@ export function statusOf(row, latestDecision) {
     if (latestDecision.action === 'approved') return { key: 'confirmed', label: 'Aprobada por el equipo' };
   }
   const estado = asText(row?.estado);
+  // El workflow ya inició la liberación automática: no espera pago ni revisión del equipo.
+  if (estado === 'cancelando_expirada') return { key: 'rejected', label: 'Cancelación por vencimiento' };
   if (REJECTED_STATES.includes(estado)) return { key: 'rejected', label: STATUS_LABELS.rejected };
   if (REVIEW_STATES.includes(estado)) return { key: 'review', label: STATUS_LABELS.review };
   if (PROCESSING_STATES.includes(estado)) return { key: 'processing', label: STATUS_LABELS.processing };
@@ -269,14 +270,15 @@ export function indexByDraftId(rows, key = 'draftId') {
 
 /* ---------- KPIs ---------- */
 
-export function buildKpis(drafts, confirmed, decisions, receiptMap) {
+export function buildKpis(drafts, confirmed, decisions, receiptMap, { date = '' } = {}) {
   const index = indexDecisions(decisions);
   const statuses = new Map(drafts.map(row => [row.id, statusOf(row, index.get(row.id))]));
   const keyOf = row => statuses.get(row.id).key;
-  const pending = drafts.filter(row => keyOf(row) === 'pending');
-  const review = drafts.filter(row => ['review', 'info'].includes(keyOf(row)));
-  const processing = drafts.filter(row => keyOf(row) === 'processing');
-  const rejected = drafts.filter(row => keyOf(row) === 'rejected');
+  const operationalDrafts = filterDrafts(drafts, statuses, { date });
+  const pending = operationalDrafts.filter(row => keyOf(row) === 'pending');
+  const review = operationalDrafts.filter(row => ['review', 'info'].includes(keyOf(row)));
+  const processing = operationalDrafts.filter(row => keyOf(row) === 'processing');
+  const rejected = operationalDrafts.filter(row => keyOf(row) === 'rejected');
   const manageable = [...pending, ...review, ...processing];
   /* "Hoy" se rige por la fecha en que la reserva se confirmó, no por la fecha de
      la cita: una pre-reserva puede entrar hoy y tener cita en otra semana. */
@@ -306,6 +308,8 @@ export function buildKpis(drafts, confirmed, decisions, receiptMap) {
   return {
     statuses,
     index,
+    creationDate: date,
+    missingCreationCount: drafts.filter(row => !parseDate(enteredAtOf(row))).length,
     pendingCount: pending.length,
     reviewCount: review.length,
     processingCount: processing.length,
@@ -325,13 +329,13 @@ export function buildKpis(drafts, confirmed, decisions, receiptMap) {
 /** Filtra pre-reservas según la barra de filtros. */
 export function filterDrafts(drafts, statuses, { query = '', service = '', status = '', date = '' } = {}) {
   const text = query.trim().toLowerCase();
-  const targetDay = date ? dayKey(date) : null;
+  const targetDay = date || null;
   return drafts.filter(row => {
     const state = statuses.get(row.id)?.key || 'pending';
     if (status && state !== status) return false;
     if (service && row.servicio !== service) return false;
     /* El filtro por día es por la fecha en que ENTRÓ la pre-reserva. */
-    if (targetDay && dayKey(row.enteredAt || enteredAtOf(row)) !== targetDay) return false;
+    if (targetDay && dayKeyInZone(enteredAtOf(row)) !== targetDay) return false;
     if (!text) return true;
     return [row.nombre, row.email, row.phone, row.id, row.servicio]
       .some(value => String(value ?? '').toLowerCase().includes(text));

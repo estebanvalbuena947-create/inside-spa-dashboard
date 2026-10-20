@@ -48,7 +48,7 @@ check('No quedan métricas ni fechas inventadas en el HTML', fakeFound.length ==
 /* La tarjeta de la derecha se titula por las pre-reservas de hoy, no por "ocupación". */
 check('La tarjeta se titula "Reservas de hoy"', html.includes('Reservas de hoy'), 'título');
 check('La tabla separa "Ingresó" de "Cita"', html.includes('<th>INGRESÓ</th>') && html.includes('<th>CITA</th>'), 'encabezados');
-check('El filtro por día aclara que es el de ingreso', html.includes('día en que ingresó'), 'filtro');
+check('El filtro por día aclara que es el de ingreso', html.includes('fecha de creación'), 'filtro');
 check('Ya no se muestra el título "Ocupación de hoy"', !html.includes('Ocupación de hoy'), 'título viejo');
 
 /* ---------- 4. Lógica de negocio ---------- */
@@ -98,7 +98,8 @@ const decisionRows = [
   { id: 5, reservation_draft_id: 4, action: 'rejected', previous_status: 'requiere_revision', resulting_status: 'rechazado', decided_by_email: 'contacto@insidespa.com.mx', created_at: iso(today) },
   { id: 6, reservation_draft_id: 1, action: 'needs_info', previous_status: 'requiere_revision_pago', resulting_status: 'requiere_revision', decided_by_email: 'contacto@insidespa.com.mx', created_at: iso(new Date(today.getTime() - 3600000)) }
 ];
-const drafts = draftRows.map(normalizeDraft);
+// Las filas de prueba con creación conocida la declaran explícitamente.
+const drafts = draftRows.map(row => normalizeDraft({ ...row, created_at: row.comprobante_revision_at }));
 /* Copia sin decisiones aplicadas, para probar los filtros sobre el estado base. */
 const renormalized = drafts.map(row => ({ ...row, monto: toAmount(row.monto) }));
 const confirmed = confirmedRows.map(normalizeConfirmed);
@@ -147,7 +148,7 @@ const byQuery = filterDrafts(drafts, statuses, { query: 'ana' });
 check('Búsqueda por nombre devuelve 2', byQuery.length === 2, String(byQuery.length));
 const byService = filterDrafts(drafts, statuses, { service: 'Facial' });
 check('Filtro por servicio devuelve 2', byService.length === 2, String(byService.length));
-const byDay = filterDrafts(renormalized, baseStatuses, { date: new Date().toISOString().slice(0, 10) });
+const byDay = filterDrafts(renormalized, baseStatuses, { date: todayKey() });
 check('Filtro por día de hoy devuelve 3', byDay.length === 3, String(byDay.length));
 check('dayKey no desfasa "YYYY-MM-DD"', dayKey('2026-09-23') === '2026-09-23', String(dayKey('2026-09-23')));
 check('dayKey usa la hora local en ISO', dayKey('2026-09-23T18:30:00Z') === (() => { const d = new Date('2026-09-23T18:30:00Z'); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(), String(dayKey('2026-09-23T18:30:00Z')));
@@ -221,6 +222,28 @@ if (existsSync(schemaPath)) {
 const required = ['index.html', 'styles.css', 'dashboard.css', 'supabase-config.js', 'js/main.js', 'js/data.js', 'js/domain.js', 'js/core.js', 'js/view.js'];
 const files = new Set(readdirSync(root, { recursive: true }).map(entry => String(entry).replaceAll('\\', '/')));
 required.forEach(file => check(`Existe ${file}`, files.has(file)));
+
+/* Cancelación automática: no es una espera de pago ni una tarea de revisión. */
+for (const estado of ['cancelando_expirada', ' CANCELANDO_EXPIRADA ', 'Cancelando_Expirada']) {
+  const row = normalizeDraft({ id: 700, estado_reserva: estado });
+  const status = statusOf(row);
+  check(`Cancelación por vencimiento reconocida: ${estado}`, status.key === 'rejected' && status.label === 'Cancelación por vencimiento');
+  const result = buildKpis([row], [], [], new Map());
+  check(`Cancelación no cuenta como pendiente: ${estado}`, result.toManage === 0 && result.pendingCount === 0 && result.rejectedCount === 1);
+}
+const cancellationRows = [701, 702, 703].map(id => normalizeDraft({
+  id, estado_reserva: 'cancelando_expirada', monto_pagado: 900,
+  retencion_expira_at: iso(new Date(today.getTime() + 30 * 60000))
+}));
+const actionableRows = ['pendiente_pago', 'requiere_revision_pago', 'creando_retencion']
+  .map((estado, index) => normalizeDraft({ id: 710 + index, estado_reserva: estado, monto_pagado: 100 }));
+const cancellationKpis = buildKpis([...cancellationRows, ...actionableRows], [], [], new Map());
+check('Mezclar cancelaciones conserva solo las tareas operativas', cancellationKpis.toManage === 3 && cancellationKpis.pendingCount === 1 && cancellationKpis.reviewCount === 1 && cancellationKpis.processingCount === 1);
+check('Cancelaciones no suman importes por confirmar ni alertas de retención', cancellationKpis.pendingAmount === 300 && cancellationKpis.expiringHolds.length === 0);
+check('Cancelaciones se pueden consultar con el filtro de rechazadas', filterDrafts([...cancellationRows, ...actionableRows], cancellationKpis.statuses, { status: 'rejected' }).length === 3);
+check('Una retención vencida no reemplaza el estado de revisión', statusOf(normalizeDraft({ id: 720, estado_reserva: 'requiere_revision_pago', retencion_expira_at: iso(new Date(today.getTime() - 60000)) })).key === 'review');
+check('La confirmación conserva prioridad sobre la cancelación', statusOf(normalizeDraft({ id: 721, estado_reserva: 'cancelando_expirada', reserva_confirmada: true })).key === 'confirmed');
+check('La decisión conserva su prioridad existente', statusOf(cancellationRows[0], { action: 'needs_info' }).key === 'info');
 
 /* ---------- Resultado ---------- */
 console.log(`\n✓ ${passes.length} comprobaciones correctas`);

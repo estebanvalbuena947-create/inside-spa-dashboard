@@ -4,7 +4,7 @@
 import { pick } from './core.js?v=2.0.0';
 import {
   normalizeConfirmed, normalizeDecision, normalizeDraft, normalizeReceipt, receiptFromEvidence, visibleAmount
-} from './domain.js?v=2.0.0';
+} from './domain.js?v=2.0.2';
 
 export const TABLE = {
   drafts: 'reservas_draft',
@@ -122,7 +122,8 @@ export async function loadDashboard(supabase, { onProgress } = {}) {
   const notify = (step, percent) => onProgress?.({ step, percent });
 
   notify('Pre-reservas', 15);
-  const draftsResult = await fetchTable(supabase, TABLE.drafts, { columns: COLUMNS.reservas_draft });
+  // Columna aditiva: antes de migrar, el fallback existente permite leer sin inventar creación.
+  const draftsResult = await fetchTable(supabase, TABLE.drafts, { columns: `${COLUMNS.reservas_draft},created_at` });
   notify('Comprobantes', 40);
   const receiptsResult = await fetchTable(supabase, TABLE.receipts, { columns: COLUMNS.spa_comprobantes_pago });
   notify('Decisiones', 65);

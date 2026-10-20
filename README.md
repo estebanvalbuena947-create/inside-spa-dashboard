@@ -19,7 +19,7 @@ Panel interno para revisar **pre-reservas**, validar **comprobantes de pago** y 
 | 4 | En ~1 minuto los cambios están en `https://inside-spa-dashboard.vercel.app`. |
 
 No hay paso de compilación: el proyecto son archivos estáticos (HTML + CSS + módulos ES).
-Si un cambio no aparece, refresca con **Ctrl + F5**; los módulos llevan versión (`?v=2.0.0`)
+Si un cambio no aparece, refresca con **Ctrl + F5**; los módulos llevan versión (`?v=2.0.2` para esta corrección)
 justo para evitar copias viejas en caché.
 
 ### Cómo verificar el despliegue
@@ -243,7 +243,7 @@ node tools/check-authenticated.mjs # valida RLS/permisos con una sesión autenti
 | Estados reconocidos | `CONFIRMED_STATES`, `REVIEW_STATES`, `PROCESSING_STATES`, `REJECTED_STATES` en `js/domain.js` |
 | Textos de los motivos de revisión de n8n | `PAYMENT_REASON_LABELS` en `js/domain.js` |
 | Color/estilo de un badge | `dashboard.css` |
-| Qué cuenta como "de hoy" | `enteredAtOf()` y `closedAtOf()` en `js/domain.js`: la tarjeta y el filtro por día usan la **fecha de creación** de la pre-reserva (`comprobante_revision_at`) |
+| Qué cuenta por fecha | `enteredAtOf()` usa creación real (`created_at`, `creado_at`, `fecha_creacion`) para el filtro y el conteo operativo; las confirmadas de hoy conservan su fecha de confirmación |
 
 ---
 
@@ -260,3 +260,32 @@ node tools/check-authenticated.mjs # valida RLS/permisos con una sesión autenti
 - El correo del usuario queda guardado en el histórico de decisiones (`decided_by_email`).
 
 El detalle completo de la auditoría está en `docs/AUDITORIA.md`.
+
+### Corrección de cancelaciones por vencimiento (20 oct 2026)
+
+El estado `cancelando_expirada` se muestra como **Cancelación por vencimiento**, dentro del filtro
+de rechazadas. No suma en «Pre-reservas por gestionar», pendientes de pago, monto por confirmar
+ni alertas de retención: el workflow ya inició su cancelación automática. No se interpreta como
+cancelación completada ni se deduce a partir de la fecha de la retención.
+La prioridad de confirmaciones y decisiones del equipo permanece igual.
+
+Diseño y límites: `specs/001-cancelacion-por-vencimiento.md`,
+`plans/001-cancelacion-por-vencimiento.md` y `docs/DECISIONS.md`.
+Corrección validada; publicación autorizada por el usuario.
+
+### Filtro por creación real (20 oct 2026)
+
+El calendario filtra por creación en Ciudad de México. «Por gestionar», su desglose y el monto
+pendiente usan el mismo día; buscar cliente, servicio o estado añade filtros a la tabla.
+Al limpiar el calendario se recupera el conjunto completo. El CSV respeta la tabla, incluso vacía.
+
+La base SPA todavía no guarda creación en `reservas_draft`. Se preparó
+`supabase/migrations/20261020205736_reservation_draft_created_at.sql`: agrega una fecha nullable y
+configura la captura para inserciones futuras, sin fechar las filas antiguas como si fueran nuevas.
+La migración fue aprobada y aplicada en SPA el 20 de octubre; la publicación está autorizada.
+Mientras una fila carezca de creación, se muestra **Sin fecha de creación**, se avisa su cantidad
+y solo se incluye al consultar todos los días. La lectura sigue funcionando antes de migrar,
+con un aviso de esquema por la columna ausente. No se deduce historia desde la revisión del pago.
+
+Regresiones específicas: `node --test tools/check-creation-date.mjs` (también probado con `TZ=Asia/Tokyo`).
+Diseño y alcance en `specs/002-fecha-real-de-creacion.md` y `plans/002-fecha-real-de-creacion.md`.
